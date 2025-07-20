@@ -6,7 +6,7 @@
         "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
         "ghcr.io/smithclay/claudetainer/claudetainer": {
             "includeBase": true,
-            "include": ""
+            "include": "python"
         }
     },
     "customizations": {

@@ -2,17 +2,20 @@
   "name": "claudetainer",
   "id": "claudetainer",
   "version": "0.1.0",
-  "description": "Language support for Claude Code through automated hooks and commands",
+  "description": "Opinionated Claude Code workflows via preconfigured hooks and commands",
   "options": {
     "include": {
       "type": "string",
       "default": "",
-      "description": "Comma-separated list of presets (empty for Phase 1)"
+      "description": "Comma-separated list of presets to include (python, nodejs, go, etc.)",
+      "proposals": [
+        "python"
+      ]
     },
     "includeBase": {
       "type": "boolean",
       "default": true,
-      "description": "Include universal commands"
+      "description": "Include universal commands and hooks"
     }
   }
 }

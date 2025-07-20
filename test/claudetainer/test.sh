@@ -4,6 +4,10 @@ set -e
 # Import test library for `check` command
 source dev-container-features-test-lib
 
+echo $HOME
+
+ls -la ~/.claude
+
 # Test 1: Check that claudetainer installed successfully
 check "claudetainer install script exists" test -f ~/.claude/commands/hello.md
 

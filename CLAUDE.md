@@ -110,26 +110,34 @@ claudetainer/
 2. **Integration Testing**: Manual validation in actual devcontainer
 3. **CI Testing**: Automated testing in GitHub Actions (future)
 
-**Current Phase 1 Status:**
+**Current Phase 2 Status:**
 - ✅ Feature structure created (`src/claudetainer/`)
-- ✅ Enhanced installation script with Node.js auto-install (`install.sh`)
+- ✅ Simplified installation script with streamlined logic (`install.sh`)
 - ✅ Base preset with universal commands and hooks (`presets/base/`)
 - ✅ Python preset with Python-specific commands and hooks (`presets/python/`)
 - ✅ Base CLAUDE.md with development guidance (`presets/base/CLAUDE.md`)
-- ✅ Hello command test (`/hello`)
-- ✅ Hello hook demonstration (`~/.claude/hooks/hello.sh`)
-- ✅ Automated test suite with bash-only validation (`test/claudetainer/test.sh`)
-- ✅ DevContainer CLI testing framework ready
+- ✅ Enhanced JSON merging utility with Claude Code-specific rules (`lib/merge-json.js`)
+- ✅ String helper utilities for robust CSV parsing (`scripts/string-helpers.sh`)
+- ✅ Comprehensive test scenarios for different preset combinations (`test/claudetainer/scenarios.json`)
+- ✅ Individual test scripts for validation (`test_base_only.sh`, `test_base_with_python.sh`)
+- ✅ DevContainer CLI testing framework with scenario support
 
-**Phase 1 Implementation Details:**
-- **Auto-dependency management**: Detects package manager and installs Node.js if missing
-- **Cross-platform support**: Works with apt, apk, dnf, yum package managers
-- **Hook system**: Demonstrates PostToolUse hook with hello.sh script
-- **Preset system**: Base and Python presets with commands, hooks, and documentation
-- **Pure bash testing**: Test suite uses only bash utilities for maximum compatibility
-- **Error handling**: Graceful degradation with clear error messages
+**Phase 2 Implementation Details:**
+- **Multi-preset merging**: Supports comma-separated preset lists with intelligent deduplication
+- **Claude Code settings merging**: Permissions and hooks are properly merged and deduplicated
+- **Simplified install logic**: 84 lines vs 270+ lines (70% reduction in complexity)
+- **Visual installation feedback**: Clear emoji-based progress indicators
+- **Robust preset handling**: Base preset included by default, no duplication
+- **Enhanced testing**: Scenario-based testing for different configuration combinations
+- **Shellcheck compliance**: Code follows bash best practices
+
+**Merge Strategy (Implemented):**
+- ✅ **Hooks are merged intelligently**: Same matchers combined, commands deduplicated
+- ✅ **Commands override**: Last preset wins for same command name  
+- ✅ **Settings deep merge**: Permissions allow/deny lists concatenated and deduplicated
+- ✅ **CLAUDE.md sections concatenate**: All preset documentation preserved with clear headers
 
 Track session progress:
-- Files modified: install.sh (enhanced), settings.json (hooks added), test.sh (bash-only)
-- Tests run: DevContainer CLI testing ready (`devcontainer features test .`)
-- Outstanding issues: Local feature testing with `devcontainer up` (requires copying feature into .devcontainer/)
+- Files modified: install.sh (simplified), merge-json.js (enhanced), test scenarios added
+- Tests implemented: DevContainer CLI scenarios for base-only and multi-preset testing
+- Outstanding: Full devcontainer scenario testing validation
