@@ -3,9 +3,13 @@ set -e
 
 echo "🚀 Installing Claudetainer..."
 
+# Determine target user's home directory
+TARGET_HOME="${_REMOTE_USER_HOME:-$HOME}"
+TARGET_USER="${_REMOTE_USER:-$(whoami)}"
+
 # Create Claude directories
-mkdir -p "$HOME/.claude/commands"
-mkdir -p "$HOME/.claude/hooks"
+mkdir -p "$TARGET_HOME/.claude/commands"
+mkdir -p "$TARGET_HOME/.claude/hooks"
 
 # Try to install Node.js if it's not available
 if ! command -v node >/dev/null || ! command -v npm >/dev/null; then
@@ -43,11 +47,11 @@ for preset in "${PRESET_LIST[@]}"; do
     # Copy commands and hooks (last preset wins for conflicts)
     if [ -d "$preset_dir/commands" ]; then
         echo "     📁 Installing commands from $preset"
-        cp -r "$preset_dir/commands/"* "$HOME/.claude/commands/"
+        cp -r "$preset_dir/commands/"* "$TARGET_HOME/.claude/commands/"
     fi
     if [ -d "$preset_dir/hooks" ]; then
         echo "     🪝 Installing hooks from $preset"
-        cp -r "$preset_dir/hooks/"* "$HOME/.claude/hooks/"
+        cp -r "$preset_dir/hooks/"* "$TARGET_HOME/.claude/hooks/"
     fi
 done
 
@@ -69,7 +73,7 @@ done
             echo ""
         fi
     done
-} > "$HOME/.claude/CLAUDE.md"
+} > "$TARGET_HOME/.claude/CLAUDE.md"
 
 # Merge settings.json files
 settings_files=""
@@ -82,7 +86,13 @@ done
 
 if [ -n "$settings_files" ]; then
     echo "🔧 Merging settings..."
-    node "lib/merge-json.js" $settings_files "$HOME/.claude/settings.json"
+    node "lib/merge-json.js" $settings_files "$TARGET_HOME/.claude/settings.json"
+fi
+
+# Fix ownership if running as root and target user is different
+if [ "$(whoami)" = "root" ] && [ "$TARGET_USER" != "root" ] && [ "$TARGET_USER" != "$(whoami)" ]; then
+    echo "🔐 Setting ownership for user $TARGET_USER..."
+    chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.claude" 2>/dev/null || true
 fi
 
 echo "✅ Claudetainer installed successfully!"
