@@ -1,0 +1,31 @@
+{
+  "model": "sonnet",
+  "permissions": {
+    "allow": ["Bash(cat:*)", "Bash(ls:*)", "Bash(echo:*)", "Bash(mkdir:*)"],
+    "deny": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/hello.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notifier.sh idle-notification"
+          }
+        ]
+      }
+    ]
+  }
+}

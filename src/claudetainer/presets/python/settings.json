@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": ["Bash(python:*)", "Bash(python3:*)", "Bash(pip:*)", "Bash(pip3:*)"],
+    "deny": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/smart-lint.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
