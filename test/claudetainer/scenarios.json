@@ -1,14 +1,14 @@
 {
   "test_base_only": {
-    "image": "mcr.microsoft.com/devcontainers/base:jammy", 
-    "user": "vscode",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm", 
+    "user": "node",
     "features": {
       "claudetainer": {}
     }
   },
   "test_base_with_python": {
-    "image": "mcr.microsoft.com/devcontainers/base:jammy",
-    "user": "vscode",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "user": "node",
     "features": {
       "claudetainer": {
         "include": "python"
