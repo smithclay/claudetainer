@@ -13,26 +13,6 @@ on:
       - 'test/claudetainer/**'
 
 jobs:
-  test-feature:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: "Setup Node.js"
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: "Install DevContainer CLI"
-        run: npm install -g @devcontainers/cli
-
-      - name: "Test Claudetainer Feature"
-        run: |
-          devcontainer features test \
-            --feature claudetainer \
-            --base-image mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm \
-            .
-
   test-scenarios:
     runs-on: ubuntu-latest
     steps:
