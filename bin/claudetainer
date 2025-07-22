@@ -1,0 +1,296 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# Claudetainer CLI - Ergonomic devcontainer management with claudetainer feature
+VERSION="0.1.0"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Emojis for visual feedback
+CHECKMARK="✅"
+CROSS="❌"
+ROCKET="🚀"
+WRENCH="🔧"
+
+# Print colored output
+print_error() {
+    echo -e "${RED}${CROSS} Error: $1${NC}" >&2
+}
+
+print_success() {
+    echo -e "${GREEN}${CHECKMARK} $1${NC}"
+}
+
+print_info() {
+    echo -e "${BLUE}${ROCKET} $1${NC}"
+}
+
+print_warning() {
+    echo -e "${YELLOW}${WRENCH} $1${NC}"
+}
+
+# Show help message
+show_help() {
+    cat << EOF
+Claudetainer CLI v${VERSION}
+Ergonomic devcontainer management with claudetainer feature
+
+USAGE:
+    claudetainer <COMMAND> [OPTIONS]
+
+COMMANDS:
+    init <language>    Create .devcontainer folder with claudetainer feature
+                      Supported languages: python, node, rust, go
+                      Will auto-detect if language not specified
+                      Creates ~/.claudetainer-credentials.json if missing
+
+    up                Start the devcontainer (wraps 'devcontainer up')
+
+    ssh               SSH into running container with tmux session
+
+    --help, -h        Show this help message
+    --version, -v     Show version information
+
+EXAMPLES:
+    claudetainer init python     # Create Python devcontainer
+    claudetainer init            # Auto-detect language and create devcontainer
+    claudetainer up              # Start the devcontainer
+    claudetainer ssh             # Connect to running container
+
+For more information, visit: https://github.com/smithclay/claudetainer
+EOF
+}
+
+# Show version
+show_version() {
+    echo "claudetainer ${VERSION}"
+}
+
+# Detect project language based on files present
+detect_language() {
+    if [[ -f "package.json" ]]; then
+        echo "node"
+    elif [[ -f "requirements.txt" ]] || [[ -f "pyproject.toml" ]] || [[ -f "setup.py" ]]; then
+        echo "python"
+    elif [[ -f "Cargo.toml" ]]; then
+        echo "rust"
+    elif [[ -f "go.mod" ]]; then
+        echo "go"
+    else
+        echo ""
+    fi
+}
+
+# Validate language is supported
+validate_language() {
+    local lang="$1"
+    case "$lang" in
+        python|node|rust|go)
+            return 0
+            ;;
+        *)
+            print_error "Unsupported language: $lang"
+            echo "Supported languages: python, node, rust, go"
+            return 1
+            ;;
+    esac
+}
+
+# Generate devcontainer.json content for a language
+generate_devcontainer_json() {
+    local lang="$1"
+    local name=""
+    local image=""
+    
+    case "$lang" in
+        python)
+            name="Python Claudetainer"
+            image="mcr.microsoft.com/devcontainers/python:3"
+            ;;
+        node)
+            name="Node.js Claudetainer"
+            image="mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm"
+            ;;
+        rust)
+            name="Rust Claudetainer"
+            image="mcr.microsoft.com/devcontainers/rust:1-bookworm"
+            ;;
+        go)
+            name="Go Claudetainer"
+            image="mcr.microsoft.com/devcontainers/go:1-bookworm"
+            ;;
+    esac
+
+    cat << EOF
+{
+    "name": "${name}",
+    "image": "${image}",
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {},
+        "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
+        "ghcr.io/smithclay/claudetainer/claudetainer:0.1.0": {
+            "includeBase": true,
+            "include": "${lang}"
+        },
+        "ghcr.io/devcontainers/features/sshd:1": {
+            "SSHD_PORT": 2223,
+            "START_SSHD": "true",
+            "NEW_PASSWORD": "vscode"
+        },
+        "ghcr.io/duduribeiro/devcontainer-features/tmux:1": {}
+    },
+    "postCreateCommand": "claude --version",
+    // Mount credentials file so you don't have to re-auth to Claude Code for each container
+    "mounts": [
+        "source=\${localEnv:HOME}\${localEnv:USERPROFILE}/.claudetainer-credentials.json,target=/home/vscode/.claude/.credentials.json,type=bind,consistency=cached"
+    ],
+    // Makes it possible to SSH in via port 2223
+    // ssh -p 2223 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null vscode@localhost
+    "forwardPorts": [
+        2223
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": []
+        }
+    }
+}
+EOF
+}
+
+# Ensure credentials file exists for container mounting
+ensure_credentials_file() {
+    local credentials_file="$HOME/.claudetainer-credentials.json"
+    
+    if [[ ! -f "$credentials_file" ]]; then
+        print_info "Creating empty credentials file at $credentials_file"
+        echo '{}' > "$credentials_file"
+        print_success "Created $credentials_file"
+    fi
+}
+
+# Initialize devcontainer for a language
+cmd_init() {
+    local language="$1"
+    
+    # Ensure credentials file exists before creating devcontainer
+    ensure_credentials_file
+    
+    # Auto-detect language if not provided
+    if [[ -z "$language" ]]; then
+        language=$(detect_language)
+        if [[ -z "$language" ]]; then
+            print_error "Could not auto-detect project language"
+            echo "Please specify a language: claudetainer init <language>"
+            echo "Supported languages: python, node, rust, go"
+            return 1
+        fi
+        print_info "Auto-detected language: $language"
+    fi
+    
+    # Validate language
+    if ! validate_language "$language"; then
+        return 1
+    fi
+    
+    # Check if .devcontainer already exists
+    if [[ -d ".devcontainer" ]]; then
+        print_warning ".devcontainer directory already exists"
+        read -p "Overwrite existing .devcontainer? [y/N]: " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            print_info "Aborted"
+            return 0
+        fi
+        rm -rf .devcontainer
+    fi
+    
+    # Create .devcontainer directory
+    mkdir -p .devcontainer
+    
+    # Generate devcontainer.json
+    generate_devcontainer_json "$language" > .devcontainer/devcontainer.json
+    
+    print_success "Created .devcontainer/devcontainer.json for $language"
+    print_info "Next steps:"
+    echo "  1. Run 'claudetainer up' to start the container"
+    echo "  2. Run 'claudetainer ssh' to connect once it's running"
+}
+
+# Start devcontainer
+cmd_up() {
+    if [[ ! -f ".devcontainer/devcontainer.json" ]]; then
+        print_error "No .devcontainer/devcontainer.json found"
+        echo "Run 'claudetainer init <language>' first"
+        return 1
+    fi
+    
+    # Check if devcontainer CLI is available
+    if ! command -v devcontainer &> /dev/null; then
+        print_error "devcontainer CLI not found"
+        echo "Install it with: npm install -g @devcontainers/cli"
+        return 1
+    fi
+    
+    print_info "Starting devcontainer..."
+    devcontainer up --workspace-folder .
+}
+
+# SSH into running container
+cmd_ssh() {
+    # Check if container is running by trying to connect
+    if ! nc -z localhost 2223 2>/dev/null; then
+        print_error "Container not running or SSH not available on port 2223"
+        echo "Run 'claudetainer up' first to start the container"
+        return 1
+    fi
+    
+    print_info "Connecting to container via SSH..."
+    ssh -p 2223 \
+        -o StrictHostKeyChecking=no \
+        -o UserKnownHostsFile=/dev/null \
+        -o GlobalKnownHostsFile=/dev/null \
+        -o LogLevel=ERROR \
+        vscode@localhost \
+        -t 'tmux attach-session -t main 2>/dev/null || tmux new-session -s main'
+}
+
+# Main command dispatcher
+main() {
+    case "${1:-}" in
+        init)
+            cmd_init "${2:-}"
+            ;;
+        up)
+            cmd_up
+            ;;
+        ssh)
+            cmd_ssh
+            ;;
+        --help|-h|help)
+            show_help
+            ;;
+        --version|-v|version)
+            show_version
+            ;;
+        "")
+            print_error "No command specified"
+            echo "Run 'claudetainer --help' for usage information"
+            return 1
+            ;;
+        *)
+            print_error "Unknown command: $1"
+            echo "Run 'claudetainer --help' for usage information"
+            return 1
+            ;;
+    esac
+}
+
+# Run main function with all arguments
+main "$@"

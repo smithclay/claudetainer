@@ -31,26 +31,115 @@ fi
 
 echo "📦 Installing presets: $PRESETS"
 
+# Function to fetch GitHub preset
+fetch_github_preset() {
+    local github_spec="$1"
+    local temp_dir="$2"
+    
+    # Parse github:owner/repo/path format
+    local repo_path="${github_spec#github:}"
+    local owner_repo="${repo_path%%/*}"
+    local preset_path="${repo_path#*/}"
+    
+    # If no path specified, default to root
+    if [ "$preset_path" = "$owner_repo" ]; then
+        preset_path=""
+    else
+        preset_path="${preset_path#*/}"  # Remove repo name, keep path
+    fi
+    
+    local clone_dir="$temp_dir/github-repos/$owner_repo"
+    
+    echo "     🌐 Fetching $github_spec..."
+    
+    # Clone repo if not already done
+    if [ ! -d "$clone_dir" ]; then
+        git clone --depth=1 "https://github.com/$owner_repo.git" "$clone_dir" >/dev/null 2>&1 || {
+            echo "❌ Failed to fetch GitHub repo: $owner_repo"
+            return 1
+        }
+    fi
+    
+    # Set up preset directory structure
+    local source_dir="$clone_dir"
+    if [ -n "$preset_path" ]; then
+        source_dir="$clone_dir/$preset_path"
+    fi
+    
+    if [ ! -d "$source_dir" ]; then
+        echo "❌ Path '$preset_path' not found in repo $owner_repo"
+        return 1
+    fi
+    
+    # Copy to local presets directory
+    local preset_name
+    preset_name=$(basename "$preset_path")
+    if [ -z "$preset_name" ] || [ "$preset_name" = "$owner_repo" ]; then
+        preset_name="$owner_repo"
+    fi
+    
+    local target_dir="presets/github-$preset_name"
+    cp -r "$source_dir" "$target_dir"
+    echo "$target_dir"  # Return the local path for processing
+}
+
+# Check if git is available for GitHub presets
+github_presets_exist=false
+IFS=',' read -ra CHECK_PRESET_LIST <<< "$PRESETS"
+for preset in "${CHECK_PRESET_LIST[@]}"; do
+    preset=$(echo "$preset" | xargs)
+    if [[ "$preset" == github:* ]]; then
+        github_presets_exist=true
+        break
+    fi
+done
+
+if [ "$github_presets_exist" = true ]; then
+    if ! command -v git >/dev/null 2>&1; then
+        echo "❌ Error: git is required for GitHub presets but not found"
+        echo "   Please install git or remove GitHub preset references"
+        exit 1
+    fi
+    
+    # Create temporary directory for GitHub repos
+    temp_dir=$(mktemp -d)
+    trap 'rm -rf "$temp_dir"' EXIT
+fi
+
 # Apply each preset
 IFS=',' read -ra PRESET_LIST <<< "$PRESETS"
 for preset in "${PRESET_LIST[@]}"; do
     preset=$(echo "$preset" | xargs)  # trim whitespace
-    preset_dir="presets/$preset"
+    
+    # Handle GitHub presets
+    if [[ "$preset" == github:* ]]; then
+        if ! preset_dir=$(fetch_github_preset "$preset" "$temp_dir"); then
+            echo "⚠️  Failed to fetch GitHub preset '$preset', skipping"
+            continue
+        fi
+        preset_name="github-$(basename "${preset#github:*/*/}")"
+        if [ -z "$preset_name" ] || [ "$preset_name" = "github-" ]; then
+            preset_name="github-$(echo "${preset#github:}" | tr '/' '-')"
+        fi
+    else
+        preset_dir="presets/$preset"
+        preset_name="$preset"
+    fi
     
     if [ ! -d "$preset_dir" ]; then
         echo "⚠️  Preset '$preset' not found, skipping"
         continue
     fi
     
-    echo "   ✓ Applying $preset preset"
+    echo "   ✓ Applying $preset_name preset"
     
     # Copy commands and hooks (last preset wins for conflicts)
     if [ -d "$preset_dir/commands" ]; then
-        echo "     📁 Installing commands from $preset"
+        echo "     📁 Installing commands from $preset_name"
         cp -r "$preset_dir/commands/"* "$TARGET_HOME/.claude/commands/"
     fi
     if [ -d "$preset_dir/hooks" ]; then
-        echo "     🪝 Installing hooks from $preset"
+        echo "     🪝 Installing hooks from $preset_name"
         cp -r "$preset_dir/hooks/"* "$TARGET_HOME/.claude/hooks/"
     fi
 done
@@ -65,9 +154,21 @@ done
     IFS=',' read -ra PRESET_LIST <<< "$PRESETS"
     for preset in "${PRESET_LIST[@]}"; do
         preset=$(echo "$preset" | xargs)
-        claude_file="presets/$preset/CLAUDE.md"
+        
+        # Handle GitHub presets for CLAUDE.md
+        if [[ "$preset" == github:* ]]; then
+            preset_name="github-$(basename "${preset#github:*/*/}")"
+            if [ -z "$preset_name" ] || [ "$preset_name" = "github-" ]; then
+                preset_name="github-$(echo "${preset#github:}" | tr '/' '-')"
+            fi
+            claude_file="presets/$preset_name/CLAUDE.md"
+        else
+            preset_name="$preset"
+            claude_file="presets/$preset/CLAUDE.md"
+        fi
+        
         if [ -f "$claude_file" ]; then
-            echo "## From $preset preset:"
+            echo "## From $preset_name preset:"
             echo ""
             cat "$claude_file"
             echo ""
@@ -80,7 +181,18 @@ settings_files=""
 IFS=',' read -ra PRESET_LIST <<< "$PRESETS"
 for preset in "${PRESET_LIST[@]}"; do
     preset=$(echo "$preset" | xargs)
-    settings_file="presets/$preset/settings.json"
+    
+    # Handle GitHub presets for settings.json
+    if [[ "$preset" == github:* ]]; then
+        preset_name="github-$(basename "${preset#github:*/*/}")"
+        if [ -z "$preset_name" ] || [ "$preset_name" = "github-" ]; then
+            preset_name="github-$(echo "${preset#github:}" | tr '/' '-')"
+        fi
+        settings_file="presets/$preset_name/settings.json"
+    else
+        settings_file="presets/$preset/settings.json"
+    fi
+    
     [ -f "$settings_file" ] && settings_files="$settings_files $settings_file"
 done
 
@@ -95,5 +207,7 @@ if [ "$(whoami)" = "root" ] && [ "$TARGET_USER" != "root" ] && [ "$TARGET_USER" 
     chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.claude" 2>/dev/null || true
 fi
 
+echo "📂 Copying tmux configuration..."
+cp tmux/.tmux.conf "$TARGET_HOME/.tmux.conf"
+
 echo "✅ Claudetainer installed successfully!"
-echo "💡 Try running: /hello"

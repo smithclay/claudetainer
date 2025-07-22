@@ -20,6 +20,58 @@ Claudetainer is a devcontainer feature that adds language-specific support to Cl
 devcontainer.json → install.sh → presets → ~/.claude/settings.json and ~/.claude/hooks
 ```
 
+## Claudetainer CLI Tool
+
+The `bin/claudetainer` CLI provides ergonomic devcontainer management with automatic language detection and tmux integration.
+
+**Installation:**
+```bash
+# Add to PATH or create symlink
+ln -s /path/to/claudetainer/bin/claudetainer /usr/local/bin/claudetainer
+```
+
+**Commands:**
+- `claudetainer init [language]` - Create `.devcontainer` folder with claudetainer feature
+  - Auto-detects language from project files if not specified
+  - Supported languages: `python`, `node`, `rust`, `go`
+  - Generates optimized devcontainer.json with claudetainer feature
+  - Creates `~/.claudetainer-credentials.json` if missing (ensures container mount point exists)
+
+- `claudetainer up` - Start the devcontainer (wraps `devcontainer up`)
+  - Requires DevContainer CLI (`npm install -g @devcontainers/cli`)
+  - Validates devcontainer.json exists
+
+- `claudetainer ssh` - SSH into running container with tmux session
+  - Connects to port 2223 with tmux integration
+  - Creates or attaches to `main` tmux session
+
+**Language Detection:**
+- **Python**: `requirements.txt`, `pyproject.toml`, `setup.py`
+- **Node.js**: `package.json`
+- **Rust**: `Cargo.toml`
+- **Go**: `go.mod`
+
+**Generated DevContainer Features:**
+- Claude Code integration (`ghcr.io/anthropics/devcontainer-features/claude-code:1.0`)
+- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.1.0`)
+- SSH daemon for remote access (`ghcr.io/devcontainers/features/sshd:1`)
+- Tmux for session management (`ghcr.io/duduribeiro/devcontainer-features/tmux:1`)
+
+**Usage Examples:**
+```bash
+# Auto-detect and initialize
+claudetainer init
+
+# Initialize specific language
+claudetainer init python
+
+# Start container
+claudetainer up
+
+# Connect via SSH with tmux
+claudetainer ssh
+```
+
 ## Development Commands
 
 **Phase Development:**
@@ -36,14 +88,23 @@ devcontainer features test .
 # Test specific feature with custom base image
 devcontainer features test --feature claudetainer --base-image mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm .
 
+# Alternative: Test with claudetainer CLI
+bin/claudetainer init python
+bin/claudetainer up
+bin/claudetainer ssh
+
 # Alternative: Test with devcontainer up (requires copying feature)
 cp -r src/claudetainer .devcontainer/
 devcontainer up --workspace-folder .
 
 # Fallback: Manual test cycle (for quick iteration)
 cp -r src/claudetainer /tmp/test-feature
-export INCLUDE="python,nodejs" 
+export INCLUDE="python,nodejs,github:acme-corp/standards/python" 
 export INCLUDEBASE="true"
+cd /tmp/test-feature && ./install.sh
+
+# Test GitHub preset functionality
+export INCLUDE="github:owner/repo,github:owner/repo/path/preset"
 cd /tmp/test-feature && ./install.sh
 ```
 
@@ -62,7 +123,13 @@ ls ~/.claude/commands/
 
 **Language:** Bash + Node.js utilities for JSON manipulation
 **Size Target:** ~150KB total
-**Dependencies:** Bash 4.0+, Node.js 16+, Claude Code 1.0+
+**Dependencies:** Bash 4.0+, Node.js 16+, Claude Code 1.0+, git (for GitHub presets)
+
+**CLI Tool:** 
+- Standalone `claudetainer` CLI tool at `bin/claudetainer` (v0.1.0)
+- Ergonomic devcontainer management with automatic language detection
+- Wraps DevContainer CLI with claudetainer-specific configurations
+- Supports SSH access with tmux integration
 
 **Preset Structure:**
 - `metadata.json` - Preset metadata and dependencies
@@ -70,33 +137,45 @@ ls ~/.claude/commands/
 - `commands/` - Slash commands (*.md files)
 - `CLAUDE.md` - Instructions for Claude
 
+**GitHub Preset Support:**
+- `github:owner/repo` - Root-level preset from GitHub repository
+- `github:owner/repo/path/to/preset` - Nested preset from specific path
+- Requires git to be available in the environment
+- Uses shallow clones for efficiency (`--depth=1`)
+- Automatic cleanup of temporary directories
+- Error handling for missing repos or invalid paths
+
 **Merge Strategy:**
 - Hooks are additive (all presets' hooks run)
 - Commands override (last preset wins for same name)
 - Settings deep merge
 - CLAUDE.md sections concatenate
+- GitHub presets processed identically to local presets
 
 ## File Structure (Target Implementation)
 
 ```
 claudetainer/
+├── bin/
+│   └── claudetainer             # Standalone CLI tool for devcontainer management
 ├── src/claudetainer/            # Feature source (DevContainer CLI structure)
 │   ├── devcontainer-feature.json    # Feature definition
-│   ├── install.sh               # Main installation script
+│   ├── install.sh               # Main installation script with GitHub preset support
 │   ├── presets/                 # Built-in language presets
-│   │   ├── base/                # Universal commands
-│   │   ├── python/              # Python tooling
-│   │   ├── nodejs/              # JavaScript/TypeScript
-│   │   └── go/                  # Go development
+│   │   ├── base/                # Universal commands and hooks
+│   │   ├── go/                  # Go development support
+│   │   ├── node/                # Node.js/JavaScript/TypeScript support
+│   │   ├── python/              # Python-specific tooling and hooks
+│   │   └── rust/                # Rust development support
 │   ├── lib/
-│   │   ├── merge-json.js        # JSON merging utility
-│   │   ├── fetch-external.sh    # GitHub preset fetcher
-│   │   └── apply-preset.sh      # Preset application
-│   └── bin/
-│       └── claudetainer         # CLI tool
+│   │   └── merge-json.js        # JSON merging utility for settings
+│   ├── scripts/
+│   │   └── nodejs-helper.sh     # Node.js installation helper
+│   └── tmux/
+│       └── .tmux.conf           # Tmux configuration
 └── test/claudetainer/           # Automated tests (DevContainer CLI)
     ├── test.sh                  # Main test script
-    └── scenarios.json           # Test scenarios (future)
+    └── scenarios.json           # Test scenarios for different preset combinations
 ```
 
 ## Coding Standards
@@ -121,19 +200,20 @@ claudetainer/
 - ✅ Python preset with Python-specific commands and hooks (`presets/python/`)
 - ✅ Base CLAUDE.md with development guidance (`presets/base/CLAUDE.md`)
 - ✅ Enhanced JSON merging utility with Claude Code-specific rules (`lib/merge-json.js`)
-- ✅ String helper utilities for robust CSV parsing (`scripts/string-helpers.sh`)
+- ✅ GitHub preset support with remote repository fetching (`install.sh`)
 - ✅ Comprehensive test scenarios for different preset combinations (`test/claudetainer/scenarios.json`)
 - ✅ DevContainer CLI testing framework with scenario support
 - ✅ GitHub Actions CI/CD workflows for automated testing and publishing
 
-**Phase 2 Implementation Details:**
+**Phase 2+ Implementation Details:**
 - **Multi-preset merging**: Supports comma-separated preset lists with intelligent deduplication
+- **GitHub preset support**: Fetches presets from remote GitHub repositories with error handling
 - **Claude Code settings merging**: Permissions and hooks are properly merged and deduplicated
-- **Simplified install logic**: 84 lines vs 270+ lines (70% reduction in complexity)
-- **Visual installation feedback**: Clear emoji-based progress indicators
+- **Enhanced install logic**: ~200 lines with GitHub support, robust error handling
+- **Visual installation feedback**: Clear emoji-based progress indicators with GitHub fetch status
 - **Robust preset handling**: Base preset included by default, no duplication
 - **Enhanced testing**: Scenario-based testing for different configuration combinations
-- **Shellcheck compliance**: Code follows bash best practices
+- **Shellcheck compliance**: Code follows bash best practices with proper quoting and error handling
 
 **Merge Strategy (Implemented):**
 - ✅ **Hooks are merged intelligently**: Same matchers combined, commands deduplicated
@@ -164,13 +244,30 @@ claudetainer/
 {
   "features": {
     "ghcr.io/smithclay/claudetainer:latest": {
-      "include": "python,nodejs"
+      "include": "python,nodejs,github:acme-corp/standards/python"
+    }
+  }
+}
+```
+
+**GitHub Preset Examples:**
+```json
+{
+  "features": {
+    "claudetainer": {
+      "include": [
+        "python",
+        "github:acme-corp/claudetainer-standards/python",
+        "github:acme-corp/claudetainer-standards/security",
+        "github:my-team/custom-presets"
+      ]
     }
   }
 }
 ```
 
 Track session progress:
-- Files modified: install.sh (simplified), merge-json.js (enhanced), test scenarios, CI/CD workflows
+- Files modified: install.sh (GitHub preset support), presets/python/CLAUDE.md (enhanced), removed scripts/string-helpers.sh
+- Major features added: GitHub preset fetching, git availability checking, enhanced error handling
 - Tests implemented: DevContainer CLI scenarios + GitHub Actions automation
 - CI/CD: Fully automated testing and publishing pipeline

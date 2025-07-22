@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": ["Bash(cargo:*)"],
+    "deny": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/smart-lint.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
