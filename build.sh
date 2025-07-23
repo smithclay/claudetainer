@@ -5,7 +5,25 @@ set -euo pipefail
 
 BUILD_DIR="dist"
 OUTPUT_FILE="$BUILD_DIR/claudetainer"
-VERSION=$(grep '^VERSION=' bin/claudetainer | cut -d'"' -f2)
+
+# Read version from devcontainer-feature.json as source of truth
+if [[ -f "src/claudetainer/devcontainer-feature.json" ]]; then
+    if command -v node >/dev/null 2>&1; then
+        VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('src/claudetainer/devcontainer-feature.json', 'utf8')).version)" 2>/dev/null)
+    else
+        echo "❌ Node.js not found - required to read version from devcontainer-feature.json"
+        exit 1
+    fi
+else
+    echo "❌ devcontainer-feature.json not found"
+    exit 1
+fi
+
+# Validate version was read successfully
+if [[ -z "$VERSION" ]]; then
+    echo "❌ Could not read version from devcontainer-feature.json"
+    exit 1
+fi
 
 echo "🔨 Building claudetainer v$VERSION..."
 
@@ -25,6 +43,8 @@ EOF
 # Add version information
 echo "VERSION=\"$VERSION\"" >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
+
+echo "📦 Injecting version: $VERSION"
 
 # Embed library functions in dependency order
 echo "# === EMBEDDED LIBRARIES ===" >> "$OUTPUT_FILE"
@@ -96,7 +116,6 @@ if "$OUTPUT_FILE" --version >/dev/null 2>&1; then
     echo "  • Install: cp ./dist/claudetainer /usr/local/bin/claudetainer"
     echo ""
     echo "🔧 Size comparison:"
-    echo "  • Original: $(wc -l < bin/claudetainer.original) lines"
     echo "  • Modular: $(wc -l < bin/claudetainer) main + $(find bin/lib bin/commands -name "*.sh" | wc -l) modules"
     echo "  • Built: $(wc -l < "$OUTPUT_FILE") lines"
     

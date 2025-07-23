@@ -59,6 +59,24 @@ cmd_up() {
 		return 1
 	fi
 
+	# Check if container already exists for this directory
+	local existing_containers=$(docker_find_project_containers)
+	if [[ -n "$existing_containers" ]]; then
+		ui_print_error "A devcontainer already exists for this directory"
+		echo "Existing container(s): $existing_containers"
+		echo ""
+		ui_print_info "To work with multiple instances of the same repository:"
+		echo "  1. Use git worktree to create separate working directories:"
+		echo "     git worktree add ../project-feature-branch feature-branch"
+		echo "  2. Each worktree can have its own devcontainer"
+		echo ""
+		ui_print_info "To manage the existing container:"
+		echo "  • Connect: claudetainer ssh"
+		echo "  • Remove: claudetainer rm"
+		echo "  • Status: claudetainer list"
+		return 1
+	fi
+
 	ui_print_info "Starting devcontainer using npx @devcontainers/cli..."
 	npx @devcontainers/cli up --workspace-folder .
 

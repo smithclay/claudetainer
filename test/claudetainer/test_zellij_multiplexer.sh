@@ -36,6 +36,26 @@ check "claudetainer layout contains claude tab" grep -q 'tab name="claude"' ~/.c
 # Test 9: Check that layout contains usage tab
 check "claudetainer layout contains usage tab" grep -q 'tab name="usage"' ~/.config/zellij/layouts/claudetainer.kdl
 
+# Test 10: Validate zellij configuration syntax
+check "zellij main config is valid" bash -c '
+    # Use official Zellij config validation command
+    zellij --config ~/.config/zellij/config.kdl setup --check >/dev/null 2>&1
+'
+
+# Test 11: Validate claudetainer layout syntax  
+check "claudetainer layout is valid KDL syntax" bash -c '
+    # Use official Zellij layout validation command
+    zellij --layout ~/.config/zellij/layouts/claudetainer.kdl setup --check >/dev/null 2>&1
+'
+
+# Test 12: Check for common KDL syntax errors in layout
+check "layout file has no obvious syntax errors" bash -c '
+    # Basic checks for common syntax issues
+    ! grep -q "Cannot have both tabs and panes" ~/.config/zellij/layouts/claudetainer.kdl 2>/dev/null &&
+    # Check for proper bracket balancing (basic check)
+    [ $(grep -c "{" ~/.config/zellij/layouts/claudetainer.kdl) -eq $(grep -c "}" ~/.config/zellij/layouts/claudetainer.kdl) ]
+'
+
 echo "✅ zellij multiplexer tests passed!"
 
 # Report result

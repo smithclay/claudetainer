@@ -1,11 +1,26 @@
 #!/bin/bash
 # DevContainer Generator Library - DevContainer JSON generation
 
+# Function to get current feature version from devcontainer-feature.json
+devcontainer_get_feature_version() {
+	local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	local feature_json="$script_dir/../../src/claudetainer/devcontainer-feature.json"
+	
+	if [[ -f "$feature_json" ]]; then
+		node -e "console.log(JSON.parse(require('fs').readFileSync('$feature_json', 'utf8')).version)" 2>/dev/null || echo "unknown"
+	else
+		echo "unknown" # fallback version
+	fi
+}
+
 # Generate devcontainer.json content for a language
 devcontainer_generate_json() {
 	local lang="$1"
 	local port="$2"
 	local multiplexer="${3:-zellij}"
+
+	# Get current feature version
+	local feature_version=$(devcontainer_get_feature_version)
 
 	# Get language-specific configuration
 	local lang_config=$(config_get_language_config "$lang")
@@ -20,7 +35,7 @@ devcontainer_generate_json() {
     "features": {
         "ghcr.io/devcontainers/features/node:1": {},
         "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
-        "ghcr.io/smithclay/claudetainer/claudetainer:0.1.3": {
+        "ghcr.io/smithclay/claudetainer/claudetainer:${feature_version}": {
             "includeBase": true,
             "include": "${lang}",
             "multiplexer": "${multiplexer}"

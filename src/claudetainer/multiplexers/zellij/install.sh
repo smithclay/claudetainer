@@ -9,7 +9,7 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../base.sh"
 
 # Zellij-specific configuration
-ZELLIJ_VERSION="0.40.1"
+ZELLIJ_VERSION="0.42.0"
 ZELLIJ_CONFIG_DIR="${TARGET_HOME:-$HOME}/.config/zellij"
 ZELLIJ_LAYOUTS_DIR="$ZELLIJ_CONFIG_DIR/layouts"
 
@@ -128,14 +128,11 @@ mouse_mode true
 // Copy to system clipboard
 copy_clipboard "system"
 
-// Auto-layout behavior
-auto_layout true
-
-// Session serialization for resurrection
-session_serialization true
-
 // Default shell
 default_shell "bash"
+
+// Session serialization for persistence
+session_serialization true
 
 // Plugin configuration
 plugins {
@@ -190,7 +187,6 @@ layout {
     tab name="claude" focus=true {
         pane {
             cwd "/workspaces"
-            // Add welcome message
             command "bash"
             args "-c" "clear; echo '🤖 Welcome to Claudetainer with Zellij!'; echo '💡 Switch tabs: Alt+h/l or Ctrl+t then 1/2'; echo '🚀 Start coding with: claude'; echo; exec bash"
         }
@@ -202,19 +198,6 @@ layout {
             cwd "/workspaces"
             command "bash"
             args "-c" "echo '📊 Claude Code Usage Monitor'; echo 'Starting ccusage...'; echo; npx ccusage"
-        }
-    }
-    
-    // Optional floating pane for quick commands
-    floating_panes {
-        pane {
-            name "quickcmd"
-            command "bash"
-            args "-c" "echo '⚡ Quick Commands'; echo 'Press Ctrl+p then f to toggle floating panes'; echo; exec bash"
-            width "50%"
-            height "30%"
-            x "25%"
-            y "35%" 
         }
     }
 }
