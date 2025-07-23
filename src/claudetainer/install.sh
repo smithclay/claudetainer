@@ -207,7 +207,24 @@ if [ "$(whoami)" = "root" ] && [ "$TARGET_USER" != "root" ] && [ "$TARGET_USER" 
     chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.claude" 2>/dev/null || true
 fi
 
-echo "📂 Copying tmux configuration..."
-cp tmux/.tmux.conf "$TARGET_HOME/.tmux.conf"
+# Install tmux configuration if enabled (default: true)
+TMUX_ENABLED="${TMUX:-true}"
+if [ "$TMUX_ENABLED" = "true" ]; then
+    echo "📂 Copying tmux configuration..."
+    cp tmux/.tmux.conf "$TARGET_HOME/.tmux.conf"
+
+    echo "📜 Installing tmux auto-start..."
+    mkdir -p "$TARGET_HOME/.claude/scripts"
+    cp scripts/bashrc-tmux.sh "$TARGET_HOME/.claude/scripts/"
+
+    # Append tmux auto-start to .bashrc if not already present
+    if ! grep -q "claudetainer tmux session" "$TARGET_HOME/.bashrc" 2>/dev/null; then
+        echo "" >> "$TARGET_HOME/.bashrc"
+        echo "# Claudetainer: Auto-start tmux session for remote connections" >> "$TARGET_HOME/.bashrc"
+        cat scripts/bashrc-tmux.sh >> "$TARGET_HOME/.bashrc"
+    fi
+else
+    echo "⏭️ Skipping tmux configuration (disabled)"
+fi
 
 echo "✅ Claudetainer installed successfully!"

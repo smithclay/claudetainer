@@ -43,7 +43,9 @@ ln -s /path/to/claudetainer/bin/claudetainer /usr/local/bin/claudetainer
 
 - `claudetainer ssh` - SSH into running container with tmux session
   - Connects to dynamically allocated port with tmux integration
-  - Creates or attaches to `claudetainer` tmux session
+  - Creates or attaches to `claudetainer` tmux session with two windows:
+    - **claude**: Main development window in /workspaces
+    - **usage**: Real-time Claude Code usage monitoring via ccusage
 
 - `claudetainer doctor` - Comprehensive health check and debugging
   - Validates prerequisites, container status, and configurations

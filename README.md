@@ -62,7 +62,9 @@ That's it! You now have a fully configured Claude Code development environment w
 - **Automatic language detection** - Python, Node.js, Go, Rust, Shell scripts (PRs welcome for additional languages)
 - **Pre-configured linting** - black, flake8, eslint, gofmt, shellcheck 
 - **Smart formatting** - Fixes code style issues automatically
-- **SSH + tmux** - Remote development with persistent sessions (for using Claude Code on your phone)
+- **SSH + tmux** - Remote development with persistent sessions and automatic two-window layout:
+  - **claude** window for development
+  - **usage** window with real-time Claude Code usage monitoring
 
 ### **Claude Code Slash Commands**
 - **`/commit`** - Conventional commits with emoji and consistency

@@ -647,6 +647,7 @@ COMMANDS:
                      Supported languages: python, node, rust, go, shell
                      Will auto-detect if language not specified
                      Creates ~/.claudetainer-credentials.json if missing
+                     Options: --no-tmux (disable automatic tmux session)
 
     up, start        Start the devcontainer (uses npx @devcontainers/cli)
     ssh              SSH into running container with tmux session
@@ -716,6 +717,7 @@ validate_language() {
 generate_devcontainer_json() {
     local lang="$1"
     local port="$2"
+    local enable_tmux="${3:-true}"
     local name=""
     local image=""
     local post_create_command=""
@@ -757,7 +759,8 @@ generate_devcontainer_json() {
         "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
         "ghcr.io/smithclay/claudetainer/claudetainer:0.1.0": {
             "includeBase": true,
-            "include": "${lang}"
+            "include": "${lang}",
+            "tmux": ${enable_tmux}
         },
         "ghcr.io/devcontainers/features/sshd:1": {
             "SSHD_PORT": ${port},
@@ -851,6 +854,22 @@ EOF
 # Initialize devcontainer for a language
 cmd_init() {
     local language="$1"
+    local enable_tmux=true
+    
+    # Parse options
+    shift
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --no-tmux)
+                enable_tmux=false
+                shift
+                ;;
+            *)
+                # Unknown option, ignore
+                shift
+                ;;
+        esac
+    done
     
     # Ensure credentials file exists before creating devcontainer
     ensure_credentials_file
@@ -895,7 +914,7 @@ cmd_init() {
     fi
     
     # Generate devcontainer.json with allocated port
-    generate_devcontainer_json "$language" "$port" > .devcontainer/devcontainer.json
+    generate_devcontainer_json "$language" "$port" "$enable_tmux" > .devcontainer/devcontainer.json
     
     print_success "Created .devcontainer/devcontainer.json for $language"
     print_info "Allocated SSH port: $port"
@@ -1026,13 +1045,13 @@ cmd_ssh() {
     fi
     
     print_info "Connecting to container via SSH on port $port..."
+    print_info "The container will automatically start a tmux session with claude and usage windows"
     ssh -p $port \
         -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=/dev/null \
         -o GlobalKnownHostsFile=/dev/null \
         -o LogLevel=ERROR \
-        vscode@localhost \
-        -t 'tmux attach-session -t claudetainer 2>/dev/null || tmux new-session -s claudetainer'
+        vscode@localhost
 }
 
 # Remove claudetainer and associated containers
@@ -1147,7 +1166,8 @@ main() {
                 print_error "Prerequisites not met. Install missing dependencies first."
                 return 1
             fi
-            cmd_init "${2:-}"
+            shift
+            cmd_init "$@"
             ;;
         up|start)
             cmd_up

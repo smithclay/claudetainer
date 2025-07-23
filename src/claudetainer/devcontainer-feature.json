@@ -1,21 +1,30 @@
 {
   "name": "claudetainer",
   "id": "claudetainer",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Opinionated Claude Code workflows via preconfigured hooks and commands",
   "options": {
     "include": {
       "type": "string",
       "default": "",
-      "description": "Comma-separated list of presets to include (python, nodejs, go, etc.)",
+      "description": "Comma-separated list of presets to include (python, nodejs, go, shell, etc.)",
       "proposals": [
-        "python"
+        "python",
+        "node",
+        "go",
+        "rust",
+        "shell"
       ]
     },
     "includeBase": {
       "type": "boolean",
       "default": true,
       "description": "Include universal commands and hooks"
+    },
+    "tmux": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable automatic tmux session with claude and usage windows for remote connections"
     }
   }
 }
