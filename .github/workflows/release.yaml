@@ -1,4 +1,4 @@
-name: "Release Claudetainer Feature & Generate Documentation"
+name: "Release"
 on:
   workflow_dispatch:
   push:
