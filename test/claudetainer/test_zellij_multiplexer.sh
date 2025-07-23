@@ -42,7 +42,7 @@ check "zellij main config is valid" bash -c '
     zellij --config ~/.config/zellij/config.kdl setup --check >/dev/null 2>&1
 '
 
-# Test 11: Validate claudetainer layout syntax  
+# Test 11: Validate claudetainer layout syntax
 check "claudetainer layout is valid KDL syntax" bash -c '
     # Use official Zellij layout validation command
     zellij --layout ~/.config/zellij/layouts/claudetainer.kdl setup --check >/dev/null 2>&1

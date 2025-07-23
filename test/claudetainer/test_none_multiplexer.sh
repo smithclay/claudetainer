@@ -24,7 +24,7 @@ check "auto-start script exists" test -f ~/.claude/scripts/bashrc-multiplexer.sh
 # Test 5: Check that auto-start script does NOT contain tmux commands
 check "auto-start script does not contain tmux commands" bash -c "! grep -q 'tmux' ~/.claude/scripts/bashrc-multiplexer.sh"
 
-# Test 6: Check that auto-start script does NOT contain zellij commands  
+# Test 6: Check that auto-start script does NOT contain zellij commands
 check "auto-start script does not contain zellij commands" bash -c "! grep -q 'zellij' ~/.claude/scripts/bashrc-multiplexer.sh"
 
 # Test 7: Check that auto-start script contains welcome message

@@ -101,6 +101,52 @@ cmd_doctor() {
 	echo "======================================="
 	echo
 
+	# 0. Show version information
+	ui_print_info "0. Version information..."
+	ui_print_success "Claudetainer CLI: $VERSION"
+
+	# Check .devcontainer for claudetainer feature version
+	if [[ -f ".devcontainer/devcontainer.json" ]]; then
+		local feature_version=""
+		if ui_command_exists node; then
+			# Extract claudetainer feature version from devcontainer.json
+			feature_version=$(node -e "
+				try {
+					const config = JSON.parse(require('fs').readFileSync('.devcontainer/devcontainer.json', 'utf8'));
+					const features = config.features || {};
+					
+					// Check different possible paths for claudetainer feature
+					if (features['ghcr.io/smithclay/claudetainer/claudetainer']) {
+						console.log('ghcr.io/smithclay/claudetainer/claudetainer');
+					} else if (features['./claudetainer']) {
+						console.log('local development');
+					} else if (features['claudetainer']) {
+						console.log('claudetainer (local)');
+					} else {
+						// Check if any feature contains 'claudetainer' in the key
+						for (const [key, value] of Object.entries(features)) {
+							if (key.includes('claudetainer')) {
+								console.log(key);
+								break;
+							}
+						}
+					}
+				} catch (e) {
+					// Silently ignore errors
+				}
+			" 2>/dev/null)
+		fi
+
+		if [[ -n "$feature_version" ]]; then
+			ui_print_success "DevContainer feature: $feature_version"
+		else
+			ui_print_info "DevContainer: Found (no claudetainer feature detected)"
+		fi
+	else
+		ui_print_info "DevContainer: Not configured"
+	fi
+	echo
+
 	# 1. Check prerequisites
 	ui_print_info "1. Checking prerequisites..."
 	if cmd_check_prerequisites >/dev/null 2>&1; then

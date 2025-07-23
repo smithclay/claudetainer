@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # smart-lint.sh - Clean format-lint-fix pipeline for Rust
-# Pattern: FORMAT í LINT í FIX í VERIFY
+# Pattern: FORMAT ÔøΩ LINT ÔøΩ FIX ÔøΩ VERIFY
 # 
 # Designed for https://github.com/devcontainers/features/tree/main/src/rust
 # Tools used: cargo fmt (format), cargo clippy (lint), cargo fix (fix)
@@ -9,7 +9,7 @@
 set -euo pipefail
 
 # =============================================================================
-# EXTENSIBLE LANGUAGE PATTERN: Format í Lint í Fix í Verify
+# EXTENSIBLE LANGUAGE PATTERN: Format ÔøΩ Lint ÔøΩ Fix ÔøΩ Verify
 # =============================================================================
 
 readonly SCRIPT_NAME="smart-lint"
@@ -49,7 +49,7 @@ check_cargo_project() {
 }
 
 # =============================================================================
-# CORE PIPELINE: Format í Lint í Fix í Verify
+# CORE PIPELINE: Format ÔøΩ Lint ÔøΩ Fix ÔøΩ Verify
 # =============================================================================
 
 # STEP 1: FORMAT - Apply consistent formatting
@@ -104,7 +104,7 @@ lint_code() {
         log " No linting issues found"
         return 0
     else
-        log "† Linting issues detected"
+        log "ÔøΩ Linting issues detected"
         # Show the issues for debugging
         cargo clippy --all-targets --all-features -- -D warnings || true
         issues_remaining=true
@@ -202,7 +202,7 @@ main() {
     
     # Execute pipeline
     echo ""
-    log "Pipeline: FORMAT í LINT í FIX í VERIFY"
+    log "Pipeline: FORMAT ÔøΩ LINT ÔøΩ FIX ÔøΩ VERIFY"
     echo ""
     
     format_code
@@ -223,21 +223,21 @@ main() {
     log "========"
     
     if [[ "${format_applied}" == "true" ]]; then
-        log "" Code was reformatted"
+        log "‚ú® Code was reformatted"
     fi
     
     if [[ "${issues_fixed}" == "true" ]]; then
-        log "" Issues were auto-fixed"
+        log "üîß Issues were auto-fixed"
     fi
     
     if [[ "${issues_remaining}" == "true" ]]; then
-        log "" Some issues require manual fixes"
+        log "‚ö†Ô∏è Some issues require manual fixes"
         return "${EXIT_UNFIXABLE_ISSUES}"
     elif [[ "${format_applied}" == "true" || "${issues_fixed}" == "true" ]]; then
-        log "" All issues resolved automatically"
+        log "‚úÖ All issues resolved automatically"
         return "${EXIT_FIXED_ISSUES}"
     else
-        log "" No issues found"
+        log "‚úÖ No issues found"
         return "${EXIT_SUCCESS}"
     fi
 }

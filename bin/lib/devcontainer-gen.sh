@@ -5,7 +5,7 @@
 devcontainer_get_feature_version() {
 	local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 	local feature_json="$script_dir/../../src/claudetainer/devcontainer-feature.json"
-	
+
 	if [[ -f "$feature_json" ]]; then
 		node -e "console.log(JSON.parse(require('fs').readFileSync('$feature_json', 'utf8')).version)" 2>/dev/null || echo "unknown"
 	else

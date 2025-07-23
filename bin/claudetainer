@@ -10,9 +10,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Read version from devcontainer-feature.json
 if [[ -f "$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json" ]] && command -v node >/dev/null 2>&1; then
-    VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json', 'utf8')).version)" 2>/dev/null || echo "unknown")
+	VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json', 'utf8')).version)" 2>/dev/null || echo "unknown")
 else
-    VERSION="unknown"  # fallback version
+	VERSION="unknown" # fallback version
 fi
 
 # Load libraries in dependency order
