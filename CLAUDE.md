@@ -23,12 +23,27 @@ devcontainer.json → install.sh → presets → ~/.claude/settings.json and ~/.
 
 ## Claudetainer CLI Tool
 
-The `bin/claudetainer` CLI provides ergonomic devcontainer management with automatic language detection and tmux integration.
+The `bin/claudetainer` CLI provides ergonomic devcontainer management with automatic language detection and multiplexer integration. The CLI now features a **modular architecture** for better maintainability and development.
+
+**Architecture:**
+- **Modular Development**: `bin/claudetainer` (143 lines) + `bin/lib/` + `bin/commands/`
+- **Single-File Distribution**: `./build.sh` creates `dist/claudetainer` (1,435 lines)
+- **Build System**: Smart concatenation preserves all functionality
 
 **Installation:**
 ```bash
-# Add to PATH or create symlink
-ln -s /path/to/claudetainer/bin/claudetainer /usr/local/bin/claudetainer
+# Development (modular)
+./bin/claudetainer <command>
+
+# Build for distribution
+./build.sh
+
+# Install built version
+cp ./dist/claudetainer /usr/local/bin/claudetainer
+
+# Or download from releases
+curl -L https://github.com/smithclay/claudetainer/releases/latest/download/claudetainer -o claudetainer
+chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
 ```
 
 **Commands:**
@@ -105,10 +120,29 @@ claudetainer ssh
 
 ## Development Commands
 
-**Phase Development:**
-- Implementation follows 6 phases outlined in `SPEC.md`
-- Each phase has specific deliverables and acceptance criteria
-- Start with Phase 1 (minimal working example) before proceeding
+**Modular Architecture:**
+- Main CLI: `bin/claudetainer` (143 lines - 89% reduction!)
+- Libraries: `bin/lib/*.sh` (8 modules for core functionality)
+- Commands: `bin/commands/*.sh` (7 modules for command implementations) 
+- Build System: `./build.sh` creates single-file distribution
+- Auto-tested in CI: Both modular and built versions
+
+**Development Workflow:**
+```bash
+# Development: Use modular version
+./bin/claudetainer doctor      # Test health check
+./bin/claudetainer --version   # Test basic functionality
+
+# Build for distribution
+./build.sh                     # Creates dist/claudetainer (1,435 lines)
+
+# Test both versions
+./bin/claudetainer --help      # Modular version
+./dist/claudetainer --help     # Built version
+
+# Install for production use
+cp ./dist/claudetainer /usr/local/bin/claudetainer
+```
 
 **Testing Strategy:**
 ```bash
@@ -116,23 +150,18 @@ claudetainer ssh
 npm install -g @devcontainers/cli
 devcontainer features test .
 
-# Test specific feature with custom base image
-devcontainer features test --feature claudetainer --base-image mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm .
+# CLI Testing (Modular + Built)
+./bin/claudetainer --version          # Test modular
+./build.sh && ./dist/claudetainer --version  # Test built
 
-# Alternative: Test with claudetainer CLI
-bin/claudetainer init python
-bin/claudetainer up
-bin/claudetainer ssh
+# Integration Testing
+./bin/claudetainer init python        # Test modular CLI
+./bin/claudetainer up                  # Test container startup
+./bin/claudetainer ssh                 # Test connection
 
-# Alternative: Test with devcontainer up (requires copying feature)
-cp -r src/claudetainer .devcontainer/
-devcontainer up --workspace-folder .
-
-# Fallback: Manual test cycle (for quick iteration)
-cp -r src/claudetainer /tmp/test-feature
-export INCLUDE="python,nodejs,github:acme-corp/standards/python" 
-export INCLUDEBASE="true"
-cd /tmp/test-feature && ./install.sh
+# CI Testing (automatically runs both)
+# - test-cli job: Tests modular and built versions
+# - test-scenarios job: Tests devcontainer features
 
 # Test GitHub preset functionality
 export INCLUDE="github:owner/repo,github:owner/repo/path/preset"

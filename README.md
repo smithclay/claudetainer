@@ -16,7 +16,26 @@ claudetainer **doesn't change your system or existing Claude Code configuration*
 
 Get up and running in under 60 seconds on Linux, macOS or WSL:
 
-### Option 1: Homebrew (Recommended)
+### Option 1: Download Binary (Recommended)
+
+```bash
+# 1. Download and install latest release
+curl -L https://github.com/smithclay/claudetainer/releases/latest/download/claudetainer -o claudetainer
+chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
+
+cd ~/your-project # node, python, go, rust, shell (PRs welcome for others)
+
+# 2. Initialize your project (auto-detects language)
+claudetainer init
+
+# 3. Start your container
+claudetainer up
+
+# 4. Connect via SSH with multiplexer
+claudetainer ssh
+```
+
+### Option 2: Homebrew
 
 ```bash
 # 1. Add the tap and install
@@ -290,6 +309,45 @@ claudetainer rm -f --config
 claudetainer init
 claudetainer up
 ```
+
+## CLI Architecture
+
+claudetainer features a **modular architecture** designed for maintainability and easy distribution:
+
+### Development Structure
+```
+bin/
+├── claudetainer              # Main CLI (143 lines - 89% smaller!)
+├── lib/                     # Core libraries (8 modules)
+│   ├── ui.sh               # Color output and user interaction
+│   ├── config.sh           # Configuration and defaults
+│   ├── validation.sh       # Language/multiplexer validation
+│   ├── port-manager.sh     # Port allocation and management
+│   ├── docker-ops.sh       # Docker container operations
+│   ├── notifications.sh    # Notification channel management
+│   └── devcontainer-gen.sh # DevContainer JSON generation
+├── commands/               # Command implementations (7 modules)
+│   ├── doctor.sh          # Health check and diagnostics
+│   ├── init.sh            # Project initialization
+│   ├── up.sh              # Container startup
+│   ├── ssh.sh             # SSH connection management
+│   ├── rm.sh              # Container removal
+│   ├── list.sh            # Container listing
+│   └── prereqs.sh         # Prerequisites checking
+└── dist/                   # Build output (gitignored)
+    └── claudetainer        # Single-file distribution (1,435 lines)
+```
+
+### Build System
+- **Development**: Use modular `./bin/claudetainer` for development
+- **Distribution**: Run `./build.sh` to create `dist/claudetainer` (single file)
+- **CI/CD**: Both versions tested automatically in GitHub Actions
+- **Size**: Reduced main script from 1,277 to 143 lines (89% reduction!)
+
+### Installation Methods
+1. **Download Binary** (recommended): Single file from GitHub releases
+2. **Homebrew**: Via `smithclay/tap` (when available)  
+3. **Development**: Clone repo and use `./bin/claudetainer` directly
 
 ## Contributing
 
