@@ -55,6 +55,7 @@ COMMANDS:
                      Options: --multiplexer zellij|tmux|none (default: zellij)
 
     up, start        Start the devcontainer (uses npx @devcontainers/cli)
+                     Options: --clean (remove existing container and rebuild without cache)
     ssh              SSH into running container with configured multiplexer session
     rm               Remove claudetainer containers and optionally config
     list, ps, ls     List running containers with names, ports, and status
@@ -68,6 +69,7 @@ EXAMPLES:
     claudetainer init python     # Create Python devcontainer
     claudetainer init            # Auto-detect language and create devcontainer
     claudetainer up              # Start the devcontainer
+    claudetainer up --clean      # Clean rebuild (remove existing container, no cache)
     claudetainer start           # Same as up
     claudetainer ssh             # Connect to running container
     claudetainer rm              # Remove containers for this project

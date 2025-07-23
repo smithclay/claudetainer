@@ -130,7 +130,8 @@ main() {
 		cmd_init "$@"
 		;;
 	up | start)
-		cmd_up
+		shift
+		cmd_up "$@"
 		;;
 	ssh)
 		cmd_ssh

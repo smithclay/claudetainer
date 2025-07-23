@@ -3,6 +3,23 @@
 
 # Start devcontainer
 cmd_up() {
+	local clean_build=false
+
+	# Parse command line arguments
+	while [[ $# -gt 0 ]]; do
+		case $1 in
+		--clean)
+			clean_build=true
+			shift
+			;;
+		*)
+			ui_print_error "Unknown option: $1"
+			echo "Usage: claudetainer up [--clean]"
+			echo "  --clean    Remove existing container and rebuild without cache"
+			return 1
+			;;
+		esac
+	done
 	if [[ ! -f ".devcontainer/devcontainer.json" ]]; then
 		ui_print_warning "No .devcontainer/devcontainer.json found"
 
@@ -62,23 +79,38 @@ cmd_up() {
 	# Check if container already exists for this directory
 	local existing_containers=$(docker_find_project_containers)
 	if [[ -n "$existing_containers" ]]; then
-		ui_print_error "A devcontainer already exists for this directory"
-		echo "Existing container(s): $existing_containers"
-		echo ""
-		ui_print_info "To work with multiple instances of the same repository:"
-		echo "  1. Use git worktree to create separate working directories:"
-		echo "     git worktree add ../project-feature-branch feature-branch"
-		echo "  2. Each worktree can have its own devcontainer"
-		echo ""
-		ui_print_info "To manage the existing container:"
-		echo "  • Connect: claudetainer ssh"
-		echo "  • Remove: claudetainer rm"
-		echo "  • Status: claudetainer list"
-		return 1
+		if [[ "$clean_build" == "true" ]]; then
+			ui_print_info "Clean build requested - removing existing container(s): $existing_containers"
+			for container in $existing_containers; do
+				ui_print_info "Removing container: $container"
+				docker rm -f "$container" 2>/dev/null || true
+			done
+		else
+			ui_print_error "A devcontainer already exists for this directory"
+			echo "Existing container(s): $existing_containers"
+			echo ""
+			ui_print_info "To work with multiple instances of the same repository:"
+			echo "  1. Use git worktree to create separate working directories:"
+			echo "     git worktree add ../project-feature-branch feature-branch"
+			echo "  2. Each worktree can have its own devcontainer"
+			echo ""
+			ui_print_info "To manage the existing container:"
+			echo "  • Connect: claudetainer ssh"
+			echo "  • Remove: claudetainer rm"
+			echo "  • Status: claudetainer list"
+			echo "  • Clean rebuild: claudetainer up --clean"
+			return 1
+		fi
 	fi
 
-	ui_print_info "Starting devcontainer using npx @devcontainers/cli..."
-	npx @devcontainers/cli up --workspace-folder .
+	# Build devcontainer with appropriate options
+	if [[ "$clean_build" == "true" ]]; then
+		ui_print_info "Starting clean devcontainer build (no cache)..."
+		npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container
+	else
+		ui_print_info "Starting devcontainer using npx @devcontainers/cli..."
+		npx @devcontainers/cli up --workspace-folder .
+	fi
 
 	# After container is up, set up notifications and credentials
 	local container_name=$(docker_get_project_container_name)
