@@ -15,8 +15,9 @@ Opinionated Claude Code workflows via preconfigured hooks and commands
 
 | Options Id | Description | Type | Default Value |
 |-----|-----|-----|-----|
-| include | Comma-separated list of presets to include (python, nodejs, go, etc.) | string | - |
+| include | Comma-separated list of presets to include (python, nodejs, go, shell, etc.) | string | - |
 | includeBase | Include universal commands and hooks | boolean | true |
+| multiplexer | Shell multiplexer for remote sessions (zellij=modern, tmux=traditional, none=simple) | string | zellij |
 
 
 
