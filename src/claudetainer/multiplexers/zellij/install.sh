@@ -53,9 +53,22 @@ install_zellij_binary() {
         return 1
     fi
     
-    # Install binary
-    sudo mv "$temp_dir/zellij" /usr/local/bin/zellij
-    sudo chmod +x /usr/local/bin/zellij
+    # Install binary (try with sudo, fallback to user bin)
+    if sudo mv "$temp_dir/zellij" /usr/local/bin/zellij 2>/dev/null && sudo chmod +x /usr/local/bin/zellij 2>/dev/null; then
+        log_info "Installed Zellij to /usr/local/bin/zellij"
+    else
+        # Fallback to user's bin directory
+        mkdir -p "$HOME/.local/bin"
+        mv "$temp_dir/zellij" "$HOME/.local/bin/zellij"
+        chmod +x "$HOME/.local/bin/zellij"
+        log_info "Installed Zellij to ~/.local/bin/zellij (add to PATH if needed)"
+        
+        # Try to add to PATH for current session
+        if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+            export PATH="$HOME/.local/bin:$PATH"
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+        fi
+    fi
     
     # Cleanup
     rm -rf "$temp_dir"

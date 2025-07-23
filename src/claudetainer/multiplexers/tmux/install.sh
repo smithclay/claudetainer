@@ -23,21 +23,34 @@ install_tmux_binary() {
         return 0
     fi
     
-    log_info "Installing tmux..."
+    log_info "tmux not found - attempting to install..."
     
-    # Try different package managers
+    # Try different package managers with proper error handling
+    local install_success=false
+    
     if command -v apt-get >/dev/null 2>&1; then
-        apt-get update && apt-get install -y tmux
+        if sudo apt-get update >/dev/null 2>&1 && sudo apt-get install -y tmux >/dev/null 2>&1; then
+            install_success=true
+        fi
     elif command -v yum >/dev/null 2>&1; then
-        yum install -y tmux
+        if sudo yum install -y tmux >/dev/null 2>&1; then
+            install_success=true
+        fi
     elif command -v apk >/dev/null 2>&1; then
-        apk add --no-cache tmux
-    else
-        log_error "No supported package manager found. Cannot install tmux."
-        return 1
+        if sudo apk add --no-cache tmux >/dev/null 2>&1; then
+            install_success=true
+        fi
     fi
     
-    log_success "tmux installed successfully"
+    if [ "$install_success" = true ]; then
+        log_success "tmux installed successfully"
+        return 0
+    else
+        log_warning "Could not install tmux automatically"
+        log_warning "Please install tmux manually or use a different multiplexer"
+        log_warning "For devcontainer, add: \"ghcr.io/duduribeiro/devcontainer-features/tmux:1\""
+        return 1
+    fi
 }
 
 # Create tmux configuration
@@ -188,7 +201,11 @@ EOF
 
 # Main installation function
 install_multiplexer() {
-    install_tmux_binary
+    if ! install_tmux_binary; then
+        log_error "tmux installation failed - cannot setup tmux multiplexer"
+        return 1
+    fi
+    
     create_tmux_config
     
     log_success "tmux multiplexer installation complete"

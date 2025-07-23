@@ -14,5 +14,32 @@
         "include": "python"
       }
     }
+  },
+  "test_tmux_multiplexer": {
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "user": "node",
+    "features": {
+      "claudetainer": {
+        "multiplexer": "tmux"
+      }
+    }
+  },
+  "test_zellij_multiplexer": {
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "user": "node",
+    "features": {
+      "claudetainer": {
+        "multiplexer": "zellij"
+      }
+    }
+  },
+  "test_none_multiplexer": {
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "user": "node",
+    "features": {
+      "claudetainer": {
+        "multiplexer": "none"
+      }
+    }
   }
 }

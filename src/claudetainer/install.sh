@@ -211,17 +211,26 @@ fi
 MULTIPLEXER="${MULTIPLEXER:-zellij}"
 echo "🔧 Setting up $MULTIPLEXER multiplexer..."
 
+# Validate multiplexer choice
+case "$MULTIPLEXER" in
+    zellij|tmux|none)
+        ;;
+    *)
+        echo "⚠️  Invalid multiplexer '$MULTIPLEXER', defaulting to 'zellij'"
+        MULTIPLEXER="zellij"
+        ;;
+esac
+
 # Source multiplexer utilities
 # shellcheck source=multiplexers/base.sh
 source "multiplexers/base.sh"
 
-# Setup the chosen multiplexer
+# Setup the chosen multiplexer (graceful failure)
 if ! setup_multiplexer "$MULTIPLEXER"; then
-    echo "❌ Failed to setup $MULTIPLEXER multiplexer"
-    exit 1
+    echo "⚠️  Failed to setup $MULTIPLEXER multiplexer, continuing with basic installation"
+else
+    # Post-install steps only if multiplexer setup succeeded
+    post_install_multiplexer
 fi
-
-# Post-install steps
-post_install_multiplexer
 
 echo "✅ Claudetainer installed successfully!"

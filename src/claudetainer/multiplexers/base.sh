@@ -67,12 +67,16 @@ setup_multiplexer() {
     log_info "Setting up $multiplexer multiplexer..."
     
     if ! load_multiplexer "$multiplexer"; then
-        return 1
+        log_warning "Failed to load $multiplexer multiplexer, falling back to 'none'"
+        return 0
     fi
     
     # Call multiplexer-specific installation
     if command -v install_multiplexer >/dev/null 2>&1; then
-        install_multiplexer
+        if ! install_multiplexer; then
+            log_warning "$multiplexer installation failed, continuing without multiplexer"
+            return 0
+        fi
     else
         log_error "install_multiplexer function not found for $multiplexer"
         return 1

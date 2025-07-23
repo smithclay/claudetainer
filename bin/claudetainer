@@ -494,6 +494,47 @@ cmd_doctor() {
             else
                 print_warning "No claudetainer hooks found in container"
             fi
+            
+            # Check configured multiplexer
+            local multiplexer_check=""
+            if docker exec "$container_name" sh -c "command -v zellij >/dev/null 2>&1" 2>/dev/null; then
+                multiplexer_check="zellij"
+            elif docker exec "$container_name" sh -c "command -v tmux >/dev/null 2>&1" 2>/dev/null; then
+                multiplexer_check="tmux"
+            else
+                multiplexer_check="none"
+            fi
+            
+            if [[ "$multiplexer_check" != "none" ]]; then
+                print_success "Multiplexer configured: $multiplexer_check"
+                
+                # Check if multiplexer is properly configured
+                if [[ "$multiplexer_check" == "zellij" ]]; then
+                    local zellij_layout_check=$(docker exec "$container_name" sh -c "ls /home/vscode/.config/zellij/layouts/claudetainer.kdl 2>/dev/null" 2>/dev/null)
+                    if [[ -n "$zellij_layout_check" ]]; then
+                        print_success "Zellij claudetainer layout configured"
+                    else
+                        print_warning "Zellij layout not found - sessions may not work properly"
+                    fi
+                elif [[ "$multiplexer_check" == "tmux" ]]; then
+                    local tmux_config_check=$(docker exec "$container_name" sh -c "ls /home/vscode/.tmux.conf 2>/dev/null" 2>/dev/null)
+                    if [[ -n "$tmux_config_check" ]]; then
+                        print_success "tmux configuration found"
+                    else
+                        print_warning "tmux configuration missing - sessions may not work properly"
+                    fi
+                fi
+                
+                # Check if auto-start is configured
+                local bashrc_multiplexer_check=$(docker exec "$container_name" sh -c "grep -q 'bashrc-multiplexer.sh' /home/vscode/.bashrc 2>/dev/null && echo 'found'" 2>/dev/null)
+                if [[ "$bashrc_multiplexer_check" = "found" ]]; then
+                    print_success "Multiplexer auto-start configured"
+                else
+                    print_warning "Multiplexer auto-start not configured"
+                fi
+            else
+                print_info "No multiplexer configured (using simple bash environment)"
+            fi
         else
             print_warning "Claude Code configuration not found in container"
             echo "  • Container may need to be rebuilt: docker system prune && claudetainer up"
@@ -781,8 +822,7 @@ generate_devcontainer_json() {
             "SSHD_PORT": ${port},
             "START_SSHD": "true",
             "NEW_PASSWORD": "vscode"
-        },
-        "ghcr.io/duduribeiro/devcontainer-features/tmux:1": {}
+        }
     },
     "postCreateCommand": "${post_create_command}",
     "mounts": [
@@ -868,7 +908,7 @@ EOF
 
 # Initialize devcontainer for a language
 cmd_init() {
-    local language="$1"
+    local language="${1:-}"
     local multiplexer="zellij"
     
     # Parse options
