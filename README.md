@@ -1,4 +1,4 @@
-# Claudetainer
+# claudetainer 📦 🤖
 
 [![Test](https://github.com/smithclay/claudetainer/workflows/Test/badge.svg)](https://github.com/smithclay/claudetainer/actions/workflows/test.yaml)
 [![Release](https://github.com/smithclay/claudetainer/workflows/Release/badge.svg)](https://github.com/smithclay/claudetainer/actions/workflows/release.yaml)
@@ -6,15 +6,15 @@
 [![DevContainer Feature](https://img.shields.io/badge/devcontainer-feature-blue?logo=visualstudiocode)](https://containers.dev/features)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Production-ready Claude Code workflows, packaged in a friendly [dev container](https://containers.dev/)
+> Production-ish Claude Code workflows, packaged in a friendly [dev container](https://containers.dev/).
 
 Opinionated [Claude Code](https://www.anthropic.com/claude-code) workflows: built-in instructions, slash commands, and hooks for common programming languages with built-in remote session and tmux support. Created for using Claude Code from anywhere (even your phone).
 
-claudetainer **doesn't change your system or existing Claude Code configuration**: everything runs inside of an isolated Docker container using Anthrophic's [Claude Code dev container feature](https://github.com/anthropics/devcontainer-features). Configuration is opt-in, and you can just use claudetainer as a simple way to isolate Claude Code if you like.
+claudetainer **doesn't change your system or existing Claude Code configuration**: everything runs inside of an isolated Docker container using Anthrophic's [Claude Code dev container feature](https://github.com/anthropics/devcontainer-features). Opinionated configuration ("presets") are opt-in. You can just use claudetainer as a simple way to isolate Claude Code if you like.
 
 ## Quick Start
 
-Get up and running in under 60 seconds:
+Get up and running in under 60 seconds on Linux, macOS or WSL:
 
 ### Option 1: Homebrew (Recommended)
 
@@ -35,6 +35,7 @@ claudetainer up
 claudetainer ssh
 
 # Once in the container, navigate to /workspaces and start `claude` in your project directory.
+# Hooks, commands, CLAUDE.md instructions and notifications are automatically configured.
 
 # 5. List running containers
 claudetainer list
@@ -68,6 +69,12 @@ That's it! You now have a fully configured Claude Code development environment w
 - **`/check`** - Project health and linting (useful after big changes)
 - **`/next`** - Tell Claude it's time to collaborate with you on something new
 - **Auto-linting** - Every file edit by Claude Code triggers code quality checks
+
+### **Push Notifications**
+- **📱 Mobile & browser notifications** - Get instant updates when Claude finishes responding, encounters errors, or needs your input
+- **Zero setup required** - Automatic notification channel generation with easy-to-type URLs (claude-projectname-abc123)
+- **Works everywhere** - Subscribe via https://ntfy.sh/your-channel or the [ntfy mobile app](https://ntfy.sh/) 
+- **Perfect for remote coding** - Know exactly when Claude needs your attention, even when working from your phone
 
 ### **Best Practices and Extensibility**
 - **Shared standards** - Load or override default configurations from remote GitHub repos
@@ -134,41 +141,15 @@ Add to your existing `.devcontainer/devcontainer.json`:
 
 ## Example Workflows
 
-### Automated Code Quality
+### Python app development example
 
-Every time you edit a file, claudetainer automatically:
+Coming soon.
 
-```bash
-# Python example - runs after each file save
-✅ Formatting with black...
-✅ Linting with flake8...  
-✅ Auto-fixing with autopep8...
-✅ All checks passed!
-```
+## Advanced Features
 
-If there are unfixable issues, Claude Code operations are blocked until you fix them - ensuring your code stays clean.
+### GitHub Presets - use your own standards
 
-### Smart Git Commits
-
-Use the `/commit` slash command for consistent commits:
-
-```bash
-/commit "add user authentication system"
-
-# Results in:
-✨ feat: add user authentication system
-
-🔧 Changes:
-- Add JWT token validation
-- Implement user login/logout endpoints
-- Add password hashing with bcrypt
-
-📋 Files changed: 5 files (+127, -23)
-```
-
-### Use your own standards
-
-Have your own standards and defaults for particular languages or projects?
+Don't like the defaults or want to override them?
 
 Just reference a remote repository under `include` in `.devcontainer/.devcontainer.json` after running `claudetainer init`:
 
@@ -186,18 +167,9 @@ Just reference a remote repository under `include` in `.devcontainer/.devcontain
 }
 ```
 
-Now everyone on your team gets the same linting rules, commands, and best practices automatically. More details are in `DEVELOPMENT.md`.
+Now everyone on your team gets the same linting rules, commands, and best practices automatically. 
 
-## Advanced Features
-
-### GitHub Presets
-
-Share configurations across teams using GitHub repositories:
-
-- **`github:owner/repo`** - Use entire repo as preset
-- **`github:owner/repo/path/preset`** - Use specific directory
-- **Automatic updates** - Pull latest standards on container rebuild
-- **Private repos supported** - Uses your git credentials
+More details are in `DEVELOPMENT.md`.
 
 ### CLI Commands
 
@@ -338,4 +310,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-Built with ❤️ for the Claude Code community
+Built with 🤖 for the Claude Code community
