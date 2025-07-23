@@ -11,7 +11,7 @@ Claudetainer is a devcontainer feature that adds language-specific support to Cl
 **Core Components:**
 - `src/claudetainer/` - Main devcontainer feature implementation
 - `install.sh` - Bash installation script that merges presets
-- `presets/` - Language-specific configurations (Python, Node.js, Go, etc.)
+- `presets/` - Language-specific configurations (Python, Node.js, Go, Shell, etc.)
 - `lib/merge-json.js` - Node.js utility for merging JSON configurations
 - Phase-based implementation plan in `SPEC.md`
 
@@ -33,7 +33,7 @@ ln -s /path/to/claudetainer/bin/claudetainer /usr/local/bin/claudetainer
 **Commands:**
 - `claudetainer init [language]` - Create `.devcontainer` folder with claudetainer feature
   - Auto-detects language from project files if not specified
-  - Supported languages: `python`, `node`, `rust`, `go`
+  - Supported languages: `python`, `node`, `rust`, `go`, `shell`
   - Generates optimized devcontainer.json with claudetainer feature
   - Creates `~/.claudetainer-credentials.json` if missing (ensures container mount point exists)
 
@@ -60,6 +60,7 @@ ln -s /path/to/claudetainer/bin/claudetainer /usr/local/bin/claudetainer
 - **Node.js**: `package.json`
 - **Rust**: `Cargo.toml`
 - **Go**: `go.mod`
+- **Shell**: `*.sh`, `install.sh`, `setup.sh`, `build.sh`
 
 **Generated DevContainer Features:**
 - Claude Code integration (`ghcr.io/anthropics/devcontainer-features/claude-code:1.0`)
@@ -191,7 +192,8 @@ claudetainer/
 │   │   ├── go/                  # Go development support
 │   │   ├── node/                # Node.js/JavaScript/TypeScript support
 │   │   ├── python/              # Python-specific tooling and hooks
-│   │   └── rust/                # Rust development support
+│   │   ├── rust/                # Rust development support
+│   │   └── shell/               # Shell script development support
 │   ├── lib/
 │   │   └── merge-json.js        # JSON merging utility for settings
 │   ├── scripts/

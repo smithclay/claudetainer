@@ -23,7 +23,7 @@ Get up and running in under 60 seconds on Linux, macOS or WSL:
 brew tap smithclay/tap
 brew install claudetainer
 
-cd ~/your-project # node, python, go, rust (PRs welcome for others)
+cd ~/your-project # node, python, go, rust, shell (PRs welcome for others)
 
 # 2. Initialize your project (auto-detects language)
 claudetainer init
@@ -59,8 +59,8 @@ That's it! You now have a fully configured Claude Code development environment w
 ## What You Get
 
 ### **Zero-Config Setup**
-- **Automatic language detection** - Python, Node.js, Go, Rust (PRs welcome for additional languages)
-- **Pre-configured linting** - black, flake8, eslint, gofmt 
+- **Automatic language detection** - Python, Node.js, Go, Rust, Shell scripts (PRs welcome for additional languages)
+- **Pre-configured linting** - black, flake8, eslint, gofmt, shellcheck 
 - **Smart formatting** - Fixes code style issues automatically
 - **SSH + tmux** - Remote development with persistent sessions (for using Claude Code on your phone)
 
@@ -91,6 +91,7 @@ Claudetainer automatically detects your project type and configures the right to
 | **Node.js** | `package.json` | eslint, prettier | TypeScript support, npm/yarn detection |
 | **Go** | `go.mod` | gofmt, golangci-lint | Module-aware linting |
 | **Rust** | `Cargo.toml` | rustfmt, clippy | Cargo integration |
+| **Shell** | `*.sh`, `install.sh`, `setup.sh`, `build.sh` | shellcheck, shfmt | POSIX/bash dialect detection, security linting |
 
 Don't see your language? Don't like the prompts? Claudetainer is [extensible](#extending-claudetainer) - create custom presets or request new ones.
 

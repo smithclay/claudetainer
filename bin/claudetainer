@@ -378,7 +378,7 @@ cmd_doctor() {
         print_success "Project language detected: $detected_lang"
     else
         print_warning "No supported project files found in current directory"
-        echo "  • Looking for: package.json, requirements.txt, pyproject.toml, Cargo.toml, go.mod"
+        echo "  • Looking for: package.json, requirements.txt, pyproject.toml, Cargo.toml, go.mod, *.sh files"
     fi
     
     # Check for .devcontainer
@@ -644,7 +644,7 @@ COMMANDS:
     prereqs           Check prerequisites and show installation guidance
     doctor            Comprehensive health check and debugging
     init <language>   Create .devcontainer folder with claudetainer feature
-                     Supported languages: python, node, rust, go
+                     Supported languages: python, node, rust, go, shell
                      Will auto-detect if language not specified
                      Creates ~/.claudetainer-credentials.json if missing
 
@@ -690,6 +690,8 @@ detect_language() {
         echo "rust"
     elif [[ -f "go.mod" ]]; then
         echo "go"
+    elif [[ -f "install.sh" ]] || [[ -f "setup.sh" ]] || [[ -f "build.sh" ]] || find . -maxdepth 2 -name "*.sh" -type f | head -1 | grep -q .; then
+        echo "shell"
     else
         echo ""
     fi
@@ -699,12 +701,12 @@ detect_language() {
 validate_language() {
     local lang="$1"
     case "$lang" in
-        python|node|rust|go)
+        python|node|rust|go|shell)
             return 0
             ;;
         *)
             print_error "Unsupported language: $lang"
-            echo "Supported languages: python, node, rust, go"
+            echo "Supported languages: python, node, rust, go, shell"
             return 1
             ;;
     esac
@@ -716,23 +718,33 @@ generate_devcontainer_json() {
     local port="$2"
     local name=""
     local image=""
+    local post_create_command=""
     
     case "$lang" in
         python)
             name="Python Claudetainer"
             image="mcr.microsoft.com/devcontainers/python:3"
+            post_create_command="claude --version"
             ;;
         node)
             name="Node.js Claudetainer"
             image="mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm"
+            post_create_command="claude --version"
             ;;
         rust)
             name="Rust Claudetainer"
             image="mcr.microsoft.com/devcontainers/rust:1-bookworm"
+            post_create_command="claude --version"
             ;;
         go)
             name="Go Claudetainer"
             image="mcr.microsoft.com/devcontainers/go:1-bookworm"
+            post_create_command="claude --version"
+            ;;
+        shell)
+            name="Shell Script Claudetainer"
+            image="mcr.microsoft.com/devcontainers/base:bookworm"
+            post_create_command="sudo apt-get update && sudo apt-get install -y shellcheck && curl -L https://github.com/mvdan/sh/releases/download/v3.7.0/shfmt_v3.7.0_linux_amd64 -o /tmp/shfmt && sudo mv /tmp/shfmt /usr/local/bin/shfmt && sudo chmod +x /usr/local/bin/shfmt && claude --version"
             ;;
     esac
 
@@ -754,7 +766,7 @@ generate_devcontainer_json() {
         },
         "ghcr.io/duduribeiro/devcontainer-features/tmux:1": {}
     },
-    "postCreateCommand": "claude --version",
+    "postCreateCommand": "${post_create_command}",
     "mounts": [
         "source=\${localEnv:HOME}\${localEnv:USERPROFILE}/.claudetainer-credentials.json,target=/home/vscode/.claude/.credentials.json,type=bind,consistency=cached"
     ],
@@ -917,7 +929,7 @@ cmd_up() {
             fi
         else
             print_error "Could not auto-detect project language"
-            echo "Available languages: python, node, rust, go"
+            echo "Available languages: python, node, rust, go, shell"
             read -p "Enter language to create devcontainer for (or press Enter to abort): " lang
             if [[ -z "$lang" ]]; then
                 print_info "Aborted"
