@@ -12,6 +12,7 @@ Claudetainer is a devcontainer feature that adds language-specific support to Cl
 - `src/claudetainer/` - Main devcontainer feature implementation
 - `install.sh` - Bash installation script that merges presets
 - `presets/` - Language-specific configurations (Python, Node.js, Go, Shell, etc.)
+- `multiplexers/` - Shell multiplexer implementations (Zellij, tmux, none)
 - `lib/merge-json.js` - Node.js utility for merging JSON configurations
 - Phase-based implementation plan in `SPEC.md`
 
@@ -31,9 +32,10 @@ ln -s /path/to/claudetainer/bin/claudetainer /usr/local/bin/claudetainer
 ```
 
 **Commands:**
-- `claudetainer init [language]` - Create `.devcontainer` folder with claudetainer feature
+- `claudetainer init [language] [options]` - Create `.devcontainer` folder with claudetainer feature
   - Auto-detects language from project files if not specified
   - Supported languages: `python`, `node`, `rust`, `go`, `shell`
+  - Options: `--multiplexer zellij|tmux|none` (default: zellij)
   - Generates optimized devcontainer.json with claudetainer feature
   - Creates `~/.claudetainer-credentials.json` if missing (ensures container mount point exists)
 
@@ -41,11 +43,13 @@ ln -s /path/to/claudetainer/bin/claudetainer /usr/local/bin/claudetainer
   - Requires DevContainer CLI (`npm install -g @devcontainers/cli`)
   - Validates devcontainer.json exists
 
-- `claudetainer ssh` - SSH into running container with tmux session
-  - Connects to dynamically allocated port with tmux integration
-  - Creates or attaches to `claudetainer` tmux session with two windows:
-    - **claude**: Main development window in /workspaces
+- `claudetainer ssh` - SSH into running container with multiplexer session
+  - Connects to dynamically allocated port with configured multiplexer
+  - Creates or attaches to `claudetainer` session with development and monitoring:
+    - **claude**: Main development tab/window in /workspaces
     - **usage**: Real-time Claude Code usage monitoring via ccusage
+    - **Zellij**: Modern interface with floating windows and plugins
+    - **tmux**: Traditional interface with familiar keybindings
 
 - `claudetainer doctor` - Comprehensive health check and debugging
   - Validates prerequisites, container status, and configurations
@@ -66,9 +70,16 @@ ln -s /path/to/claudetainer/bin/claudetainer /usr/local/bin/claudetainer
 
 **Generated DevContainer Features:**
 - Claude Code integration (`ghcr.io/anthropics/devcontainer-features/claude-code:1.0`)
-- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.1.2`)
+- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.1.3`)
 - SSH daemon for remote access (`ghcr.io/devcontainers/features/sshd:1`)
-- Tmux for session management (`ghcr.io/duduribeiro/devcontainer-features/tmux:1`)
+- Tmux for session management (`ghcr.io/duduribeiro/devcontainer-features/tmux:1`) - when using tmux multiplexer
+
+**Shell Multiplexer Support:**
+- **Zellij (default)**: Modern terminal workspace with intuitive UI, floating windows, WebAssembly plugins, and multiplayer collaboration
+- **tmux**: Traditional, mature multiplexer with familiar keybindings and wide compatibility
+- **none**: Simple bash environment for minimal setups or when multiplexers aren't needed
+- Automatic session management with `claude` and `usage` environments
+- Consistent interface across all multiplexer options
 
 **Notification System:**
 - Automatic ntfy notification channel generation (claude-projectname-hash format)
@@ -196,12 +207,15 @@ claudetainer/
 │   │   ├── python/              # Python-specific tooling and hooks
 │   │   ├── rust/                # Rust development support
 │   │   └── shell/               # Shell script development support
+│   ├── multiplexers/            # Shell multiplexer implementations
+│   │   ├── base.sh              # Common multiplexer interface
+│   │   ├── zellij/              # Zellij configuration and setup
+│   │   ├── tmux/                # tmux configuration and setup
+│   │   └── none/                # No multiplexer setup
 │   ├── lib/
 │   │   └── merge-json.js        # JSON merging utility for settings
-│   ├── scripts/
-│   │   └── nodejs-helper.sh     # Node.js installation helper
-│   └── tmux/
-│       └── .tmux.conf           # Tmux configuration
+│   └── scripts/
+│       └── nodejs-helper.sh     # Node.js installation helper
 └── test/claudetainer/           # Automated tests (DevContainer CLI)
     ├── test.sh                  # Main test script
     └── scenarios.json           # Test scenarios for different preset combinations
@@ -307,27 +321,33 @@ claudetainer/
 ## Recent Updates (Latest Session)
 
 **Major Features Added:**
+- ✅ **Shell Multiplexer Abstraction**: Support for Zellij (default), tmux, and none with unified interface
+- ✅ **Zellij Integration**: Modern terminal workspace with KDL configuration, floating windows, and plugins
 - ✅ **Dynamic Port Allocation System**: Hash-based port calculation with collision detection and atomic file operations
 - ✅ **Notification Channel Generation**: Automatic ntfy channel creation with easy-to-type format (claude-projectname-hash)
 - ✅ **Comprehensive Health Checking**: Multi-phase doctor command with 8 diagnostic areas
 - ✅ **Enhanced CLI Tool**: Robust error handling, user guidance, and recovery procedures
-- ✅ **Version Management**: Updated to v0.1.2 with improved feature stability
+- ✅ **Version Management**: Updated to v0.1.3 with multiplexer support
 
 **Files Modified:**
-- `bin/claudetainer` - Added port allocation, notification setup, and doctor command enhancements
-- `src/claudetainer/devcontainer-feature.json` - Version bump to 0.1.2
-- `.github/workflows/` - Simplified workflow names and improved documentation
-- `README.md` - Updated documentation and badge links
+- `bin/claudetainer` - Added multiplexer abstraction, Zellij support, and updated CLI interface
+- `src/claudetainer/devcontainer-feature.json` - Version bump to 0.1.3 with multiplexer option
+- `src/claudetainer/install.sh` - Replaced tmux-specific logic with multiplexer abstraction
+- `src/claudetainer/multiplexers/` - New directory structure with Zellij, tmux, and none implementations
+- `CLAUDE.md` - Updated documentation to reflect multiplexer architecture
+- Removed old tmux-specific files for clean implementation
 
 **Infrastructure Improvements:**
+- **Multiplexer Abstraction**: Clean interface supporting multiple terminal multiplexers
+- **Zellij as Default**: Modern terminal workspace with superior UX and features
 - **Port Management**: 2220-2299 range with project-specific allocation and persistence
-- **Container Lifecycle**: Automatic notification setup during container startup
+- **Container Lifecycle**: Automatic notification and multiplexer setup during container startup
 - **Debugging Tools**: Comprehensive diagnostics for all system components
 - **Error Recovery**: Clear guidance and automated fixes for common issues
 
 **Track session progress:**
-- Major architectural improvements: port allocation system, notification integration
-- Enhanced user experience: comprehensive debugging, better error messages
-- Infrastructure hardening: atomic operations, race condition prevention
-- Documentation updates: workflow names, feature descriptions, usage examples
-- Version management: semantic versioning with feature stability tracking
+- Major architectural improvements: multiplexer abstraction, Zellij integration, notification system
+- Enhanced user experience: modern terminal workspace, comprehensive debugging, better error messages
+- Infrastructure hardening: clean codebase without backward compatibility, atomic operations
+- Documentation updates: multiplexer architecture, feature comparisons, usage examples
+- Version management: semantic versioning with multiplexer support (v0.1.3)

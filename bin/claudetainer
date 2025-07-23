@@ -647,10 +647,10 @@ COMMANDS:
                      Supported languages: python, node, rust, go, shell
                      Will auto-detect if language not specified
                      Creates ~/.claudetainer-credentials.json if missing
-                     Options: --no-tmux (disable automatic tmux session)
+                     Options: --multiplexer zellij|tmux|none (default: zellij)
 
     up, start        Start the devcontainer (uses npx @devcontainers/cli)
-    ssh              SSH into running container with tmux session
+    ssh              SSH into running container with configured multiplexer session
     rm               Remove claudetainer containers and optionally config
     list, ps, ls     List running containers with names, ports, and status
 
@@ -713,11 +713,26 @@ validate_language() {
     esac
 }
 
+# Validate multiplexer is supported
+validate_multiplexer() {
+    local multiplexer="$1"
+    case "$multiplexer" in
+        zellij|tmux|none)
+            return 0
+            ;;
+        *)
+            print_error "Unsupported multiplexer: $multiplexer"
+            echo "Supported multiplexers: zellij, tmux, none"
+            return 1
+            ;;
+    esac
+}
+
 # Generate devcontainer.json content for a language
 generate_devcontainer_json() {
     local lang="$1"
     local port="$2"
-    local enable_tmux="${3:-true}"
+    local multiplexer="${3:-zellij}"
     local name=""
     local image=""
     local post_create_command=""
@@ -757,10 +772,10 @@ generate_devcontainer_json() {
     "features": {
         "ghcr.io/devcontainers/features/node:1": {},
         "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
-        "ghcr.io/smithclay/claudetainer/claudetainer:0.1.0": {
+        "ghcr.io/smithclay/claudetainer/claudetainer:0.1.3": {
             "includeBase": true,
             "include": "${lang}",
-            "tmux": ${enable_tmux}
+            "multiplexer": "${multiplexer}"
         },
         "ghcr.io/devcontainers/features/sshd:1": {
             "SSHD_PORT": ${port},
@@ -854,14 +869,19 @@ EOF
 # Initialize devcontainer for a language
 cmd_init() {
     local language="$1"
-    local enable_tmux=true
+    local multiplexer="zellij"
     
     # Parse options
     shift
     while [[ $# -gt 0 ]]; do
         case $1 in
+            --multiplexer)
+                multiplexer="$2"
+                shift 2
+                ;;
             --no-tmux)
-                enable_tmux=false
+                # Legacy option for backward compatibility
+                multiplexer="none"
                 shift
                 ;;
             *)
@@ -886,8 +906,12 @@ cmd_init() {
         print_info "Auto-detected language: $language"
     fi
     
-    # Validate language
+    # Validate language and multiplexer
     if ! validate_language "$language"; then
+        return 1
+    fi
+    
+    if ! validate_multiplexer "$multiplexer"; then
         return 1
     fi
     
@@ -913,11 +937,12 @@ cmd_init() {
         return 1
     fi
     
-    # Generate devcontainer.json with allocated port
-    generate_devcontainer_json "$language" "$port" "$enable_tmux" > .devcontainer/devcontainer.json
+    # Generate devcontainer.json with allocated port and multiplexer
+    generate_devcontainer_json "$language" "$port" "$multiplexer" > .devcontainer/devcontainer.json
     
     print_success "Created .devcontainer/devcontainer.json for $language"
     print_info "Allocated SSH port: $port"
+    print_info "Multiplexer: $multiplexer"
     print_info "Next steps:"
     echo "  1. Run 'claudetainer up' to start the container"
     echo "  2. Run 'claudetainer ssh' to connect once it's running"
@@ -1045,7 +1070,7 @@ cmd_ssh() {
     fi
     
     print_info "Connecting to container via SSH on port $port..."
-    print_info "The container will automatically start a tmux session with claude and usage windows"
+    print_info "The container will automatically start a multiplexer session with claude and usage windows"
     ssh -p $port \
         -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=/dev/null \

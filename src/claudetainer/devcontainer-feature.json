@@ -21,10 +21,11 @@
       "default": true,
       "description": "Include universal commands and hooks"
     },
-    "tmux": {
-      "type": "boolean",
-      "default": true,
-      "description": "Enable automatic tmux session with claude and usage windows for remote connections"
+    "multiplexer": {
+      "type": "string",
+      "enum": ["zellij", "tmux", "none"],
+      "default": "zellij",
+      "description": "Shell multiplexer for remote sessions (zellij=modern, tmux=traditional, none=simple)"
     }
   }
 }

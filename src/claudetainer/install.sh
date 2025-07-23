@@ -207,24 +207,21 @@ if [ "$(whoami)" = "root" ] && [ "$TARGET_USER" != "root" ] && [ "$TARGET_USER" 
     chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.claude" 2>/dev/null || true
 fi
 
-# Install tmux configuration if enabled (default: true)
-TMUX_ENABLED="${TMUX:-true}"
-if [ "$TMUX_ENABLED" = "true" ]; then
-    echo "📂 Copying tmux configuration..."
-    cp tmux/.tmux.conf "$TARGET_HOME/.tmux.conf"
+# Setup multiplexer (zellij, tmux, or none)
+MULTIPLEXER="${MULTIPLEXER:-zellij}"
+echo "🔧 Setting up $MULTIPLEXER multiplexer..."
 
-    echo "📜 Installing tmux auto-start..."
-    mkdir -p "$TARGET_HOME/.claude/scripts"
-    cp scripts/bashrc-tmux.sh "$TARGET_HOME/.claude/scripts/"
+# Source multiplexer utilities
+# shellcheck source=multiplexers/base.sh
+source "multiplexers/base.sh"
 
-    # Append tmux auto-start to .bashrc if not already present
-    if ! grep -q "claudetainer tmux session" "$TARGET_HOME/.bashrc" 2>/dev/null; then
-        echo "" >> "$TARGET_HOME/.bashrc"
-        echo "# Claudetainer: Auto-start tmux session for remote connections" >> "$TARGET_HOME/.bashrc"
-        cat scripts/bashrc-tmux.sh >> "$TARGET_HOME/.bashrc"
-    fi
-else
-    echo "⏭️ Skipping tmux configuration (disabled)"
+# Setup the chosen multiplexer
+if ! setup_multiplexer "$MULTIPLEXER"; then
+    echo "❌ Failed to setup $MULTIPLEXER multiplexer"
+    exit 1
 fi
+
+# Post-install steps
+post_install_multiplexer
 
 echo "✅ Claudetainer installed successfully!"
