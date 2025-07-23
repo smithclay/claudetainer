@@ -503,8 +503,92 @@ cmd_doctor() {
     fi
     echo
     
-    # 7. Check for common issues
-    print_info "7. Checking for common issues..."
+    # 7. Check notification setup
+    print_info "7. Checking notification setup..."
+    
+    # Check host notification channel file
+    local ntfy_channel_file="$HOME/.claudetainer-ntfy-channel"
+    if [[ -f "$ntfy_channel_file" ]]; then
+        local ntfy_channel=$(cat "$ntfy_channel_file" 2>/dev/null | tr -d '\n\r ')
+        if [[ -n "$ntfy_channel" ]]; then
+            print_success "Notification channel configured: $ntfy_channel"
+            echo "  • Subscribe at: https://ntfy.sh/$ntfy_channel"
+        else
+            print_warning "Notification channel file is empty"
+            ((issues_found++))
+        fi
+    else
+        print_info "No notification channel configured yet"
+        echo "  • Will be created automatically on next 'claudetainer up'"
+    fi
+    
+    # Check container notification config
+    if [[ -n "$container_name" ]]; then
+        local container_ntfy_check=$(docker exec "$container_name" sh -c "cat /home/vscode/.config/claudetainer/ntfy.yaml 2>/dev/null" 2>/dev/null)
+        if [[ -n "$container_ntfy_check" ]]; then
+            print_success "Notification config found in container"
+            
+            # Parse and validate the config
+            local container_topic=$(docker exec "$container_name" sh -c "grep 'ntfy_topic:' /home/vscode/.config/claudetainer/ntfy.yaml 2>/dev/null | cut -d: -f2 | xargs" 2>/dev/null)
+            local container_server=$(docker exec "$container_name" sh -c "grep 'ntfy_server:' /home/vscode/.config/claudetainer/ntfy.yaml 2>/dev/null | cut -d: -f2- | xargs" 2>/dev/null)
+            
+            if [[ -n "$container_topic" ]]; then
+                print_success "Container notification topic: $container_topic"
+                
+                # Check if host and container topics match
+                if [[ -f "$ntfy_channel_file" ]]; then
+                    local host_channel=$(cat "$ntfy_channel_file" 2>/dev/null | tr -d '\n\r ')
+                    if [[ "$host_channel" = "$container_topic" ]]; then
+                        print_success "Host and container notification channels match"
+                    else
+                        print_warning "Host ($host_channel) and container ($container_topic) channels differ"
+                        echo "  • This may cause notification confusion"
+                        ((issues_found++))
+                    fi
+                fi
+            else
+                print_warning "No notification topic found in container config"
+                ((issues_found++))
+            fi
+            
+            if [[ -n "$container_server" ]]; then
+                print_success "Container notification server: $container_server"
+            else
+                print_warning "No notification server found in container config"
+                ((issues_found++))
+            fi
+            
+            # Test if yq is available in container (needed by notifier.sh)
+            local yq_check=$(docker exec "$container_name" sh -c "command -v yq >/dev/null 2>&1 && echo 'found'" 2>/dev/null)
+            if [[ "$yq_check" = "found" ]]; then
+                print_success "yq is available in container (required for notifications)"
+            else
+                print_warning "yq not found in container - notifications may not work"
+                echo "  • yq is required by notifier.sh to parse ntfy.yaml"
+                ((issues_found++))
+            fi
+            
+            # Test notification functionality
+            local curl_check=$(docker exec "$container_name" sh -c "command -v curl >/dev/null 2>&1 && echo 'found'" 2>/dev/null)
+            if [[ "$curl_check" = "found" ]]; then
+                print_success "curl is available in container (required for notifications)"
+            else
+                print_warning "curl not found in container - notifications will not work"
+                echo "  • curl is required by notifier.sh to send notifications"
+                ((issues_found++))
+            fi
+        else
+            print_warning "No notification config found in container"
+            echo "  • Config should be at: /home/vscode/.config/claudetainer/ntfy.yaml"
+            echo "  • Run 'claudetainer up' to recreate container with notifications"
+        fi
+    else
+        print_info "No running container - cannot check container notification config"
+    fi
+    echo
+    
+    # 8. Check for common issues
+    print_info "8. Checking for common issues..."
     
     # Check credentials file
     if [[ -f "$HOME/.claudetainer-credentials.json" ]]; then
@@ -697,6 +781,14 @@ generate_devcontainer_json() {
 EOF
 }
 
+# Generate unique notification channel
+generate_notification_channel() {
+    # Generate a short, easy-to-type unique channel using project path and timestamp
+    local project_name=$(basename "$PWD" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]//g')
+    local hash=$(echo "$PWD$(date +%s)" | shasum | head -c6)
+    echo "claude-${project_name}-${hash}"
+}
+
 # Ensure credentials file exists for container mounting
 ensure_credentials_file() {
     local credentials_file="$HOME/.claudetainer-credentials.json"
@@ -705,6 +797,42 @@ ensure_credentials_file() {
         print_info "Creating empty credentials file at $credentials_file"
         echo '{}' > "$credentials_file"
         print_success "Created $credentials_file"
+    fi
+}
+
+# Setup notification channel and config
+setup_notification_channel() {
+    local container_name="$1"
+    local ntfy_channel_file="$HOME/.claudetainer-ntfy-channel"
+    
+    # Generate or reuse existing notification channel
+    local ntfy_channel
+    if [[ -f "$ntfy_channel_file" ]]; then
+        ntfy_channel=$(cat "$ntfy_channel_file" 2>/dev/null | tr -d '\n\r ')
+        print_info "Using existing ntfy channel: $ntfy_channel"
+    else
+        ntfy_channel=$(generate_notification_channel)
+        echo "$ntfy_channel" > "$ntfy_channel_file"
+        print_success "Generated ntfy channel: $ntfy_channel"
+        print_info "Saved to: $ntfy_channel_file"
+    fi
+    
+    # Create ntfy config inside the container
+    if [[ -n "$container_name" ]]; then
+        print_info "Setting up ntfy configuration in container..."
+        docker exec "$container_name" sh -c "
+            mkdir -p /home/vscode/.config/claudetainer
+            cat > /home/vscode/.config/claudetainer/ntfy.yaml << 'EOF'
+ntfy_topic: $ntfy_channel
+ntfy_server: https://ntfy.sh
+EOF
+            chown -R vscode:vscode /home/vscode/.config/claudetainer
+        " 2>/dev/null && print_success "Created ntfy config in container" || print_warning "Could not create ntfy config in container"
+        
+        print_info "Notification setup complete!"
+        echo "  • Channel: $ntfy_channel"
+        echo "  • Subscribe at: https://ntfy.sh/$ntfy_channel"
+        echo "  • Or use ntfy app with topic: $ntfy_channel"
     fi
 }
 
@@ -825,26 +953,26 @@ cmd_up() {
     print_info "Starting devcontainer using npx @devcontainers/cli..."
     npx @devcontainers/cli up --workspace-folder .
     
-    # After container is up, check credentials and set onboarding flag inside container
-    local credentials_file="$HOME/.claudetainer-credentials.json"
-    if [[ -f "$credentials_file" ]]; then
-        # Check if file contains more than just empty object
-        local file_content=$(cat "$credentials_file" 2>/dev/null)
-        if [[ "$file_content" != "{}" ]] && [[ -n "$file_content" ]] && [[ "$file_content" != "" ]]; then
-            print_info "Detected credentials. Setting Claude Code onboarding complete flag in container..."
-            local ssh_port=$(get_current_project_port)
-            
-            # Wait a moment for container to be fully ready
-            sleep 5
-            
-            # Set onboarding flag inside the container using docker exec
-            local container_name=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" | head -1)
-            if [[ -n "$container_name" ]]; then
+    # After container is up, set up notifications and credentials
+    local container_name=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" | head -1)
+    if [[ -n "$container_name" ]]; then
+        # Wait a moment for container to be fully ready
+        sleep 5
+        
+        # Set up notification channel and config
+        setup_notification_channel "$container_name"
+        
+        # Check credentials and set onboarding flag
+        local credentials_file="$HOME/.claudetainer-credentials.json"
+        if [[ -f "$credentials_file" ]]; then
+            local file_content=$(cat "$credentials_file" 2>/dev/null)
+            if [[ "$file_content" != "{}" ]] && [[ -n "$file_content" ]] && [[ "$file_content" != "" ]]; then
+                print_info "Setting Claude Code onboarding complete flag in container..."
                 docker exec "$container_name" sh -c "echo '{\"hasCompletedOnboarding\": true}' > /home/vscode/.claude.json" 2>/dev/null || print_warning "Could not set onboarding flag in container"
-            else
-                print_warning "Could not find container to set onboarding flag"
             fi
         fi
+    else
+        print_warning "Could not find container for post-setup configuration"
     fi
 
     echo
@@ -858,6 +986,7 @@ cmd_up() {
     echo "  • Type 'claude' to interact with Claude directly"
     echo "  • Use slash commands like '/commit' and '/check'"
     echo "  • All your files are automatically linted and formatted"
+    echo "  • Push notifications are configured and ready to use"
     echo
     local ssh_port=$(get_current_project_port)
     print_info "Container details:"

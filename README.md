@@ -1,14 +1,14 @@
 # Claudetainer
 
-[![Test](https://github.com/smithclay/claudetainer/workflows/Test%20Claudetainer%20Feature/badge.svg)](https://github.com/smithclay/claudetainer/actions/workflows/test.yaml)
-[![Release](https://github.com/smithclay/claudetainer/workflows/Release%20Claudetainer%20Feature/badge.svg)](https://github.com/smithclay/claudetainer/actions/workflows/release.yaml)
+[![Test](https://github.com/smithclay/claudetainer/workflows/Test/badge.svg)](https://github.com/smithclay/claudetainer/actions/workflows/test.yaml)
+[![Release](https://github.com/smithclay/claudetainer/workflows/Release/badge.svg)](https://github.com/smithclay/claudetainer/actions/workflows/release.yaml)
 [![GitHub Container Registry](https://img.shields.io/badge/ghcr.io-claudetainer-blue?logo=docker)](https://github.com/smithclay/claudetainer/pkgs/container/claudetainer)
 [![DevContainer Feature](https://img.shields.io/badge/devcontainer-feature-blue?logo=visualstudiocode)](https://containers.dev/features)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > Production-ready Claude Code workflows, packaged in a friendly [dev container](https://containers.dev/)
 
-Opinionated [Claude Code](https://www.anthropic.com/claude-code) workflows: built-in instructions, slash commands, and hooks for common programming languages with built-in remote session and tmux support. Designed for using Claude Code from your phone.
+Opinionated [Claude Code](https://www.anthropic.com/claude-code) workflows: built-in instructions, slash commands, and hooks for common programming languages with built-in remote session and tmux support. Created for using Claude Code from anywhere (even your phone).
 
 claudetainer **doesn't change your system or existing Claude Code configuration**: everything runs inside of an isolated Docker container using Anthrophic's [Claude Code dev container feature](https://github.com/anthropics/devcontainer-features). Configuration is opt-in, and you can just use claudetainer as a simple way to isolate Claude Code if you like.
 
@@ -34,6 +34,8 @@ claudetainer up
 # 4. Connect with full tooling
 claudetainer ssh
 
+# Once in the container, navigate to /workspaces and start `claude` in your project directory.
+
 # 5. List running containers
 claudetainer list
 
@@ -55,7 +57,7 @@ That's it! You now have a fully configured Claude Code development environment w
 
 ## What You Get
 
-### ✨ **Zero-Config Setup**
+### **Zero-Config Setup**
 - **Automatic language detection** - Python, Node.js, Go, Rust (PRs welcome for additional languages)
 - **Pre-configured linting** - black, flake8, eslint, gofmt 
 - **Smart formatting** - Fixes code style issues automatically
@@ -63,13 +65,13 @@ That's it! You now have a fully configured Claude Code development environment w
 
 ### **Claude Code Slash Commands**
 - **`/commit`** - Conventional commits with emoji and consistency
-- **`/check`** - Project health and dependency auditing
-- **`/next`** - Intelligent task management and prioritization
+- **`/check`** - Project health and linting (useful after big changes)
+- **`/next`** - Tell Claude it's time to collaborate with you on something new
 - **Auto-linting** - Every file edit by Claude Code triggers code quality checks
 
 ### **Best Practices and Extensibility**
 - **Shared standards** - Load or override default configurations from remote GitHub repos
-- **Enforced quality** - Blocks commits with unfixable issues  
+- **Enforced quality** - Blocks Calude from proceeding with unfixable issues  
 - **Best practices** - Language-specific guidance built-in
 
 ## Language Support
@@ -164,10 +166,11 @@ Use the `/commit` slash command for consistent commits:
 📋 Files changed: 5 files (+127, -23)
 ```
 
-### Team Standards Integration
+### Use your own standards
 
 Have your own standards and defaults for particular languages or projects?
-Pull your organization's coding standards directly from GitHub:
+
+Just reference a remote repository under `include` in `.devcontainer/.devcontainer.json` after running `claudetainer init`:
 
 ```json
 {
@@ -183,7 +186,7 @@ Pull your organization's coding standards directly from GitHub:
 }
 ```
 
-Now everyone on your team gets the same linting rules, commands, and best practices automatically.
+Now everyone on your team gets the same linting rules, commands, and best practices automatically. More details are in `DEVELOPMENT.md`.
 
 ## Advanced Features
 
@@ -230,20 +233,6 @@ claudetainer ssh
 ```
 
 Includes tmux for persistent sessions that survive disconnections: perfect for talking to Claude Code from your iPhone.
-
-## Extending Claudetainer
-
-Create custom presets by following the preset structure:
-
-```
-my-preset/
-├── settings.json     # Claude Code hooks and permissions
-├── commands/         # Slash commands (.md files)
-├── hooks/           # Executable scripts
-└── CLAUDE.md        # Development guidelines
-```
-
-Host on GitHub and reference with `github:yourorg/my-preset`.
 
 ## Requirements
 

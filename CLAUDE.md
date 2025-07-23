@@ -42,8 +42,18 @@ ln -s /path/to/claudetainer/bin/claudetainer /usr/local/bin/claudetainer
   - Validates devcontainer.json exists
 
 - `claudetainer ssh` - SSH into running container with tmux session
-  - Connects to port 2223 with tmux integration
-  - Creates or attaches to `main` tmux session
+  - Connects to dynamically allocated port with tmux integration
+  - Creates or attaches to `claudetainer` tmux session
+
+- `claudetainer doctor` - Comprehensive health check and debugging
+  - Validates prerequisites, container status, and configurations
+  - Checks notification setup and dependency availability
+  - Provides actionable guidance for fixing issues
+  - Tests SSH connectivity and container health
+
+- `claudetainer list|ps|ls` - List running containers with details
+  - Shows container IDs, names, ports, status, and local folders
+  - Useful for managing multiple claudetainer projects
 
 **Language Detection:**
 - **Python**: `requirements.txt`, `pyproject.toml`, `setup.py`
@@ -53,9 +63,16 @@ ln -s /path/to/claudetainer/bin/claudetainer /usr/local/bin/claudetainer
 
 **Generated DevContainer Features:**
 - Claude Code integration (`ghcr.io/anthropics/devcontainer-features/claude-code:1.0`)
-- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.1.0`)
+- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.1.2`)
 - SSH daemon for remote access (`ghcr.io/devcontainers/features/sshd:1`)
 - Tmux for session management (`ghcr.io/duduribeiro/devcontainer-features/tmux:1`)
+
+**Notification System:**
+- Automatic ntfy notification channel generation (claude-projectname-hash format)
+- Host-side channel persistence (`~/.claudetainer-ntfy-channel`)
+- Container-side configuration (`/home/vscode/.config/claudetainer/ntfy.yaml`)
+- Integration with Claude Code hooks for real-time notifications
+- Easy subscription via https://ntfy.sh/your-channel or ntfy mobile app
 
 **Usage Examples:**
 ```bash
@@ -123,13 +140,21 @@ ls ~/.claude/commands/
 
 **Language:** Bash + Node.js utilities for JSON manipulation
 **Size Target:** ~150KB total
-**Dependencies:** Bash 4.0+, Node.js 16+, Claude Code 1.0+, git (for GitHub presets)
+**Dependencies:** Bash 4.0+, Node.js 16+, Claude Code 1.0+, git (for GitHub presets), Docker, DevContainer CLI
+
+**Container Dependencies:** 
+- `yq` - Required for parsing ntfy.yaml configuration in notification hooks
+- `curl` - Required for sending notifications to ntfy service
+- `tmux` - Session management and persistence
+- Standard UNIX tools: `nc`, `lsof`, `shasum` (for port management and health checks)
 
 **CLI Tool:** 
-- Standalone `claudetainer` CLI tool at `bin/claudetainer` (v0.1.0)
+- Standalone `claudetainer` CLI tool at `bin/claudetainer` (v0.1.2)
 - Ergonomic devcontainer management with automatic language detection
-- Wraps DevContainer CLI with claudetainer-specific configurations
-- Supports SSH access with tmux integration
+- Dynamic port allocation system (2220-2299 range) with collision avoidance
+- Robust SSH access with tmux integration and session persistence
+- Comprehensive health checking via `claudetainer doctor` command
+- Automatic notification channel generation and configuration
 
 **Preset Structure:**
 - `metadata.json` - Preset metadata and dependencies
@@ -204,6 +229,10 @@ claudetainer/
 - ✅ Comprehensive test scenarios for different preset combinations (`test/claudetainer/scenarios.json`)
 - ✅ DevContainer CLI testing framework with scenario support
 - ✅ GitHub Actions CI/CD workflows for automated testing and publishing
+- ✅ Dynamic port allocation system with collision detection and project isolation
+- ✅ Notification channel generation and configuration system
+- ✅ Comprehensive health checking and debugging via doctor command
+- ✅ Enhanced CLI tool with robust error handling and user guidance
 
 **Phase 2+ Implementation Details:**
 - **Multi-preset merging**: Supports comma-separated preset lists with intelligent deduplication
@@ -214,6 +243,11 @@ claudetainer/
 - **Robust preset handling**: Base preset included by default, no duplication
 - **Enhanced testing**: Scenario-based testing for different configuration combinations
 - **Shellcheck compliance**: Code follows bash best practices with proper quoting and error handling
+- **Dynamic port allocation**: Hash-based port calculation with collision detection and project isolation
+- **Port persistence**: Atomic file operations with locking to prevent race conditions
+- **Notification system**: Automatic channel generation, host/container sync, and comprehensive debugging
+- **Health monitoring**: Multi-phase doctor command covering prerequisites, containers, SSH, and notifications
+- **CLI robustness**: Comprehensive error handling, user guidance, and recovery procedures
 
 **Merge Strategy (Implemented):**
 - ✅ **Hooks are merged intelligently**: Same matchers combined, commands deduplicated
@@ -266,8 +300,30 @@ claudetainer/
 }
 ```
 
-Track session progress:
-- Files modified: install.sh (GitHub preset support), presets/python/CLAUDE.md (enhanced), removed scripts/string-helpers.sh
-- Major features added: GitHub preset fetching, git availability checking, enhanced error handling
-- Tests implemented: DevContainer CLI scenarios + GitHub Actions automation
-- CI/CD: Fully automated testing and publishing pipeline
+## Recent Updates (Latest Session)
+
+**Major Features Added:**
+- ✅ **Dynamic Port Allocation System**: Hash-based port calculation with collision detection and atomic file operations
+- ✅ **Notification Channel Generation**: Automatic ntfy channel creation with easy-to-type format (claude-projectname-hash)
+- ✅ **Comprehensive Health Checking**: Multi-phase doctor command with 8 diagnostic areas
+- ✅ **Enhanced CLI Tool**: Robust error handling, user guidance, and recovery procedures
+- ✅ **Version Management**: Updated to v0.1.2 with improved feature stability
+
+**Files Modified:**
+- `bin/claudetainer` - Added port allocation, notification setup, and doctor command enhancements
+- `src/claudetainer/devcontainer-feature.json` - Version bump to 0.1.2
+- `.github/workflows/` - Simplified workflow names and improved documentation
+- `README.md` - Updated documentation and badge links
+
+**Infrastructure Improvements:**
+- **Port Management**: 2220-2299 range with project-specific allocation and persistence
+- **Container Lifecycle**: Automatic notification setup during container startup
+- **Debugging Tools**: Comprehensive diagnostics for all system components
+- **Error Recovery**: Clear guidance and automated fixes for common issues
+
+**Track session progress:**
+- Major architectural improvements: port allocation system, notification integration
+- Enhanced user experience: comprehensive debugging, better error messages
+- Infrastructure hardening: atomic operations, race condition prevention
+- Documentation updates: workflow names, feature descriptions, usage examples
+- Version management: semantic versioning with feature stability tracking
