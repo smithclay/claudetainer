@@ -35,33 +35,557 @@ print_warning() {
     echo -e "${YELLOW}${WRENCH} $1${NC}"
 }
 
+# Check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Calculate base port from project path hash
+calculate_project_base_port() {
+    local hash=$(echo "$PWD" | shasum | head -c8)
+    local port=$((2220 + (0x$hash % 80)))
+    echo $port
+}
+
+# Check if a port is truly available using multiple methods
+is_port_available() {
+    local port=$1
+    
+    # Method 1: netcat check
+    if nc -z localhost $port 2>/dev/null; then
+        return 1  # Port is in use
+    fi
+    
+    # Method 2: lsof check (if available)
+    if command_exists lsof; then
+        if lsof -i :$port >/dev/null 2>&1; then
+            return 1  # Port is in use
+        fi
+    fi
+    
+    # Method 3: netstat check (if available and lsof not available)
+    if ! command_exists lsof && command_exists netstat; then
+        if netstat -ln 2>/dev/null | grep -q ":$port "; then
+            return 1  # Port is in use
+        fi
+    fi
+    
+    # Method 4: Check if any Docker containers are using this port
+    if command_exists docker; then
+        if docker ps --format "table {{.Ports}}" 2>/dev/null | grep -q ":$port->"; then
+            return 1  # Port is in use by Docker
+        fi
+    fi
+    
+    return 0  # Port appears to be available
+}
+
+# Find next available port starting from base
+find_available_port() {
+    local base_port=$1
+    local attempts=0
+    local max_attempts=80  # 2220-2299 range
+    
+    for ((port=base_port; port<=2299 && attempts<max_attempts; port++, attempts++)); do
+        if is_port_available $port; then
+            echo $port
+            return 0
+        fi
+    done
+    
+    # If we've exhausted the range, try a second pass with a small delay
+    # This handles race conditions where ports become available
+    sleep 0.1
+    for ((port=2220; port<=2299; port++)); do
+        if is_port_available $port; then
+            echo $port
+            return 0
+        fi
+    done
+    
+    return 1
+}
+
+# Get the current project's port (read-only, doesn't allocate)
+get_current_project_port() {
+    local port_file=".devcontainer/.claudetainer-port"
+    
+    # First try: read from port file
+    if [[ -f "$port_file" ]]; then
+        local saved_port=$(cat "$port_file" 2>/dev/null | tr -d '\n\r ')
+        # Validate port is a number in valid range
+        if [[ "$saved_port" =~ ^[0-9]+$ ]] && [[ "$saved_port" -ge 2220 ]] && [[ "$saved_port" -le 2299 ]]; then
+            echo "$saved_port"
+            return 0
+        fi
+    fi
+    
+    # Second try: extract port from running container
+    local container_name=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" | head -1)
+    if [[ -n "$container_name" ]]; then
+        local container_port=$(docker inspect "$container_name" --format '{{index .Config.Labels "devcontainer.ssh_port"}}' 2>/dev/null)
+        if [[ "$container_port" =~ ^[0-9]+$ ]] && [[ "$container_port" -ge 2220 ]] && [[ "$container_port" -le 2299 ]]; then
+            # Recreate port file for future use
+            mkdir -p .devcontainer 2>/dev/null
+            echo "$container_port" > "$port_file" 2>/dev/null
+            echo "$container_port"
+            return 0
+        fi
+    fi
+    
+    # Third try: scan for active container ports in our range
+    local project_containers=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}")
+    if [[ -n "$project_containers" ]]; then
+        for container in $project_containers; do
+            local host_ports=$(docker port "$container" 2>/dev/null | grep -E '^22[0-9]{2}/' | cut -d: -f2)
+            for port in $host_ports; do
+                if [[ "$port" -ge 2220 ]] && [[ "$port" -le 2299 ]]; then
+                    # Recreate port file for future use
+                    mkdir -p .devcontainer 2>/dev/null
+                    echo "$port" > "$port_file" 2>/dev/null
+                    echo "$port"
+                    return 0
+                fi
+            done
+        done
+    fi
+    
+    # Final fallback
+    echo "2223"
+}
+
+# Get or allocate port for current project
+get_project_port() {
+    local port_file=".devcontainer/.claudetainer-port"
+    local lock_file=".devcontainer/.claudetainer-port.lock"
+    
+    # Create .devcontainer directory if it doesn't exist
+    if ! mkdir -p .devcontainer 2>/dev/null; then
+        print_error "Cannot create .devcontainer directory"
+        return 1
+    fi
+    
+    # Use file locking to prevent race conditions
+    (
+        # Acquire lock with 10 second timeout
+        if command_exists flock; then
+            flock -w 10 200 || { print_error "Could not acquire port allocation lock"; return 1; }
+        fi
+        
+        # Check existing port file (inside lock)
+        if [[ -f "$port_file" ]]; then
+            local saved_port=$(cat "$port_file" 2>/dev/null | tr -d '\n\r ')
+            # Validate port format and range
+            if [[ "$saved_port" =~ ^[0-9]+$ ]] && [[ "$saved_port" -ge 2220 ]] && [[ "$saved_port" -le 2299 ]]; then
+                # Check if saved port is still available for this project to use
+                # If port is in use by our own container, that's fine - we want to reuse it
+                local our_container=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --filter "label=devcontainer.ssh_port=$saved_port" --format "{{.Names}}" | head -1)
+                if [[ -n "$our_container" ]] || is_port_available $saved_port; then
+                    echo $saved_port
+                    return 0
+                fi
+            fi
+        fi
+        
+        # Allocate new port
+        local base_port=$(calculate_project_base_port)
+        local available_port=$(find_available_port $base_port)
+        
+        if [[ -n "$available_port" ]]; then
+            # Atomic write using temporary file
+            local temp_file="${port_file}.tmp.$$"
+            if echo "$available_port" > "$temp_file" && mv "$temp_file" "$port_file"; then
+                echo $available_port
+                return 0
+            else
+                rm -f "$temp_file" 2>/dev/null
+                print_error "Failed to write port allocation file"
+                return 1
+            fi
+        else
+            print_error "No available ports in range 2220-2299"
+            return 1
+        fi
+        
+    ) 200>"$lock_file"
+    
+    local result=$?
+    rm -f "$lock_file" 2>/dev/null
+    return $result
+}
+
+# Diagnostic function to show port allocation status
+show_port_status() {
+    local port_file=".devcontainer/.claudetainer-port"
+    local current_port=$(get_current_project_port)
+    local base_port=$(calculate_project_base_port)
+    
+    echo "Port Allocation Status for $(pwd):"
+    echo "========================================"
+    echo "Project hash base port: $base_port"
+    echo "Current allocated port: $current_port"
+    echo
+    
+    if [[ -f "$port_file" ]]; then
+        echo "Port file exists: $port_file"
+        local file_content=$(cat "$port_file" 2>/dev/null)
+        echo "Port file content: '$file_content'"
+    else
+        echo "Port file missing: $port_file"
+    fi
+    echo
+    
+    echo "Container status:"
+    local containers=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}\t{{.Status}}\t{{.Ports}}")
+    if [[ -n "$containers" ]]; then
+        echo "$containers"
+    else
+        echo "No running containers found for this directory"
+    fi
+    echo
+    
+    echo "Port availability check:"
+    if is_port_available $current_port; then
+        echo "Port $current_port: AVAILABLE"
+    else
+        echo "Port $current_port: IN USE"
+        # Show what's using it
+        if command_exists lsof; then
+            local process=$(lsof -i :$current_port 2>/dev/null | grep LISTEN)
+            if [[ -n "$process" ]]; then
+                echo "Used by: $process"
+            fi
+        fi
+    fi
+}
+
+# Check prerequisites and show installation guidance
+check_prerequisites() {
+    local missing_deps=()
+    local all_good=true
+    
+    print_info "Checking prerequisites..."
+    
+    # Check Docker
+    if command_exists docker; then
+        if docker info >/dev/null 2>&1; then
+            print_success "Docker is installed and running"
+        else
+            print_warning "Docker is installed but not running"
+            echo "  → Start Docker Desktop or run: sudo systemctl start docker"
+            all_good=false
+        fi
+    else
+        print_error "Docker is not installed"
+        missing_deps+=("docker")
+        all_good=false
+    fi
+    
+    # Check Node.js
+    if command_exists node; then
+        local node_version=$(node --version)
+        print_success "Node.js is installed ($node_version)"
+    else
+        print_error "Node.js is not installed"
+        missing_deps+=("node")
+        all_good=false
+    fi
+    
+    # Check npm (comes with Node.js)
+    if command_exists npm; then
+        local npm_version=$(npm --version)
+        print_success "npm is installed ($npm_version)"
+    else
+        if command_exists node; then
+            print_warning "Node.js found but npm missing (unusual)"
+        fi
+    fi
+    
+    # Check git
+    if command_exists git; then
+        local git_version=$(git --version | cut -d' ' -f3)
+        print_success "Git is installed ($git_version)"
+    else
+        print_warning "Git is not installed (needed for GitHub presets)"
+        missing_deps+=("git")
+    fi
+    
+    # Show installation guidance if needed
+    if [[ ${#missing_deps[@]} -gt 0 ]]; then
+        echo
+        print_info "Installation guidance:"
+        
+        for dep in "${missing_deps[@]}"; do
+            case "$dep" in
+                docker)
+                    echo "  ${WRENCH} Docker:"
+                    echo "    • macOS/Windows: Download Docker Desktop from https://docker.com"
+                    echo "    • Ubuntu/Debian: curl -fsSL https://get.docker.com | sh"
+                    echo "    • With Homebrew: brew install --cask docker"
+                    ;;
+                node)
+                    echo "  ${WRENCH} Node.js:"
+                    echo "    • Download from https://nodejs.org (LTS recommended)"
+                    echo "    • With Homebrew: brew install node"
+                    echo "    • With package manager: sudo apt install nodejs npm"
+                    ;;
+                git)
+                    echo "  ${WRENCH} Git:"
+                    echo "    • Download from https://git-scm.com"
+                    echo "    • With Homebrew: brew install git"
+                    echo "    • With package manager: sudo apt install git"
+                    ;;
+            esac
+            echo
+        done
+        
+        print_info "After installing dependencies, run 'claudetainer prereqs' to verify"
+        return 1
+    fi
+    
+    if $all_good; then
+        print_success "All prerequisites satisfied!"
+        echo "  Ready to use: claudetainer init"
+    fi
+    
+    return 0
+}
+
+# Doctor command for debugging and health checks
+cmd_doctor() {
+    local issues_found=0
+    
+    print_info "Running claudetainer doctor..."
+    echo "======================================="
+    echo
+    
+    # 1. Check prerequisites
+    print_info "1. Checking prerequisites..."
+    if check_prerequisites >/dev/null 2>&1; then
+        print_success "All prerequisites satisfied"
+    else
+        print_warning "Some prerequisites missing - run 'claudetainer prereqs' for details"
+        ((issues_found++))
+    fi
+    echo
+    
+    # 2. Check current directory setup
+    print_info "2. Checking current directory setup..."
+    
+    # Check if in a project directory
+    local detected_lang=$(detect_language)
+    if [[ -n "$detected_lang" ]]; then
+        print_success "Project language detected: $detected_lang"
+    else
+        print_warning "No supported project files found in current directory"
+        echo "  • Looking for: package.json, requirements.txt, pyproject.toml, Cargo.toml, go.mod"
+    fi
+    
+    # Check for .devcontainer
+    if [[ -d ".devcontainer" ]]; then
+        print_success ".devcontainer directory exists"
+        
+        # Validate devcontainer.json
+        if [[ -f ".devcontainer/devcontainer.json" ]]; then
+            print_success "devcontainer.json found"
+            
+            # Check if it's a claudetainer devcontainer
+            if grep -q "claudetainer" ".devcontainer/devcontainer.json" 2>/dev/null; then
+                print_success "claudetainer feature detected in devcontainer.json"
+            else
+                print_warning "devcontainer.json exists but doesn't use claudetainer feature"
+                echo "  • Run 'claudetainer init' to create a claudetainer devcontainer"
+            fi
+            
+            # Validate JSON syntax
+            if command_exists node; then
+                if node -e "JSON.parse(require('fs').readFileSync('.devcontainer/devcontainer.json', 'utf8'))" 2>/dev/null; then
+                    print_success "devcontainer.json is valid JSON"
+                else
+                    print_error "devcontainer.json has invalid JSON syntax"
+                    ((issues_found++))
+                fi
+            fi
+        else
+            print_warning "devcontainer.json not found"
+            echo "  • Run 'claudetainer init' to create one"
+        fi
+    else
+        print_warning "No .devcontainer directory found"
+        echo "  • Run 'claudetainer init' to create one"
+    fi
+    echo
+    
+    # 3. Check Docker status
+    print_info "3. Checking Docker status..."
+    if command_exists docker; then
+        if docker info >/dev/null 2>&1; then
+            print_success "Docker is running"
+            
+            # Check for existing containers
+            local containers=$(docker ps -a --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" 2>/dev/null)
+            if [[ -n "$containers" ]]; then
+                print_success "Found existing devcontainer(s): $containers"
+                
+                # Check if running
+                local running=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" 2>/dev/null)
+                if [[ -n "$running" ]]; then
+                    print_success "Container is running: $running"
+                else
+                    print_warning "Container exists but is not running"
+                    echo "  • Run 'claudetainer up' to start it"
+                fi
+            else
+                print_info "No existing devcontainer found for this directory"
+            fi
+        else
+            print_error "Docker is installed but not running"
+            echo "  • Start Docker Desktop or run: sudo systemctl start docker"
+            ((issues_found++))
+        fi
+    else
+        print_error "Docker is not installed"
+        ((issues_found++))
+    fi
+    echo
+    
+    # 4. Check port allocation status
+    print_info "4. Checking port allocation status..."
+    show_port_status
+    echo
+    
+    # 5. Check SSH connectivity (if container should be running)
+    print_info "5. Checking SSH connectivity..."
+    local ssh_port=$(get_current_project_port)
+    if nc -z localhost $ssh_port 2>/dev/null; then
+        print_success "SSH port $ssh_port is accessible"
+        
+        # Test actual SSH connection
+        if timeout 5 ssh -p $ssh_port -o ConnectTimeout=3 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no vscode@localhost "echo 'SSH test successful'" 2>/dev/null; then
+            print_success "SSH connection test passed"
+        else
+            print_warning "SSH port open but connection failed"
+            echo "  • Try: ssh -p $ssh_port vscode@localhost (password: vscode)"
+        fi
+    else
+        print_info "SSH port $ssh_port not accessible (container likely not running)"
+    fi
+    echo
+    
+    # 6. Check claudetainer installation inside container (if running)
+    print_info "6. Checking claudetainer installation in container..."
+    local container_name=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" | head -1)
+    if [[ -n "$container_name" ]]; then
+        local claude_check=$(docker exec "$container_name" sh -c "ls /home/vscode/.claude/ 2>/dev/null" 2>/dev/null)
+        if [[ -n "$claude_check" ]]; then
+            print_success "Claude Code configuration found in container"
+            
+            # Check for specific claudetainer files
+            local commands_check=$(docker exec "$container_name" sh -c "ls /home/vscode/.claude/commands/*.md 2>/dev/null | wc -l" 2>/dev/null)
+            if [[ "$commands_check" -gt 0 ]]; then
+                print_success "Claudetainer commands installed ($commands_check commands)"
+            else
+                print_warning "No claudetainer commands found in container"
+            fi
+            
+            local hooks_check=$(docker exec "$container_name" sh -c "ls /home/vscode/.claude/hooks/*.sh 2>/dev/null | wc -l" 2>/dev/null)
+            if [[ "$hooks_check" -gt 0 ]]; then
+                print_success "Claudetainer hooks installed ($hooks_check hooks)"
+            else
+                print_warning "No claudetainer hooks found in container"
+            fi
+        else
+            print_warning "Claude Code configuration not found in container"
+            echo "  • Container may need to be rebuilt: docker system prune && claudetainer up"
+        fi
+    else
+        print_info "No running container found for this directory"
+    fi
+    echo
+    
+    # 7. Check for common issues
+    print_info "7. Checking for common issues..."
+    
+    # Check credentials file
+    if [[ -f "$HOME/.claudetainer-credentials.json" ]]; then
+        print_success "Credentials file exists: ~/.claudetainer-credentials.json"
+    else
+        print_warning "Credentials file missing: ~/.claudetainer-credentials.json"
+        echo "  • Will be created automatically on next 'claudetainer init'"
+    fi
+    
+    # Check for port conflicts
+    local port_check=$(lsof -i :$ssh_port 2>/dev/null | wc -l)
+    if [[ "$port_check" -gt 0 ]]; then
+        print_success "Port $ssh_port is in use (likely by claudetainer)"
+    else
+        print_info "Port $ssh_port is available"
+    fi
+    
+    # Check disk space
+    local disk_usage=$(df . | tail -1 | awk '{print $5}' | sed 's/%//')
+    if [[ "$disk_usage" -lt 90 ]]; then
+        print_success "Sufficient disk space available (${disk_usage}% used)"
+    else
+        print_warning "Disk space is low (${disk_usage}% used)"
+        echo "  • Consider running: docker system prune -a"
+        ((issues_found++))
+    fi
+    echo
+    
+    # Summary
+    echo "======================================="
+    if [[ $issues_found -eq 0 ]]; then
+        print_success "Doctor check completed - no issues found!"
+        echo "  Your claudetainer setup looks healthy ✨"
+    else
+        print_warning "Doctor check completed with $issues_found issue(s) found"
+        echo "  Review the warnings above and follow the suggested fixes"
+        echo "  Run 'claudetainer doctor' again after making changes"
+    fi
+    
+    return $issues_found
+}
+
 # Show help message
 show_help() {
     cat << EOF
-Claudetainer CLI v${VERSION}
-Ergonomic devcontainer management with claudetainer feature
+claudetainer CLI v${VERSION}
+Easy and opinionated Claude Code in a dev container.
 
 USAGE:
     claudetainer <COMMAND> [OPTIONS]
 
 COMMANDS:
-    init <language>    Create .devcontainer folder with claudetainer feature
-                      Supported languages: python, node, rust, go
-                      Will auto-detect if language not specified
-                      Creates ~/.claudetainer-credentials.json if missing
+    prereqs           Check prerequisites and show installation guidance
+    doctor            Comprehensive health check and debugging
+    init <language>   Create .devcontainer folder with claudetainer feature
+                     Supported languages: python, node, rust, go
+                     Will auto-detect if language not specified
+                     Creates ~/.claudetainer-credentials.json if missing
 
-    up                Start the devcontainer (wraps 'devcontainer up')
+    up, start        Start the devcontainer (uses npx @devcontainers/cli)
+    ssh              SSH into running container with tmux session
+    rm               Remove claudetainer containers and optionally config
+    list, ps, ls     List running containers with names, ports, and status
 
-    ssh               SSH into running container with tmux session
-
-    --help, -h        Show this help message
-    --version, -v     Show version information
+    --help, -h       Show this help message
+    --version, -v    Show version information
 
 EXAMPLES:
+    claudetainer prereqs         # Check if Docker, Node.js are installed
+    claudetainer doctor          # Run comprehensive health check
     claudetainer init python     # Create Python devcontainer
     claudetainer init            # Auto-detect language and create devcontainer
     claudetainer up              # Start the devcontainer
+    claudetainer start           # Same as up
     claudetainer ssh             # Connect to running container
+    claudetainer rm              # Remove containers for this project
+    claudetainer rm --config     # Remove containers and .devcontainer dir
+    claudetainer rm -f           # Force remove without confirmation
+    claudetainer list            # List running containers
+    claudetainer ps              # Same as list
+    claudetainer ls              # Same as list
 
 For more information, visit: https://github.com/smithclay/claudetainer
 EOF
@@ -105,6 +629,7 @@ validate_language() {
 # Generate devcontainer.json content for a language
 generate_devcontainer_json() {
     local lang="$1"
+    local port="$2"
     local name=""
     local image=""
     
@@ -139,22 +664,30 @@ generate_devcontainer_json() {
             "include": "${lang}"
         },
         "ghcr.io/devcontainers/features/sshd:1": {
-            "SSHD_PORT": 2223,
+            "SSHD_PORT": ${port},
             "START_SSHD": "true",
             "NEW_PASSWORD": "vscode"
         },
         "ghcr.io/duduribeiro/devcontainer-features/tmux:1": {}
     },
     "postCreateCommand": "claude --version",
-    // Mount credentials file so you don't have to re-auth to Claude Code for each container
     "mounts": [
         "source=\${localEnv:HOME}\${localEnv:USERPROFILE}/.claudetainer-credentials.json,target=/home/vscode/.claude/.credentials.json,type=bind,consistency=cached"
     ],
-    // Makes it possible to SSH in via port 2223
-    // ssh -p 2223 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null vscode@localhost
-    "forwardPorts": [
-        2223
+    "runArgs": [
+        "-p", "${port}:${port}", 
+        "--label", "devcontainer.local_folder=${PWD}",
+        "--label", "devcontainer.language=${lang}",
+        "--label", "devcontainer.type=claudetainer",
+        "--label", "devcontainer.ssh_port=${port}"
     ],
+    "forwardPorts": [
+        ${port}
+    ],
+    "remoteEnv": {
+        "CLAUDETAINER": "true",
+        "NODE_OPTIONS": "--max-old-space-size=4096"
+    },
     "customizations": {
         "vscode": {
             "extensions": []
@@ -214,10 +747,18 @@ cmd_init() {
     # Create .devcontainer directory
     mkdir -p .devcontainer
     
-    # Generate devcontainer.json
-    generate_devcontainer_json "$language" > .devcontainer/devcontainer.json
+    # Get or allocate port for this project
+    local port=$(get_project_port)
+    if [[ $? -ne 0 ]]; then
+        print_error "Failed to allocate port for project"
+        return 1
+    fi
+    
+    # Generate devcontainer.json with allocated port
+    generate_devcontainer_json "$language" "$port" > .devcontainer/devcontainer.json
     
     print_success "Created .devcontainer/devcontainer.json for $language"
+    print_info "Allocated SSH port: $port"
     print_info "Next steps:"
     echo "  1. Run 'claudetainer up' to start the container"
     echo "  2. Run 'claudetainer ssh' to connect once it's running"
@@ -226,52 +767,267 @@ cmd_init() {
 # Start devcontainer
 cmd_up() {
     if [[ ! -f ".devcontainer/devcontainer.json" ]]; then
-        print_error "No .devcontainer/devcontainer.json found"
-        echo "Run 'claudetainer init <language>' first"
+        print_warning "No .devcontainer/devcontainer.json found"
+        
+        # Try to auto-detect language
+        local detected_lang=$(detect_language)
+        if [[ -n "$detected_lang" ]]; then
+            print_info "Detected project language: $detected_lang"
+            read -p "Create devcontainer for $detected_lang? [Y/n]: " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Nn]$ ]]; then
+                print_info "Aborted"
+                return 1
+            fi
+            
+            # Create devcontainer
+            if cmd_init "$detected_lang"; then
+                print_success "Created devcontainer, now starting..."
+            else
+                print_error "Failed to create devcontainer"
+                return 1
+            fi
+        else
+            print_error "Could not auto-detect project language"
+            echo "Available languages: python, node, rust, go"
+            read -p "Enter language to create devcontainer for (or press Enter to abort): " lang
+            if [[ -z "$lang" ]]; then
+                print_info "Aborted"
+                return 1
+            fi
+            
+            # Create devcontainer with specified language
+            if cmd_init "$lang"; then
+                print_success "Created devcontainer, now starting..."
+            else
+                print_error "Failed to create devcontainer"
+                return 1
+            fi
+        fi
+    fi
+    
+    # Check if Node.js is available (needed for npx)
+    if ! command_exists node; then
+        print_error "Node.js not found"
+        echo "Node.js is required to run devcontainer CLI via npx"
+        echo "Install with: brew install node  # or visit https://nodejs.org"
         return 1
     fi
     
-    # Check if devcontainer CLI is available
-    if ! command -v devcontainer &> /dev/null; then
-        print_error "devcontainer CLI not found"
-        echo "Install it with: npm install -g @devcontainers/cli"
+    # Check if npm is available (needed for npx)
+    if ! command_exists npm; then
+        print_error "npm not found"
+        echo "npm is required to run devcontainer CLI via npx"
+        echo "npm usually comes with Node.js installation"
         return 1
     fi
     
-    print_info "Starting devcontainer..."
-    devcontainer up --workspace-folder .
+    print_info "Starting devcontainer using npx @devcontainers/cli..."
+    npx @devcontainers/cli up --workspace-folder .
+    
+    # After container is up, check credentials and set onboarding flag inside container
+    local credentials_file="$HOME/.claudetainer-credentials.json"
+    if [[ -f "$credentials_file" ]]; then
+        # Check if file contains more than just empty object
+        local file_content=$(cat "$credentials_file" 2>/dev/null)
+        if [[ "$file_content" != "{}" ]] && [[ -n "$file_content" ]] && [[ "$file_content" != "" ]]; then
+            print_info "Detected credentials. Setting Claude Code onboarding complete flag in container..."
+            local ssh_port=$(get_current_project_port)
+            
+            # Wait a moment for container to be fully ready
+            sleep 5
+            
+            # Set onboarding flag inside the container using docker exec
+            local container_name=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" | head -1)
+            if [[ -n "$container_name" ]]; then
+                docker exec "$container_name" sh -c "echo '{\"hasCompletedOnboarding\": true}' > /home/vscode/.claude.json" 2>/dev/null || print_warning "Could not set onboarding flag in container"
+            else
+                print_warning "Could not find container to set onboarding flag"
+            fi
+        fi
+    fi
+
+    echo
+    print_success "Container is ready!"
+    print_info "Next steps:"
+    echo "  1. Run 'claudetainer ssh' to connect and start coding"
+    echo "  2. Use 'claudetainer list' to see running containers"
+    echo "  3. Run 'claudetainer doctor' if you encounter issues"
+    echo
+    print_info "Inside the container, try these Claude Code features:"
+    echo "  • Type 'claude' to interact with Claude directly"
+    echo "  • Use slash commands like '/commit' and '/check'"
+    echo "  • All your files are automatically linted and formatted"
+    echo
+    local ssh_port=$(get_current_project_port)
+    print_info "Container details:"
+    echo "  • SSH port: $ssh_port"
+    echo "  • Direct SSH: ssh -p $ssh_port vscode@localhost (password: vscode)"
+    echo "  • Workspace: /workspaces (mounted from current directory)"
+
 }
 
 # SSH into running container
 cmd_ssh() {
+    # Get the project's SSH port
+    local port_file=".devcontainer/.claudetainer-port"
+    local port=2223  # fallback port
+    
+    if [[ -f "$port_file" ]]; then
+        port=$(cat "$port_file")
+    fi
+    
     # Check if container is running by trying to connect
-    if ! nc -z localhost 2223 2>/dev/null; then
-        print_error "Container not running or SSH not available on port 2223"
+    if ! nc -z localhost $port 2>/dev/null; then
+        print_error "Container not running or SSH not available on port $port"
         echo "Run 'claudetainer up' first to start the container"
         return 1
     fi
     
-    print_info "Connecting to container via SSH..."
-    ssh -p 2223 \
+    print_info "Connecting to container via SSH on port $port..."
+    ssh -p $port \
         -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=/dev/null \
         -o GlobalKnownHostsFile=/dev/null \
         -o LogLevel=ERROR \
         vscode@localhost \
-        -t 'tmux attach-session -t main 2>/dev/null || tmux new-session -s main'
+        -t 'tmux attach-session -t claudetainer 2>/dev/null || tmux new-session -s claudetainer'
+}
+
+# Remove claudetainer and associated containers
+cmd_rm() {
+    local force=false
+    local remove_config=false
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -f|--force)
+                force=true
+                shift
+                ;;
+            --config)
+                remove_config=true
+                shift
+                ;;
+            *)
+                print_error "Unknown option: $1"
+                echo "Usage: claudetainer rm [-f|--force] [--config]"
+                echo "  -f, --force    Force removal without confirmation"
+                echo "  --config       Also remove .devcontainer directory"
+                return 1
+                ;;
+        esac
+    done
+    
+    # Find containers for this directory
+    local containers=$(docker ps -a --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" 2>/dev/null)
+    
+    if [[ -z "$containers" ]]; then
+        print_info "No claudetainer containers found for this directory"
+    else
+        print_info "Found containers: $containers"
+        
+        if [[ "$force" = false ]]; then
+            read -p "Remove these containers? [y/N]: " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                print_info "Aborted container removal"
+                if [[ "$remove_config" = false ]]; then
+                    return 0
+                fi
+            else
+                # Remove containers
+                echo "$containers" | while read container; do
+                    print_info "Stopping and removing container: $container"
+                    docker stop "$container" >/dev/null 2>&1 || true
+                    docker rm "$container" >/dev/null 2>&1 || true
+                done
+                print_success "Removed containers"
+                
+                # Clean up port file when containers are removed
+                if [[ -f ".devcontainer/.claudetainer-port" ]]; then
+                    rm -f ".devcontainer/.claudetainer-port"
+                    print_success "Cleaned up port allocation file"
+                fi
+            fi
+        else
+            # Force removal
+            echo "$containers" | while read container; do
+                print_info "Stopping and removing container: $container"
+                docker stop "$container" >/dev/null 2>&1 || true
+                docker rm "$container" >/dev/null 2>&1 || true
+            done
+            print_success "Removed containers"
+            
+            # Clean up port file when containers are removed
+            if [[ -f ".devcontainer/.claudetainer-port" ]]; then
+                rm -f ".devcontainer/.claudetainer-port"
+                print_success "Cleaned up port allocation file"
+            fi
+        fi
+    fi
+    
+    # Handle .devcontainer directory removal
+    if [[ "$remove_config" = true ]]; then
+        if [[ -d ".devcontainer" ]]; then
+            if [[ "$force" = false ]]; then
+                read -p "Remove .devcontainer directory? [y/N]: " -n 1 -r
+                echo
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    rm -rf .devcontainer
+                    print_success "Removed .devcontainer directory"
+                else
+                    print_info "Kept .devcontainer directory"
+                fi
+            else
+                rm -rf .devcontainer
+                print_success "Removed .devcontainer directory"
+            fi
+        else
+            print_info "No .devcontainer directory found"
+        fi
+    fi
 }
 
 # Main command dispatcher
 main() {
     case "${1:-}" in
+        prereqs)
+            check_prerequisites
+            ;;
+        doctor)
+            cmd_doctor
+            ;;
         init)
+            # Check prerequisites before initializing
+            if ! check_prerequisites; then
+                echo
+                print_error "Prerequisites not met. Install missing dependencies first."
+                return 1
+            fi
             cmd_init "${2:-}"
             ;;
-        up)
+        up|start)
             cmd_up
             ;;
         ssh)
             cmd_ssh
+            ;;
+        rm)
+            shift
+            cmd_rm "$@"
+            ;;
+        list|ps|ls)
+            echo -e "CONTAINER ID\tNAMES\tPORTS\tSTATUS\tLOCAL_FOLDER"
+            docker ps -q | while read cid; do
+                short_id=$(echo $cid | cut -c1-12)
+                name=$(docker inspect --format '{{.Name}}' $cid | sed 's/^\///')
+                ports=$(docker inspect --format '{{range $p, $conf := .NetworkSettings.Ports}}{{if $conf}}{{$p}}->{{(index $conf 0).HostPort}} {{end}}{{end}}' $cid)
+                status=$(docker inspect --format '{{.State.Status}}' $cid)
+                folder=$(docker inspect --format '{{index .Config.Labels "devcontainer.local_folder"}}' $cid)
+                echo -e "${short_id}\t${name}\t${ports}\t${status}\t${folder}"
+            done | column -t
             ;;
         --help|-h|help)
             show_help
