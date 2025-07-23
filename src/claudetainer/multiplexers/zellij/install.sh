@@ -223,14 +223,10 @@ setup_auto_start() {
 
 # Only run for interactive, remote SSH sessions, and not already in Zellij
 if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]] && [[ -z "$ZELLIJ" ]]; then
-    # Check if claudetainer session exists
-    if zellij list-sessions 2>/dev/null | grep -q "claudetainer"; then
-        echo "🔗 Attaching to existing claudetainer session..."
-        exec zellij attach claudetainer
-    else
-        echo "🚀 Starting new claudetainer session with Zellij..."
-        exec zellij --layout claudetainer --session claudetainer
-    fi
+    echo "🚀 Starting/attaching to claudetainer session with Zellij..."
+    # Use attach --create for best practice session management
+    # This will attach to existing session or create new one if it doesn't exist
+    exec zellij attach --create claudetainer --layout claudetainer
 fi
 EOF
     
