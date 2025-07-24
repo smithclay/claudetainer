@@ -61,9 +61,26 @@ jobs:
       - name: "Get Version"
         id: version
         run: |
-          VERSION=$(grep '^VERSION=' bin/claudetainer | cut -d'"' -f2)
+          VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('src/claudetainer/devcontainer-feature.json', 'utf8')).version)")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Found version: $VERSION"
+
+      - name: "Delete Previous Release (if exists)"
+        run: |
+          TAG="cli-v${{ steps.version.outputs.version }}"
+          # Delete release if it exists
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Deleting existing release $TAG"
+            gh release delete "$TAG" --yes
+          fi
+          # Delete tag if it exists
+          if git tag -l | grep -q "^$TAG$"; then
+            echo "Deleting existing tag $TAG"
+            git push --delete origin "$TAG" || true
+            git tag -d "$TAG" || true
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Create Release"
         id: create_release
