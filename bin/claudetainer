@@ -68,7 +68,7 @@ load_commands_for() {
 		load_command "init"
 		load_command "doctor" # init calls cmd_check_prerequisites from doctor
 		;;
-	up | start)
+	run | up | start)
 		load_command "up"
 		load_command "init" # up might call cmd_init
 		;;
@@ -129,7 +129,7 @@ main() {
 		shift
 		cmd_init "$@"
 		;;
-	up | start)
+	run | up | start)
 		shift
 		cmd_up "$@"
 		;;

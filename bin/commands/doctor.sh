@@ -5,13 +5,18 @@
 cmd_check_prerequisites() {
 	local missing_deps=()
 	local all_good=true
+	local verbose="${1:-false}"
 
-	ui_print_info "Checking prerequisites..."
+	if [[ "$verbose" == "true" ]]; then
+		ui_print_info "Checking prerequisites..."
+	fi
 
 	# Check Docker
 	if ui_command_exists docker; then
 		if docker info >/dev/null 2>&1; then
-			ui_print_success "Docker is installed and running"
+			if [[ "$verbose" == "true" ]]; then
+				ui_print_success "Docker is installed and running"
+			fi
 		else
 			ui_print_warning "Docker is installed but not running"
 			echo "  → Start Docker Desktop or run: sudo systemctl start docker"
@@ -25,8 +30,10 @@ cmd_check_prerequisites() {
 
 	# Check Node.js
 	if ui_command_exists node; then
-		local node_version=$(node --version)
-		ui_print_success "Node.js is installed ($node_version)"
+		if [[ "$verbose" == "true" ]]; then
+			local node_version=$(node --version)
+			ui_print_success "Node.js is installed ($node_version)"
+		fi
 	else
 		ui_print_error "Node.js is not installed"
 		missing_deps+=("node")
@@ -35,8 +42,10 @@ cmd_check_prerequisites() {
 
 	# Check npm (comes with Node.js)
 	if ui_command_exists npm; then
-		local npm_version=$(npm --version)
-		ui_print_success "npm is installed ($npm_version)"
+		if [[ "$verbose" == "true" ]]; then
+			local npm_version=$(npm --version)
+			ui_print_success "npm is installed ($npm_version)"
+		fi
 	else
 		if ui_command_exists node; then
 			ui_print_warning "Node.js found but npm missing (unusual)"
@@ -45,8 +54,10 @@ cmd_check_prerequisites() {
 
 	# Check git
 	if ui_command_exists git; then
-		local git_version=$(git --version | cut -d' ' -f3)
-		ui_print_success "Git is installed ($git_version)"
+		if [[ "$verbose" == "true" ]]; then
+			local git_version=$(git --version | cut -d' ' -f3)
+			ui_print_success "Git is installed ($git_version)"
+		fi
 	else
 		ui_print_warning "Git is not installed (needed for GitHub presets)"
 		missing_deps+=("git")
@@ -83,11 +94,6 @@ cmd_check_prerequisites() {
 
 		ui_print_info "After installing dependencies, run 'claudetainer prereqs' to verify"
 		return 1
-	fi
-
-	if $all_good; then
-		ui_print_success "All prerequisites satisfied!"
-		echo "  Ready to use: claudetainer init"
 	fi
 
 	return 0

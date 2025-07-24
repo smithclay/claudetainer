@@ -3,5 +3,5 @@
 
 # Check prerequisites command wrapper
 cmd_prereqs() {
-	cmd_check_prerequisites
+	cmd_check_prerequisites true
 }

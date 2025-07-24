@@ -31,7 +31,7 @@ devcontainer_generate_json() {
 	# Determine claudetainer feature configuration
 	local claudetainer_config
 	if [[ "$lang" == "base" ]]; then
-		claudetainer_config='"includeBase": true, "multiplexer": "'${multiplexer}'"'
+		claudetainer_config='"includeBase": true, "include": "", "multiplexer": "'${multiplexer}'"'
 	else
 		claudetainer_config='"includeBase": true, "include": "'${lang}'", "multiplexer": "'${multiplexer}'"'
 	fi

@@ -4,6 +4,7 @@
 # Start devcontainer
 cmd_up() {
 	local clean_build=false
+	local verbose=false
 
 	# Parse command line arguments
 	while [[ $# -gt 0 ]]; do
@@ -12,10 +13,15 @@ cmd_up() {
 			clean_build=true
 			shift
 			;;
+		--verbose)
+			verbose=true
+			shift
+			;;
 		*)
 			ui_print_error "Unknown option: $1"
-			echo "Usage: claudetainer up [--clean]"
-			echo "  --clean    Remove existing container and rebuild without cache"
+			echo "Usage: claudetainer up [--clean] [--verbose]"
+			echo "  --clean     Remove existing container and rebuild without cache"
+			echo "  --verbose   Show detailed devcontainer CLI output"
 			return 1
 			;;
 		esac
@@ -105,11 +111,28 @@ cmd_up() {
 
 	# Build devcontainer with appropriate options
 	if [[ "$clean_build" == "true" ]]; then
-		ui_print_info "Starting clean devcontainer build (no cache)..."
-		npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container
+		ui_print_info "Starting clean devcontainer build (no cache, may take a few minutes)..."
+		if [[ "$verbose" == "true" ]]; then
+			npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container
+		else
+			npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container >/dev/null 2>&1
+		fi
 	else
-		ui_print_info "Starting devcontainer using npx @devcontainers/cli..."
-		npx @devcontainers/cli up --workspace-folder .
+		ui_print_info "Starting devcontainer (may take a few minutes on first run)..."
+		if [[ "$verbose" == "true" ]]; then
+			npx @devcontainers/cli up --workspace-folder .
+		else
+			npx @devcontainers/cli up --workspace-folder . >/dev/null 2>&1
+		fi
+	fi
+	
+	# Check if devcontainer command succeeded
+	if [[ $? -ne 0 ]]; then
+		ui_print_error "Failed to start devcontainer"
+		if [[ "$verbose" != "true" ]]; then
+			echo "Run with --verbose to see detailed error output"
+		fi
+		return 1
 	fi
 
 	# After container is up, set up notifications and credentials

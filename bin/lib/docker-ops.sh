@@ -11,6 +11,11 @@ docker_find_running_project_containers() {
 	docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" 2>/dev/null
 }
 
+# Find all claudetainer containers
+docker_find_all_claudetainer_containers() {
+	docker ps -a --filter "label=devcontainer.type=claudetainer" --format "{{.Names}}" 2>/dev/null
+}
+
 # Get container name for current project
 docker_get_project_container_name() {
 	docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" | head -1
@@ -108,4 +113,38 @@ docker_remove_project_containers() {
 		rm -f ".devcontainer/.claudetainer-port"
 		ui_print_success "Cleaned up port allocation file"
 	fi
+}
+
+# Remove all claudetainer containers
+docker_remove_all_claudetainer_containers() {
+	local force="$1"
+	local containers=$(docker_find_all_claudetainer_containers)
+
+	if [[ -z "$containers" ]]; then
+		ui_print_info "No claudetainer containers found"
+		return 0
+	fi
+
+	ui_print_info "Found claudetainer containers:"
+	echo "$containers" | while read -r container; do
+		local folder=$(docker inspect --format '{{index .Config.Labels "devcontainer.local_folder"}}' "$container" 2>/dev/null)
+		echo "  • $container (from: $folder)"
+	done
+
+	if [[ "$force" != "true" ]]; then
+		read -p "Remove ALL claudetainer containers? [y/N]: " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			ui_print_info "Aborted container removal"
+			return 1
+		fi
+	fi
+
+	# Remove containers
+	echo "$containers" | while read -r container; do
+		ui_print_info "Stopping and removing container: $container"
+		docker stop "$container" >/dev/null 2>&1 || true
+		docker rm "$container" >/dev/null 2>&1 || true
+	done
+	ui_print_success "Removed all claudetainer containers"
 }

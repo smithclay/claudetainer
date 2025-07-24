@@ -54,10 +54,14 @@ COMMANDS:
                      Creates ~/.claudetainer-credentials.json if missing
                      Options: --multiplexer zellij|tmux|none (default: zellij)
 
-    up, start        Start the devcontainer (uses npx @devcontainers/cli)
+    run, up, start   Start the devcontainer (uses npx @devcontainers/cli)
                      Options: --clean (remove existing container and rebuild without cache)
+                              --verbose (show detailed devcontainer CLI output)
     ssh              SSH into running container with configured multiplexer session
     rm               Remove claudetainer containers and optionally config
+                     Options: --all (remove all claudetainer containers)
+                              --config (also remove .devcontainer directory)
+                              -f, --force (skip confirmation prompts)
     list, ps, ls     List running containers with names, ports, and status
 
     --help, -h       Show this help message
@@ -68,12 +72,15 @@ EXAMPLES:
     claudetainer doctor          # Run comprehensive health check
     claudetainer init python     # Create Python devcontainer
     claudetainer init            # Auto-detect language and create devcontainer
-    claudetainer up              # Start the devcontainer
-    claudetainer up --clean      # Clean rebuild (remove existing container, no cache)
-    claudetainer start           # Same as up
+    claudetainer run             # Start the devcontainer (quiet by default)
+    claudetainer run --clean     # Clean rebuild (remove existing container, no cache)
+    claudetainer run --verbose   # Start with detailed output
+    claudetainer up              # Same as run (alias)
+    claudetainer start           # Same as run (alias)
     claudetainer ssh             # Connect to running container
     claudetainer rm              # Remove containers for this project
     claudetainer rm --config     # Remove containers and .devcontainer dir
+    claudetainer rm --all        # Remove ALL claudetainer containers
     claudetainer rm -f           # Force remove without confirmation
     claudetainer list            # List running containers
     claudetainer ps              # Same as list
