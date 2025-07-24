@@ -54,6 +54,11 @@ config_get_language_config() {
 		echo "image:mcr.microsoft.com/devcontainers/base:bookworm"
 		echo "post_create:sudo apt-get update && sudo apt-get install -y shellcheck && curl -L https://github.com/mvdan/sh/releases/download/v3.7.0/shfmt_v3.7.0_linux_amd64 -o /tmp/shfmt && sudo mv /tmp/shfmt /usr/local/bin/shfmt && sudo chmod +x /usr/local/bin/shfmt && claude --version"
 		;;
+	base)
+		echo "name:Base Claudetainer"
+		echo "image:mcr.microsoft.com/devcontainers/base:bookworm"
+		echo "post_create:claude --version"
+		;;
 	esac
 }
 

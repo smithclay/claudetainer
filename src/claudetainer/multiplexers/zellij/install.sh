@@ -186,18 +186,16 @@ layout {
     // Main development tab
     tab name="claude" focus=true {
         pane {
-            cwd "/workspaces"
             command "bash"
-            args "-c" "clear; echo '🤖 Welcome to Claudetainer with Zellij!'; echo '💡 Switch tabs: Alt+h/l or Ctrl+t then 1/2'; echo '🚀 Start coding with: claude'; echo; exec bash"
+            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 Welcome to Claudetainer with Zellij!'; echo '💡 Switch tabs: Alt+h/l or Ctrl+t then 1/2'; echo '🚀 Start coding with: claude'; echo '📁 Working directory:' $(pwd); echo; exec bash"
         }
     }
     
     // Usage monitoring tab  
     tab name="usage" {
         pane {
-            cwd "/workspaces"
             command "bash"
-            args "-c" "echo '📊 Claude Code Usage Monitor'; echo 'Starting ccusage...'; echo; npx ccusage"
+            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; echo '📊 Claude Code Usage Monitor'; echo 'Starting ccusage...'; echo; npx ccusage"
         }
     }
 }

@@ -28,6 +28,14 @@ devcontainer_generate_json() {
 	local image=$(echo "$lang_config" | grep "^image:" | cut -d: -f2-)
 	local post_create_command=$(echo "$lang_config" | grep "^post_create:" | cut -d: -f2-)
 
+	# Determine claudetainer feature configuration
+	local claudetainer_config
+	if [[ "$lang" == "base" ]]; then
+		claudetainer_config='"includeBase": true, "multiplexer": "'${multiplexer}'"'
+	else
+		claudetainer_config='"includeBase": true, "include": "'${lang}'", "multiplexer": "'${multiplexer}'"'
+	fi
+
 	cat <<EOF
 {
     "name": "${name}",
@@ -36,9 +44,7 @@ devcontainer_generate_json() {
         "ghcr.io/devcontainers/features/node:1": {},
         "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
         "ghcr.io/smithclay/claudetainer/claudetainer:${feature_version}": {
-            "includeBase": true,
-            "include": "${lang}",
-            "multiplexer": "${multiplexer}"
+            ${claudetainer_config}
         },
         "ghcr.io/devcontainers/features/sshd:1": {
             "SSHD_PORT": ${port},

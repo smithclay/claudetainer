@@ -22,12 +22,12 @@ validation_detect_language() {
 validation_validate_language() {
 	local lang="$1"
 	case "$lang" in
-	python | node | rust | go | shell)
+	python | node | rust | go | shell | base)
 		return 0
 		;;
 	*)
 		ui_print_error "Unsupported language: $lang"
-		echo "Supported languages: python, node, rust, go, shell"
+		echo "Supported languages: python, node, rust, go, shell, base"
 		return 1
 		;;
 	esac

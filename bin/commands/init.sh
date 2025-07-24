@@ -33,16 +33,15 @@ cmd_init() {
 	if [[ -z "$language" ]]; then
 		language=$(validation_detect_language)
 		if [[ -z "$language" ]]; then
-			ui_print_error "Could not auto-detect project language"
-			echo "Please specify a language: claudetainer init <language>"
-			echo "Supported languages: python, node, rust, go"
-			return 1
+			ui_print_info "No language detected - creating base devcontainer without language-specific presets"
+			language="base"
+		else
+			ui_print_info "Auto-detected language: $language"
 		fi
-		ui_print_info "Auto-detected language: $language"
 	fi
 
-	# Validate language and multiplexer
-	if ! validation_validate_language "$language"; then
+	# Validate language and multiplexer (skip validation for base)
+	if [[ "$language" != "base" ]] && ! validation_validate_language "$language"; then
 		return 1
 	fi
 
