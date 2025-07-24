@@ -1,0 +1,89 @@
+// Claude Code Development Layout - Enhanced Workflow
+// Four-tab layout optimized for Claude Code development with latest Zellij features
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    
+    // Tab 1: Claude Code - Main development workspace
+    tab name="🤖 claude" focus=true {
+        pane split_direction="vertical" {
+            // Main Claude Code terminal
+            pane size="70%" {
+                name "claude-main"
+                command "bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 Claude Code Development Environment'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo '💡 Tips:'; echo '  • Use claude for interactive coding'; echo '  • Alt+h/l to switch tabs quickly'; echo '  • Ctrl+p for pane management'; echo '  • Ctrl+t for tab management'; echo ''; echo '📁 Working in:' $(pwd); echo '🚀 Ready for development!'; echo ''; exec bash"
+            }
+            
+            // Quick commands and notes
+            pane size="30%" {
+                name "quick-cmds"
+                command "bash" 
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ Quick Commands'; echo '━━━━━━━━━━━━━━━━━'; echo 'Development:'; echo '  • claude          # Start Claude Code'; echo '  • make test       # Run tests'; echo '  • make fmt        # Format code'; echo '  • make lint       # Lint code'; echo ''; echo 'Project:'; echo '  • ls -la          # List files'; echo '  • find . -name... # Find files'; echo '  • rg \"pattern\"    # Search code'; echo ''; echo 'Git (see git tab for interactive):'; echo '  • git status      # Check status'; echo '  • git log --oneline -10  # Recent commits'; echo ''; exec bash"
+            }
+        }
+    }
+    
+    // Tab 2: Cost Monitoring - Usage and resource tracking
+    tab name="💰 cost" {
+        pane split_direction="horizontal" {
+            // Claude Code usage monitoring
+            pane size="60%" {
+                name "claude-usage"
+                command "bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '💰 Claude Code Usage Monitor'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo 'Starting ccusage for real-time usage tracking...'; echo ''; echo '💡 This shows:'; echo '  • Token usage per request'; echo '  • Cost estimates'; echo '  • Request patterns'; echo '  • Daily/weekly totals'; echo ''; echo 'Loading...'; sleep 2; if command -v npx >/dev/null 2>&1; then npx ccusage; else echo '❌ ccusage not available. Install with: npm install -g ccusage'; echo '📊 Alternative: Check Claude usage at https://console.anthropic.com'; exec bash; fi"
+            }
+            
+            // System resources
+            pane size="40%" {
+                name "system-resources"
+                command "bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🖥️  System Resources'; echo '━━━━━━━━━━━━━━━━━━━━'; while true; do clear; echo '🖥️  System Resources - $(date)'; echo '━━━━━━━━━━━━━━━━━━━━'; echo; echo '💾 Memory:'; if command -v free >/dev/null 2>&1; then free -h | head -2; else echo 'Memory info not available'; fi; echo; echo '💿 Disk:'; if command -v df >/dev/null 2>&1; then df -h / | tail -1; else echo 'Disk info not available'; fi; echo; echo '⚡ CPU:'; if command -v top >/dev/null 2>&1; then top -bn1 | grep 'Cpu(s)' | head -1; else echo 'CPU info not available'; fi; echo; echo '🐳 Container:'; echo 'Container ID:' $(hostname); echo; echo '🔄 Auto-refresh every 5s (Ctrl+C to get shell)'; sleep 5; done"
+            }
+        }
+    }
+    
+    // Tab 3: Git Status - Interactive git operations
+    tab name="🌲 git" {
+        pane split_direction="vertical" {
+            // Git status and log
+            pane size="50%" {
+                name "git-status"
+                command "bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🌲 Git Status & Operations'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo; git_loop() { while true; do clear; echo '🌲 Git Status & Log - $(date +\"%H:%M:%S\")'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo; echo '📊 Current Status:'; git status --short 2>/dev/null || echo 'Not a git repository'; echo; echo '📝 Recent Commits (last 8):'; git log --oneline --graph -8 2>/dev/null || echo 'No commits yet'; echo; echo '🌿 Current Branch:'; git branch --show-current 2>/dev/null || echo 'No branch'; echo; echo '🔄 Auto-refresh every 10s | Press Ctrl+C for interactive shell'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; sleep 10; done; }; echo 'Starting git monitoring...'; git_loop"
+            }
+            
+            // Git commands and operations
+            pane size="50%" {
+                name "git-commands"
+                command "bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ Git Commands'; echo '━━━━━━━━━━━━━━━'; echo 'Quick Operations:'; echo ''; echo '📋 Status & Info:'; echo '  git status                    # Detailed status'; echo '  git log --oneline -20         # Recent commits'; echo '  git diff                      # Show changes'; echo '  git diff --cached             # Show staged'; echo '  git show HEAD                 # Latest commit'; echo ''; echo '🔄 Basic Operations:'; echo '  git add .                     # Stage all'; echo '  git add <file>                # Stage file'; echo '  git commit -m \"message\"       # Commit'; echo '  git push                      # Push changes'; echo '  git pull                      # Pull updates'; echo ''; echo '🌿 Branching:'; echo '  git branch                    # List branches'; echo '  git checkout -b <name>        # New branch'; echo '  git checkout <branch>         # Switch branch'; echo '  git merge <branch>            # Merge branch'; echo ''; echo '🔍 History & Search:'; echo '  git log --grep=\"text\"         # Search commits'; echo '  git log --author=\"name\"       # By author'; echo '  git blame <file>              # File history'; echo ''; echo '⚡ Ready for git commands!'; exec bash"
+            }
+        }
+    }
+    
+    // Tab 4: Shell - General development tasks
+    tab name="🐚 shell" {
+        pane split_direction="horizontal" {
+            // Main shell for general tasks
+            pane size="70%" {
+                name "main-shell"
+                command "bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🐚 Development Shell'; echo '━━━━━━━━━━━━━━━━━━━━'; echo 'General purpose shell for development tasks'; echo ''; echo '📁 Current directory:' $(pwd); echo ''; echo '🛠️  Common Development Commands:'; echo '  • ls -la              # List files'; echo '  • find . -name \"*.py\" # Find files'; echo '  • rg \"pattern\"        # Search in files'; echo '  • tree                # Show directory tree'; echo '  • which <command>     # Find command location'; echo ''; echo '📦 Package Management:'; echo '  • npm install         # Node.js packages'; echo '  • pip install         # Python packages'; echo '  • cargo build         # Rust packages'; echo '  • go mod tidy         # Go modules'; echo ''; echo '🔧 Build & Test:'; echo '  • make               # Run Makefile'; echo '  • ./build.sh         # Run build script'; echo '  • npm test           # Run tests'; echo ''; echo 'Ready for commands!'; exec bash"
+            }
+            
+            // File explorer and monitoring
+            pane size="30%" {
+                name "file-explorer"
+                command "bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '📁 File Explorer'; echo '━━━━━━━━━━━━━━━'; file_watch() { while true; do clear; echo '📁 File Explorer - $(date +\"%H:%M:%S\")'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo; echo '📂 Current: $(pwd)'; echo; echo '📋 Directory Contents:'; ls -la 2>/dev/null | head -20; echo; if [ $(ls -la 2>/dev/null | wc -l) -gt 20 ]; then echo '... (showing first 20 items)'; echo; fi; echo '🔍 Quick Navigation:'; echo '  • cd <dir>    # Change directory'; echo '  • ls -la      # List all files'; echo '  • tree        # Show tree view'; echo '  • pwd         # Current path'; echo; echo '🔄 Auto-refresh every 15s | Ctrl+C to interact'; sleep 15; done; }; file_watch"
+            }
+        }
+    }
+}

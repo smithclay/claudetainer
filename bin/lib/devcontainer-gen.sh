@@ -3,40 +3,40 @@
 
 # Function to get current feature version from devcontainer-feature.json
 devcontainer_get_feature_version() {
-	local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-	local feature_json="$script_dir/../../src/claudetainer/devcontainer-feature.json"
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local feature_json="$script_dir/../../src/claudetainer/devcontainer-feature.json"
 
-	if [[ -f "$feature_json" ]]; then
-		node -e "console.log(JSON.parse(require('fs').readFileSync('$feature_json', 'utf8')).version)" 2>/dev/null || echo "unknown"
-	else
-		echo "unknown" # fallback version
-	fi
+    if [[ -f "$feature_json" ]]; then
+        node -e "console.log(JSON.parse(require('fs').readFileSync('$feature_json', 'utf8')).version)" 2>/dev/null || echo "unknown"
+    else
+        echo "unknown" # fallback version
+    fi
 }
 
 # Generate devcontainer.json content for a language
 devcontainer_generate_json() {
-	local lang="$1"
-	local port="$2"
-	local multiplexer="${3:-zellij}"
+    local lang="$1"
+    local port="$2"
+    local multiplexer="${3:-zellij}"
 
-	# Get current feature version
-	local feature_version=$(devcontainer_get_feature_version)
+    # Get current feature version
+    local feature_version=$(devcontainer_get_feature_version)
 
-	# Get language-specific configuration
-	local lang_config=$(config_get_language_config "$lang")
-	local name=$(echo "$lang_config" | grep "^name:" | cut -d: -f2-)
-	local image=$(echo "$lang_config" | grep "^image:" | cut -d: -f2-)
-	local post_create_command=$(echo "$lang_config" | grep "^post_create:" | cut -d: -f2-)
+    # Get language-specific configuration
+    local lang_config=$(config_get_language_config "$lang")
+    local name=$(echo "$lang_config" | grep "^name:" | cut -d: -f2-)
+    local image=$(echo "$lang_config" | grep "^image:" | cut -d: -f2-)
+    local post_create_command=$(echo "$lang_config" | grep "^post_create:" | cut -d: -f2-)
 
-	# Determine claudetainer feature configuration
-	local claudetainer_config
-	if [[ "$lang" == "base" ]]; then
-		claudetainer_config='"includeBase": true, "include": "", "multiplexer": "'${multiplexer}'"'
-	else
-		claudetainer_config='"includeBase": true, "include": "'${lang}'", "multiplexer": "'${multiplexer}'"'
-	fi
+    # Determine claudetainer feature configuration
+    local claudetainer_config
+    if [[ "$lang" == "base" ]]; then
+        claudetainer_config='"includeBase": true, "include": "", "multiplexer": "'${multiplexer}'"'
+    else
+        claudetainer_config='"includeBase": true, "include": "'${lang}'", "multiplexer": "'${multiplexer}'"'
+    fi
 
-	cat <<EOF
+    cat <<EOF
 {
     "name": "${name}",
     "image": "${image}",
@@ -81,37 +81,37 @@ EOF
 
 # Create devcontainer directory and JSON file
 devcontainer_create_config() {
-	local language="$1"
-	local multiplexer="$2"
+    local language="$1"
+    local multiplexer="$2"
 
-	# Check if .devcontainer already exists
-	if [[ -d ".devcontainer" ]]; then
-		ui_print_warning ".devcontainer directory already exists"
-		read -p "Overwrite existing .devcontainer? [y/N]: " -n 1 -r
-		echo
-		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-			ui_print_info "Aborted"
-			return 1
-		fi
-		rm -rf .devcontainer
-	fi
+    # Check if .devcontainer already exists
+    if [[ -d ".devcontainer" ]]; then
+        ui_print_warning ".devcontainer directory already exists"
+        read -p "Overwrite existing .devcontainer? [y/N]: " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            ui_print_info "Aborted"
+            return 1
+        fi
+        rm -rf .devcontainer
+    fi
 
-	# Create .devcontainer directory
-	mkdir -p .devcontainer
+    # Create .devcontainer directory
+    mkdir -p .devcontainer
 
-	# Get or allocate port for this project
-	local port
-	if ! port=$(pm_get_project_port); then
-		ui_print_error "Failed to allocate port for project"
-		return 1
-	fi
+    # Get or allocate port for this project
+    local port
+    if ! port=$(pm_get_project_port); then
+        ui_print_error "Failed to allocate port for project"
+        return 1
+    fi
 
-	# Generate devcontainer.json with allocated port and multiplexer
-	devcontainer_generate_json "$language" "$port" "$multiplexer" >.devcontainer/devcontainer.json
+    # Generate devcontainer.json with allocated port and multiplexer
+    devcontainer_generate_json "$language" "$port" "$multiplexer" >.devcontainer/devcontainer.json
 
-	ui_print_success "Created .devcontainer/devcontainer.json for $language"
-	ui_print_info "Allocated SSH port: $port"
-	ui_print_info "Multiplexer: $multiplexer"
+    ui_print_success "Created .devcontainer/devcontainer.json for $language"
+    ui_print_info "Allocated SSH port: $port"
+    ui_print_info "Multiplexer: $multiplexer"
 
-	return 0
+    return 0
 }

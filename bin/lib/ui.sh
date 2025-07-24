@@ -16,29 +16,29 @@ WRENCH="🔧"
 
 # Print colored output functions
 ui_print_error() {
-	echo -e "${RED}${CROSS} Error: $1${NC}" >&2
+    echo -e "${RED}${CROSS} Error: $1${NC}" >&2
 }
 
 ui_print_success() {
-	echo -e "${GREEN}${CHECKMARK} $1${NC}"
+    echo -e "${GREEN}${CHECKMARK} $1${NC}"
 }
 
 ui_print_info() {
-	echo -e "${BLUE}${ROCKET} $1${NC}"
+    echo -e "${BLUE}${ROCKET} $1${NC}"
 }
 
 ui_print_warning() {
-	echo -e "${YELLOW}${WRENCH} $1${NC}"
+    echo -e "${YELLOW}${WRENCH} $1${NC}"
 }
 
 # Check if a command exists
 ui_command_exists() {
-	command -v "$1" >/dev/null 2>&1
+    command -v "$1" >/dev/null 2>&1
 }
 
 # Show help message
 ui_show_help() {
-	cat <<EOF
+    cat <<EOF
 claudetainer CLI v${VERSION}
 Easy and opinionated Claude Code in a dev container.
 
@@ -92,5 +92,5 @@ EOF
 
 # Show version
 ui_show_version() {
-	echo "claudetainer ${VERSION}"
+    echo "claudetainer ${VERSION}"
 }

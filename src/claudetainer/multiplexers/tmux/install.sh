@@ -13,51 +13,51 @@ TMUX_CONFIG_FILE="${TARGET_HOME:-$HOME}/.tmux.conf"
 
 # Check if tmux is available
 is_multiplexer_available() {
-	command -v tmux >/dev/null 2>&1
+    command -v tmux >/dev/null 2>&1
 }
 
 # Install tmux (usually pre-installed in most containers)
 install_tmux_binary() {
-	if is_multiplexer_available; then
-		log_info "tmux already available: $(tmux -V)"
-		return 0
-	fi
+    if is_multiplexer_available; then
+        log_info "tmux already available: $(tmux -V)"
+        return 0
+    fi
 
-	log_info "tmux not found - attempting to install..."
+    log_info "tmux not found - attempting to install..."
 
-	# Try different package managers with proper error handling
-	local install_success=false
+    # Try different package managers with proper error handling
+    local install_success=false
 
-	if command -v apt-get >/dev/null 2>&1; then
-		if sudo apt-get update >/dev/null 2>&1 && sudo apt-get install -y tmux >/dev/null 2>&1; then
-			install_success=true
-		fi
-	elif command -v yum >/dev/null 2>&1; then
-		if sudo yum install -y tmux >/dev/null 2>&1; then
-			install_success=true
-		fi
-	elif command -v apk >/dev/null 2>&1; then
-		if sudo apk add --no-cache tmux >/dev/null 2>&1; then
-			install_success=true
-		fi
-	fi
+    if command -v apt-get >/dev/null 2>&1; then
+        if sudo apt-get update >/dev/null 2>&1 && sudo apt-get install -y tmux >/dev/null 2>&1; then
+            install_success=true
+        fi
+    elif command -v yum >/dev/null 2>&1; then
+        if sudo yum install -y tmux >/dev/null 2>&1; then
+            install_success=true
+        fi
+    elif command -v apk >/dev/null 2>&1; then
+        if sudo apk add --no-cache tmux >/dev/null 2>&1; then
+            install_success=true
+        fi
+    fi
 
-	if [ "$install_success" = true ]; then
-		log_success "tmux installed successfully"
-		return 0
-	else
-		log_warning "Could not install tmux automatically"
-		log_warning "Please install tmux manually or use a different multiplexer"
-		log_warning "For devcontainer, add: \"ghcr.io/duduribeiro/devcontainer-features/tmux:1\""
-		return 1
-	fi
+    if [ "$install_success" = true ]; then
+        log_success "tmux installed successfully"
+        return 0
+    else
+        log_warning "Could not install tmux automatically"
+        log_warning "Please install tmux manually or use a different multiplexer"
+        log_warning "For devcontainer, add: \"ghcr.io/duduribeiro/devcontainer-features/tmux:1\""
+        return 1
+    fi
 }
 
 # Create tmux configuration
 create_tmux_config() {
-	log_info "Creating tmux configuration..."
+    log_info "Creating tmux configuration..."
 
-	cat >"$TMUX_CONFIG_FILE" <<'EOF'
+    cat >"$TMUX_CONFIG_FILE" <<'EOF'
 # Claudetainer tmux Configuration
 # Optimized for remote Claude Code development
 
@@ -143,19 +143,19 @@ set -g status-right '#[fg=#D8DEE9]%Y-%m-%d #[fg=#88C0D0,bold]%H:%M'
 set -g message-style 'bg=#EBCB8B fg=#2E3440 bold'
 EOF
 
-	log_success "Created tmux configuration at $TMUX_CONFIG_FILE"
+    log_success "Created tmux configuration at $TMUX_CONFIG_FILE"
 }
 
 # Setup auto-start for SSH sessions
 setup_auto_start() {
-	local target_home="${TARGET_HOME:-$HOME}"
-	local bashrc="$target_home/.bashrc"
+    local target_home="${TARGET_HOME:-$HOME}"
+    local bashrc="$target_home/.bashrc"
 
-	log_info "Setting up tmux auto-start..."
+    log_info "Setting up tmux auto-start..."
 
-	# Create the auto-start script
-	mkdir -p "$target_home/.claude/scripts"
-	cat >"$target_home/.claude/scripts/bashrc-multiplexer.sh" <<'EOF'
+    # Create the auto-start script
+    mkdir -p "$target_home/.claude/scripts"
+    cat >"$target_home/.claude/scripts/bashrc-multiplexer.sh" <<'EOF'
 #!/usr/bin/env bash
 
 # bashrc-multiplexer.sh - Auto-start tmux session for remote connections
@@ -188,27 +188,27 @@ if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]] && 
 fi
 EOF
 
-	# Append to bashrc if not already present
-	if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2>/dev/null; then
-		echo "" >>"$bashrc"
-		echo "# Claudetainer: Auto-start multiplexer session for remote connections" >>"$bashrc"
-		echo "source ~/.claude/scripts/bashrc-multiplexer.sh" >>"$bashrc"
-		log_success "Added tmux auto-start to ~/.bashrc"
-	else
-		log_info "tmux auto-start already configured in ~/.bashrc"
-	fi
+    # Append to bashrc if not already present
+    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2>/dev/null; then
+        echo "" >>"$bashrc"
+        echo "# Claudetainer: Auto-start multiplexer session for remote connections" >>"$bashrc"
+        echo "source ~/.claude/scripts/bashrc-multiplexer.sh" >>"$bashrc"
+        log_success "Added tmux auto-start to ~/.bashrc"
+    else
+        log_info "tmux auto-start already configured in ~/.bashrc"
+    fi
 }
 
 # Main installation function
 install_multiplexer() {
-	if ! install_tmux_binary; then
-		log_error "tmux installation failed - cannot setup tmux multiplexer"
-		return 1
-	fi
+    if ! install_tmux_binary; then
+        log_error "tmux installation failed - cannot setup tmux multiplexer"
+        return 1
+    fi
 
-	create_tmux_config
+    create_tmux_config
 
-	log_success "tmux multiplexer installation complete"
-	log_info "Session will start automatically on SSH login"
-	log_info "Use 'tmux new-session -s claudetainer' to start manually"
+    log_success "tmux multiplexer installation complete"
+    log_info "Session will start automatically on SSH login"
+    log_info "Use 'tmux new-session -s claudetainer' to start manually"
 }

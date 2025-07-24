@@ -3,5 +3,5 @@
 
 # List running containers with details
 cmd_list() {
-	docker_list_containers
+    docker_list_containers
 }

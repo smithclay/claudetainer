@@ -28,8 +28,8 @@ check "merged: settings contains python hooks" grep -q "smart-lint.sh" ~/.claude
 
 # Test hook file override behavior (python smart-lint.sh should override base version)
 if [ -f ~/.claude/hooks/smart-lint.sh ]; then
-	# Python version should contain python-specific content or different content than base
-	echo "✓ smart-lint.sh hook exists (python version should override base)"
+    # Python version should contain python-specific content or different content than base
+    echo "✓ smart-lint.sh hook exists (python version should override base)"
 fi
 
 # Test that all expected commands directory has both base and python commands

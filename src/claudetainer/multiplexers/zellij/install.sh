@@ -15,75 +15,75 @@ ZELLIJ_LAYOUTS_DIR="$ZELLIJ_CONFIG_DIR/layouts"
 
 # Check if Zellij is available
 is_multiplexer_available() {
-	command -v zellij >/dev/null 2>&1
+    command -v zellij >/dev/null 2>&1
 }
 
 # Install Zellij
 install_zellij_binary() {
-	if is_multiplexer_available; then
-		log_info "Zellij already installed: $(zellij --version)"
-		return 0
-	fi
+    if is_multiplexer_available; then
+        log_info "Zellij already installed: $(zellij --version)"
+        return 0
+    fi
 
-	log_info "Installing Zellij $ZELLIJ_VERSION..."
+    log_info "Installing Zellij $ZELLIJ_VERSION..."
 
-	# Detect architecture
-	local arch
-	case "$(uname -m)" in
-	x86_64) arch="x86_64-unknown-linux-musl" ;;
-	aarch64 | arm64) arch="aarch64-unknown-linux-musl" ;;
-	*)
-		log_error "Unsupported architecture: $(uname -m)"
-		return 1
-		;;
-	esac
+    # Detect architecture
+    local arch
+    case "$(uname -m)" in
+        x86_64) arch="x86_64-unknown-linux-musl" ;;
+        aarch64 | arm64) arch="aarch64-unknown-linux-musl" ;;
+        *)
+            log_error "Unsupported architecture: $(uname -m)"
+            return 1
+            ;;
+    esac
 
-	# Download and install Zellij
-	local download_url="https://github.com/zellij-org/zellij/releases/download/v${ZELLIJ_VERSION}/zellij-${arch}.tar.gz"
-	local temp_dir="/tmp/zellij-install"
+    # Download and install Zellij
+    local download_url="https://github.com/zellij-org/zellij/releases/download/v${ZELLIJ_VERSION}/zellij-${arch}.tar.gz"
+    local temp_dir="/tmp/zellij-install"
 
-	mkdir -p "$temp_dir"
+    mkdir -p "$temp_dir"
 
-	if command -v curl >/dev/null 2>&1; then
-		curl -fsSL "$download_url" | tar -xz -C "$temp_dir"
-	elif command -v wget >/dev/null 2>&1; then
-		wget -qO- "$download_url" | tar -xz -C "$temp_dir"
-	else
-		log_error "Neither curl nor wget found. Cannot download Zellij."
-		return 1
-	fi
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL "$download_url" | tar -xz -C "$temp_dir"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -qO- "$download_url" | tar -xz -C "$temp_dir"
+    else
+        log_error "Neither curl nor wget found. Cannot download Zellij."
+        return 1
+    fi
 
-	# Install binary (try with sudo, fallback to user bin)
-	if sudo mv "$temp_dir/zellij" /usr/local/bin/zellij 2>/dev/null && sudo chmod +x /usr/local/bin/zellij 2>/dev/null; then
-		log_info "Installed Zellij to /usr/local/bin/zellij"
-	else
-		# Fallback to user's bin directory
-		mkdir -p "$HOME/.local/bin"
-		mv "$temp_dir/zellij" "$HOME/.local/bin/zellij"
-		chmod +x "$HOME/.local/bin/zellij"
-		log_info "Installed Zellij to ~/.local/bin/zellij (add to PATH if needed)"
+    # Install binary (try with sudo, fallback to user bin)
+    if sudo mv "$temp_dir/zellij" /usr/local/bin/zellij 2>/dev/null && sudo chmod +x /usr/local/bin/zellij 2>/dev/null; then
+        log_info "Installed Zellij to /usr/local/bin/zellij"
+    else
+        # Fallback to user's bin directory
+        mkdir -p "$HOME/.local/bin"
+        mv "$temp_dir/zellij" "$HOME/.local/bin/zellij"
+        chmod +x "$HOME/.local/bin/zellij"
+        log_info "Installed Zellij to ~/.local/bin/zellij (add to PATH if needed)"
 
-		# Try to add to PATH for current session
-		if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-			export PATH="$HOME/.local/bin:$PATH"
-			echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >>"$HOME/.bashrc"
-		fi
-	fi
+        # Try to add to PATH for current session
+        if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+            export PATH="$HOME/.local/bin:$PATH"
+            echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >>"$HOME/.bashrc"
+        fi
+    fi
 
-	# Cleanup
-	rm -rf "$temp_dir"
+    # Cleanup
+    rm -rf "$temp_dir"
 
-	log_success "Zellij $ZELLIJ_VERSION installed successfully"
+    log_success "Zellij $ZELLIJ_VERSION installed successfully"
 }
 
 # Create Zellij configuration
 create_zellij_config() {
-	log_info "Creating Zellij configuration..."
+    log_info "Creating Zellij configuration..."
 
-	mkdir -p "$ZELLIJ_CONFIG_DIR" "$ZELLIJ_LAYOUTS_DIR"
+    mkdir -p "$ZELLIJ_CONFIG_DIR" "$ZELLIJ_LAYOUTS_DIR"
 
-	# Main configuration file
-	cat >"$ZELLIJ_CONFIG_DIR/config.kdl" <<'EOF'
+    # Main configuration file
+    cat >"$ZELLIJ_CONFIG_DIR/config.kdl" <<'EOF'
 // Claudetainer Zellij Configuration
 // Human-readable configuration for optimal remote development
 
@@ -163,15 +163,19 @@ themes {
 theme "claudetainer"
 EOF
 
-	log_success "Created Zellij configuration at $ZELLIJ_CONFIG_DIR/config.kdl"
+    log_success "Created Zellij configuration at $ZELLIJ_CONFIG_DIR/config.kdl"
 }
 
-# Create Claudetainer layout
-create_claudetainer_layout() {
-	log_info "Creating Claudetainer layout..."
+# Create Claudetainer layouts
+create_claudetainer_layouts() {
+    log_info "Creating Claudetainer layouts..."
 
-	cat >"$ZELLIJ_LAYOUTS_DIR/claudetainer.kdl" <<'EOF'
-// Claudetainer Layout - Optimized for remote Claude Code development
+    # Create layouts directory
+    mkdir -p "$ZELLIJ_LAYOUTS_DIR"
+
+    # Default Claudetainer layout (basic 2-tab)
+    cat >"$ZELLIJ_LAYOUTS_DIR/claudetainer.kdl" <<'EOF'
+// Claudetainer Layout - Basic 2-tab layout for Claude Code development
 layout {
     default_tab_template {
         pane size=1 borderless=true {
@@ -187,7 +191,7 @@ layout {
     tab name="claude" focus=true {
         pane {
             command "bash"
-            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 Welcome to Claudetainer with Zellij!'; echo '💡 Switch tabs: Alt+h/l or Ctrl+t then 1/2'; echo '🚀 Start coding with: claude'; echo '📁 Working directory:' $(pwd); echo; exec bash"
+            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 Welcome to Claudetainer with Zellij!'; echo '💡 Switch tabs: Alt+h/l or Ctrl+t then 1/2/3/4'; echo '🚀 Start coding with: claude'; echo '📁 Working directory:' $(pwd); echo; echo '📋 Available layouts:'; echo '  • claude-dev     # 4-tab enhanced workflow'; echo '  • claude-compact # Minimal 4-tab layout'; echo '  • claudetainer   # This basic 2-tab layout'; echo; exec bash"
         }
     }
     
@@ -201,19 +205,35 @@ layout {
 }
 EOF
 
-	log_success "Created Claudetainer layout at $ZELLIJ_LAYOUTS_DIR/claudetainer.kdl"
+    # Copy enhanced development layout
+    local script_dir="$(dirname "${BASH_SOURCE[0]}")"
+    if [ -f "$script_dir/layouts/claude-dev.kdl" ]; then
+        cp "$script_dir/layouts/claude-dev.kdl" "$ZELLIJ_LAYOUTS_DIR/claude-dev.kdl"
+        log_success "Copied enhanced development layout"
+    fi
+
+    # Copy compact layout
+    if [ -f "$script_dir/layouts/claude-compact.kdl" ]; then
+        cp "$script_dir/layouts/claude-compact.kdl" "$ZELLIJ_LAYOUTS_DIR/claude-compact.kdl"
+        log_success "Copied compact layout"
+    fi
+
+    log_success "Created Claudetainer layouts:"
+    log_info "  • claudetainer    - Basic 2-tab layout"
+    log_info "  • claude-dev      - Enhanced 4-tab development workflow"
+    log_info "  • claude-compact  - Minimal 4-tab layout for small screens"
 }
 
 # Setup auto-start for SSH sessions
 setup_auto_start() {
-	local target_home="${TARGET_HOME:-$HOME}"
-	local bashrc="$target_home/.bashrc"
+    local target_home="${TARGET_HOME:-$HOME}"
+    local bashrc="$target_home/.bashrc"
 
-	log_info "Setting up Zellij auto-start..."
+    log_info "Setting up Zellij auto-start..."
 
-	# Create the auto-start script
-	mkdir -p "$target_home/.claude/scripts"
-	cat >"$target_home/.claude/scripts/bashrc-multiplexer.sh" <<'EOF'
+    # Create the auto-start script
+    mkdir -p "$target_home/.claude/scripts"
+    cat >"$target_home/.claude/scripts/bashrc-multiplexer.sh" <<'EOF'
 #!/usr/bin/env bash
 
 # bashrc-multiplexer.sh - Auto-start Zellij session for remote connections
@@ -221,38 +241,88 @@ setup_auto_start() {
 
 # Only run for interactive, remote SSH sessions, and not already in Zellij
 if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]] && [[ -z "$ZELLIJ" ]]; then
-    echo "🚀 Starting/attaching to claudetainer session with Zellij..."
-    # Check if claudetainer session exists, attach if it does, create with layout if not
-    if zellij list-sessions 2>/dev/null | grep -q "claudetainer"; then
-        echo "🔗 Attaching to existing claudetainer session..."
-        exec zellij attach claudetainer
+    
+    # Function to start regular shell with helpful message
+    start_fallback_shell() {
+        local reason="$1"
+        echo "⚠️  Zellij startup failed: $reason"
+        echo "🐚 Falling back to regular shell..."
+        echo "💡 You can try manually: zellij --layout claude-dev --session claudetainer"
+        echo "🔧 Or use basic shell commands as normal"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "📁 Working directory: $(pwd)"
+        echo "🚀 Ready for development!"
+        echo ""
+        # Continue with normal shell - do NOT exec to avoid terminating session
+        return 0
+    }
+    
+    # Check if Zellij is available
+    if ! command -v zellij >/dev/null 2>&1; then
+        start_fallback_shell "Zellij not installed or not in PATH"
     else
-        echo "🆕 Creating new claudetainer session with layout..."
-        exec zellij --new-session-with-layout claudetainer -s claudetainer
+        echo "🚀 Starting/attaching to claudetainer session with Zellij..."
+        
+        # Check if claudetainer session exists, attach if it does
+        if zellij list-sessions 2>/dev/null | grep -q "claudetainer"; then
+            echo "🔗 Attaching to existing claudetainer session..."
+            # Try to attach, fallback to shell if it fails
+            if ! zellij attach claudetainer 2>/dev/null; then
+                start_fallback_shell "Failed to attach to existing session"
+            fi
+        else
+            echo "🆕 Creating new claudetainer session with enhanced layout..."
+            echo "💡 Available layouts: claudetainer (basic), claude-dev (enhanced), claude-compact (minimal)"
+            
+            # Determine which layout to use
+            local layout_to_use="claudetainer"
+            if [ -f ~/.config/zellij/layouts/claude-dev.kdl ]; then
+                layout_to_use="claude-dev"
+                echo "✅ Using enhanced development layout (claude-dev)"
+            else
+                echo "ℹ️  Enhanced layout not found, using basic layout (claudetainer)"
+            fi
+            
+            # Try to start new session with error handling
+            if ! zellij --new-session-with-layout "$layout_to_use" -s claudetainer 2>/dev/null; then
+                # If layout fails, try basic layout
+                if [ "$layout_to_use" = "claude-dev" ]; then
+                    echo "⚠️  Enhanced layout failed, trying basic layout..."
+                    if ! zellij --new-session-with-layout claudetainer -s claudetainer 2>/dev/null; then
+                        start_fallback_shell "Both enhanced and basic layouts failed"
+                    fi
+                else
+                    start_fallback_shell "Basic layout failed to start"
+                fi
+            fi
+        fi
     fi
 fi
 EOF
 
-	# Append to bashrc if not already present
-	if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2>/dev/null; then
-		{
-			echo ""
-			echo "# Claudetainer: Auto-start multiplexer session for remote connections"
-			echo "source ~/.claude/scripts/bashrc-multiplexer.sh"
-		} >>"$bashrc"
-		log_success "Added Zellij auto-start to ~/.bashrc"
-	else
-		log_info "Zellij auto-start already configured in ~/.bashrc"
-	fi
+    # Append to bashrc if not already present
+    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2>/dev/null; then
+        {
+            echo ""
+            echo "# Claudetainer: Auto-start multiplexer session for remote connections"
+            echo "source ~/.claude/scripts/bashrc-multiplexer.sh"
+        } >>"$bashrc"
+        log_success "Added Zellij auto-start to ~/.bashrc"
+    else
+        log_info "Zellij auto-start already configured in ~/.bashrc"
+    fi
 }
 
 # Main installation function
 install_multiplexer() {
-	install_zellij_binary
-	create_zellij_config
-	create_claudetainer_layout
+    install_zellij_binary
+    create_zellij_config
+    create_claudetainer_layouts
 
-	log_success "Zellij multiplexer installation complete"
-	log_info "Session will start automatically on SSH login"
-	log_info "Use 'zellij --layout claudetainer --session claudetainer' to start manually"
+    log_success "Zellij multiplexer installation complete"
+    log_info "Session will start automatically on SSH login"
+    log_info "Available layouts:"
+    log_info "  • zellij --layout claudetainer --session claudetainer    # Basic 2-tab"
+    log_info "  • zellij --layout claude-dev --session claudetainer      # Enhanced 4-tab"
+    log_info "  • zellij --layout claude-compact --session claudetainer  # Compact 4-tab"
 }

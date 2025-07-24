@@ -1,0 +1,46 @@
+// Claude Code Compact Layout - Optimized for smaller screens
+// Four-tab layout with minimal UI for efficient space usage
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:compact-bar"
+        }
+        children
+    }
+    
+    // Tab 1: Claude Code - Simplified main workspace
+    tab name="🤖" focus=true {
+        pane {
+            name "claude"
+            command "bash"
+            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 Claude Code (Compact Mode)'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo '💡 Alt+h/l: Switch tabs | Ctrl+p: Panes'; echo '📁 $(pwd)'; echo; exec bash"
+        }
+    }
+    
+    // Tab 2: Cost - Single pane usage monitor
+    tab name="💰" {
+        pane {
+            name "usage"
+            command "bash"
+            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '💰 Usage Monitor'; echo '━━━━━━━━━━━━━━━'; if command -v npx >/dev/null 2>&1; then npx ccusage; else echo '❌ ccusage not available'; echo '📊 Check: https://console.anthropic.com'; exec bash; fi"
+        }
+    }
+    
+    // Tab 3: Git - Minimal git interface
+    tab name="🌲" {
+        pane {
+            name "git"
+            command "bash"
+            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🌲 Git Status'; echo '━━━━━━━━━━━━'; git status --short 2>/dev/null || echo 'Not a git repo'; echo; git log --oneline -5 2>/dev/null || echo 'No commits'; echo; echo '⚡ Ready for git commands'; exec bash"
+        }
+    }
+    
+    // Tab 4: Shell - Simple shell
+    tab name="🐚" {
+        pane {
+            name "shell"
+            command "bash"
+            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🐚 Shell'; echo '━━━━━━━'; echo '📁 $(pwd)'; exec bash"
+        }
+    }
+}

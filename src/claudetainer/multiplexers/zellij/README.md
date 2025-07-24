@@ -1,0 +1,131 @@
+# Zellij Layouts for Claude Code Development
+
+This directory contains Zellij layout configurations optimized for Claude Code development workflows.
+
+## Available Layouts
+
+### 🤖 claude-dev.kdl (Enhanced Development Layout)
+**Default for new sessions** - A comprehensive 4-tab workflow with split panes:
+
+- **🤖 claude** (Tab 1) - Main development workspace
+  - Primary Claude Code terminal (70% width)
+  - Quick commands reference (30% width)
+- **💰 cost** (Tab 2) - Usage and resource monitoring  
+  - Real-time Claude Code usage via ccusage (60% height)
+  - System resources monitor (40% height)
+- **🌲 git** (Tab 3) - Interactive git operations
+  - Auto-refreshing git status and log (50% width)
+  - Git commands reference and shell (50% width)
+- **🐚 shell** (Tab 4) - General development tasks
+  - Main shell for development (70% height)
+  - File explorer with auto-refresh (30% height)
+
+### 📱 claude-compact.kdl (Compact Layout)
+**For smaller screens** - Minimal 4-tab layout with single panes:
+
+- **🤖** - Claude Code workspace (simplified)
+- **💰** - Usage monitor only
+- **🌲** - Basic git status
+- **🐚** - Simple shell
+
+### 🏠 claudetainer.kdl (Basic Layout)
+**Simple 2-tab layout** for basic needs:
+
+- **claude** - Main development workspace
+- **usage** - Usage monitoring via ccusage
+
+## Key Features
+
+### Navigation
+- **Alt+h/l** or **Alt+←/→** - Quick tab switching
+- **Alt+j/k** or **Alt+↓/↑** - Pane navigation within tabs
+- **Ctrl+t** - Tab management mode
+- **Ctrl+p** - Pane management mode
+
+### Development Features
+- **Auto-start on SSH login** with enhanced layout by default
+- **Real-time monitoring** of Claude Code usage and system resources
+- **Interactive git operations** with auto-refreshing status
+- **Quick command references** in dedicated panes
+- **File explorer** with automatic refresh
+- **Professional dark theme** (Nord-inspired)
+
+### Usage Monitoring
+- **ccusage integration** for real-time Claude Code usage tracking
+- **System resource monitoring** (memory, disk, CPU)
+- **Cost awareness** with usage patterns and estimates
+
+### Git Integration
+- **Auto-refreshing git status** showing current state
+- **Recent commit history** with graph visualization
+- **Git command reference** with common operations
+- **Branch and staging information**
+
+## Usage
+
+### Starting Sessions
+```bash
+# Auto-start (enhanced layout by default)
+ssh into container  # Automatically uses claude-dev layout
+
+# Manual start with specific layout
+zellij --layout claude-dev --session claudetainer      # Enhanced 4-tab
+zellij --layout claude-compact --session claudetainer  # Compact 4-tab  
+zellij --layout claudetainer --session claudetainer    # Basic 2-tab
+```
+
+### Switching Layouts
+```bash
+# From within Zellij
+Ctrl+t → n → type layout name
+
+# Or start new session
+zellij --layout claude-compact --session dev-compact
+```
+
+### Layout Selection Guide
+- **claude-dev** - Best for development with monitoring and git workflow
+- **claude-compact** - Best for small screens or minimal setups
+- **claudetainer** - Best for simple Claude Code usage
+
+## Customization
+
+### Modifying Layouts
+Edit the `.kdl` files in `~/.config/zellij/layouts/` after installation:
+
+```bash
+# Edit enhanced layout
+nano ~/.config/zellij/layouts/claude-dev.kdl
+
+# Edit compact layout  
+nano ~/.config/zellij/layouts/claude-compact.kdl
+
+# Edit basic layout
+nano ~/.config/zellij/layouts/claudetainer.kdl
+```
+
+### Configuration
+Main Zellij configuration at `~/.config/zellij/config.kdl` includes:
+- Professional dark theme (Nord-inspired)
+- Optimized keybindings for development
+- Mouse support for easier navigation
+- System clipboard integration
+- Session persistence
+
+## Dependencies
+
+- **Zellij 0.42.0+** - Modern terminal multiplexer
+- **ccusage** - Claude Code usage monitoring (npm package)
+- **git** - Version control operations
+- **Standard UNIX tools** - ls, ps, top, df, free
+
+## Tips
+
+1. **Use Alt+h/l** for fastest tab switching
+2. **Ctrl+C in monitoring panes** to get interactive shell
+3. **Git tab auto-refreshes** - Ctrl+C for manual operations
+4. **File explorer refreshes** every 15 seconds
+5. **System monitor refreshes** every 5 seconds
+6. **Professional theme** optimized for long coding sessions
+
+The layouts are designed to provide a comprehensive development environment while maintaining the efficiency and elegance that makes Zellij a superior choice for remote development workflows.
