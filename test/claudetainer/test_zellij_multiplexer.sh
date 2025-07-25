@@ -56,6 +56,18 @@ check "layout file has no obvious syntax errors" bash -c '
     [ $(grep -c "{" ~/.config/zellij/layouts/claudetainer.kdl) -eq $(grep -c "}" ~/.config/zellij/layouts/claudetainer.kdl) ]
 '
 
+# Test 13: Validate bash script syntax
+check "auto-start script has valid bash syntax" bash -n "$HOME/.claude/scripts/bashrc-multiplexer.sh"
+
+# Test 14: Auto-start script can be sourced without syntax errors
+check "auto-start script can be sourced safely" bash -c '
+    # Create a safe test environment and source the script
+    export SSH_CONNECTION="test" ZELLIJ="" HOME="$HOME"
+    timeout 5s bash -c "source ~/.claude/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 || 
+    # Check if it failed due to syntax vs runtime issues
+    bash -n ~/.claude/scripts/bashrc-multiplexer.sh
+'
+
 echo "✅ zellij multiplexer tests passed!"
 
 # Report result

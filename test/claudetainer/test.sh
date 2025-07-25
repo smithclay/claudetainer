@@ -27,6 +27,21 @@ check "settings.json contains permissions field" grep -q '"permissions"' ~/.clau
 check "settings.json contains PostToolUse hook" grep -q '"PostToolUse"' ~/.claude/settings.json
 check "settings.json contains PostToolUse hook" grep -q '"Notification"' ~/.claude/settings.json
 
+# Test 6: Validate syntax of generated shell scripts
+check "settings.json is valid JSON" python3 -c "import json; json.load(open('$HOME/.claude/settings.json'))" 2>/dev/null
+
+# Test 7: Check bash syntax of hook scripts
+for hook_script in ~/.claude/hooks/*.sh; do
+    if [ -f "$hook_script" ]; then
+        check "hook script $(basename $hook_script) has valid bash syntax" bash -n "$hook_script"
+    fi
+done
+
+# Test 8: Check multiplexer auto-start script if it exists
+if [ -f ~/.claude/scripts/bashrc-multiplexer.sh ]; then
+    check "auto-start script has valid bash syntax" bash -n ~/.claude/scripts/bashrc-multiplexer.sh
+fi
+
 echo "✅ All tests passed!"
 
 # Report result

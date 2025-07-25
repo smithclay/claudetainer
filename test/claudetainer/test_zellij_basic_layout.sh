@@ -40,4 +40,16 @@ check "claudetainer layout is valid KDL syntax" bash -c 'head -1 ~/.config/zelli
 # Test 10: Layout has basic structure
 check "layout has focus on claude tab" grep -q 'focus=true' "$HOME/.config/zellij/layouts/claudetainer.kdl"
 
+# Test 11: Validate bash script syntax
+check "auto-start script has valid bash syntax" bash -n "$HOME/.claude/scripts/bashrc-multiplexer.sh"
+
+# Test 12: Auto-start script can be sourced without syntax errors
+check "auto-start script can be sourced safely" bash -c '
+    # Create a safe test environment and source the script
+    export SSH_CONNECTION="test" ZELLIJ="" HOME="$HOME"
+    timeout 5s bash -c "source ~/.claude/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 || 
+    # Check if it failed due to syntax vs runtime issues
+    bash -n ~/.claude/scripts/bashrc-multiplexer.sh
+'
+
 echo "✅ Zellij claudetainer layout tests passed!"

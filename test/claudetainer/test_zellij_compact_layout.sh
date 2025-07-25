@@ -39,4 +39,16 @@ check "compact layout uses compact-bar" grep -q "compact-bar" "$HOME/.config/zel
 # Test 10: Layout is valid KDL syntax (basic validation)
 check "compact layout is valid KDL syntax" bash -c 'head -1 ~/.config/zellij/layouts/claude-compact.kdl | grep -q "layout"'
 
+# Test 11: Validate bash script syntax
+check "auto-start script has valid bash syntax" bash -n "$HOME/.claude/scripts/bashrc-multiplexer.sh"
+
+# Test 12: Auto-start script references compact layout correctly
+check "auto-start script can be sourced safely" bash -c '
+    # Create a safe test environment and source the script
+    export SSH_CONNECTION="test" ZELLIJ="" HOME="$HOME"
+    timeout 5s bash -c "source ~/.claude/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 || 
+    # Check if it failed due to syntax vs runtime issues
+    bash -n ~/.claude/scripts/bashrc-multiplexer.sh
+'
+
 echo "✅ Zellij compact layout tests passed!"

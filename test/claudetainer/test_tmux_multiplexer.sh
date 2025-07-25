@@ -24,6 +24,9 @@ check "tmux auto-start script exists" test -f ~/.claude/scripts/bashrc-multiplex
 # Test 5: Check that auto-start script contains tmux-specific code
 check "auto-start script contains tmux commands" grep -q "tmux" ~/.claude/scripts/bashrc-multiplexer.sh
 
+# Test 6: Validate bash script syntax
+check "auto-start script has valid bash syntax" bash -n "$HOME/.claude/scripts/bashrc-multiplexer.sh"
+
 echo "✅ tmux multiplexer tests passed!"
 
 # Report result
