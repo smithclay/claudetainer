@@ -4,7 +4,7 @@ on:
     paths:
       - 'src/claudetainer/**'
       - 'test/claudetainer/**'
-      - 'test/cli/**'
+      - 'cli_test/**'
       - 'bin/**'
       - 'build.sh'
       - 'CLAUDE.md'
@@ -16,7 +16,7 @@ on:
     paths:
       - 'src/claudetainer/**'
       - 'test/claudetainer/**'
-      - 'test/cli/**'
+      - 'cli_test/**'
       - 'bin/**'
       - 'build.sh'
       - 'CLAUDE.md'
@@ -67,11 +67,12 @@ jobs:
         with:
           node-version: '18'
 
-      - name: "Install Docker"
+      - name: "Verify Docker"
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-          sudo systemctl start docker
+          # GitHub Actions runners already have Docker installed
+          docker --version
+          sudo systemctl start docker || echo "Docker already running"
+          # Add user to docker group for access
           sudo usermod -aG docker $USER
 
       - name: "Install DevContainer CLI"
@@ -80,6 +81,6 @@ jobs:
       - name: "Test CLI Full Lifecycle"
         run: |
           # Make test executable
-          chmod +x test/cli/lifecycle.sh
+          chmod +x cli_test/lifecycle.sh
           # Run with built-in retry for Docker startup
-          ./test/cli/lifecycle.sh ./bin/claudetainer
+          ./cli_test/lifecycle.sh ./bin/claudetainer

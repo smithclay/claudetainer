@@ -114,7 +114,7 @@ test-feature:
 ## test-lifecycle: Test CLI full lifecycle (external test)
 test-lifecycle:
 	@echo -e "$(BLUE)🧪 Testing CLI full lifecycle...$(RESET)"
-	@./test/cli/lifecycle.sh ./$(BIN_DIR)/claudetainer
+	@./cli_test/lifecycle.sh ./$(BIN_DIR)/claudetainer
 	@echo -e "$(GREEN)✅ CLI lifecycle test completed$(RESET)"
 
 ## test: Run all tests
@@ -243,7 +243,7 @@ info:
 	@echo -e "Commands: $(shell find $(CMD_DIR) -name "*.sh" 2>/dev/null | wc -l || echo 0) files"
 	@echo -e "Presets: $(shell find $(SRC_DIR)/presets -name "metadata.json" 2>/dev/null | wc -l || echo 0) available"
 	@echo -e "DevContainer Tests: $(shell find $(TEST_DIR) -name "*.sh" 2>/dev/null | wc -l || echo 0) scripts"
-	@echo -e "CLI Tests: $(shell find test/cli -name "*.sh" 2>/dev/null | wc -l || echo 0) scripts"
+	@echo -e "CLI Tests: $(shell find cli_test -name "*.sh" 2>/dev/null | wc -l || echo 0) scripts"
 
 ## debug: Show debug information for troubleshooting
 debug:

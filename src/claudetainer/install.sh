@@ -20,7 +20,11 @@ if ! command -v node >/dev/null || ! command -v npm >/dev/null; then
     echo "Detected package manager: $PKG_MANAGER"
 
     echo "Node.js or npm not found, attempting to install automatically..."
-    install_nodejs "$PKG_MANAGER" || print_nodejs_requirement
+    if ! install_nodejs "$PKG_MANAGER"; then
+        echo "Failed to install Node.js automatically"
+        echo "Please install Node.js manually: https://nodejs.org/"
+        exit 1
+    fi
 fi
 
 # Parse presets to install
