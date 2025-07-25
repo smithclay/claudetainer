@@ -8,7 +8,7 @@
 
 > Production-ish Claude Code workflows, packaged in a friendly [dev container](https://containers.dev/).
 
-Opinionated [Claude Code](https://www.anthropic.com/claude-code) workflows: built-in instructions, slash commands, and hooks for common programming languages with built-in remote session and tmux support. Created for using Claude Code from anywhere (even your phone).
+Opinionated [Claude Code](https://www.anthropic.com/claude-code) workflows: built-in instructions, slash commands, and hooks for common programming languages with built-in remote session and Zellij multiplexer support. Created for using Claude Code from anywhere (even your phone).
 
 claudetainer **doesn't change your system or existing Claude Code configuration**: everything runs inside of an isolated Docker container using Anthrophic's [Claude Code dev container feature](https://github.com/anthropics/devcontainer-features). Opinionated configuration ("presets") are opt-in. You can just use claudetainer as a simple way to isolate Claude Code if you like.
 
@@ -81,9 +81,11 @@ That's it! You now have a fully configured Claude Code development environment w
 - **Automatic language detection** - Python, Node.js, Go, Rust, Shell scripts (PRs welcome for additional languages)
 - **Pre-configured linting** - black, flake8, eslint, gofmt, shellcheck 
 - **Smart formatting** - Fixes code style issues automatically
-- **SSH + tmux** - Remote development with persistent sessions and automatic two-window layout:
-  - **claude** window for development
-  - **usage** window with real-time Claude Code usage monitoring
+- **SSH + Zellij** - Remote development with persistent sessions and configurable layouts:
+  - **claude-dev** layout (default): 4-tab enhanced workflow with split panes
+  - **claude-compact** layout: Minimal 4-tab layout for smaller screens  
+  - **claudetainer** layout: Basic 2-tab layout (claude + usage monitoring)
+  - Custom layout support via `zellij_layout` option
 
 ### **Claude Code Slash Commands**
 - **`/commit`** - Conventional commits with emoji and consistency
@@ -155,7 +157,9 @@ Add to your existing `.devcontainer/devcontainer.json`:
   "features": {
     "ghcr.io/smithclay/claudetainer/claudetainer:latest": {
       "include": "python",
-      "includeBase": true
+      "includeBase": true,
+      "multiplexer": "zellij",
+      "zellij_layout": "claude-dev"
     }
   }
 }
@@ -193,6 +197,65 @@ Now everyone on your team gets the same linting rules, commands, and best practi
 
 More details are in `DEVELOPMENT.md`.
 
+### Multiplexer and Layout Configuration
+
+Claudetainer supports multiple terminal multiplexers with configurable layouts:
+
+#### Multiplexer Options
+
+```json
+{
+  "features": {
+    "claudetainer": {
+      "multiplexer": "zellij"  // zellij (default), tmux, or none
+    }
+  }
+}
+```
+
+- **`zellij`** (default): Modern terminal workspace with intuitive UI and WebAssembly plugins
+- **`tmux`**: Traditional, mature multiplexer with familiar keybindings  
+- **`none`**: Simple bash environment without multiplexer
+
+#### Zellij Layout Options
+
+When using `multiplexer: "zellij"`, customize the layout:
+
+```json
+{
+  "features": {
+    "claudetainer": {
+      "multiplexer": "zellij",
+      "zellij_layout": "claude-dev"  // Layout to use
+    }
+  }
+}
+```
+
+**Bundled Layouts:**
+- **`claude-dev`** (default): Enhanced 4-tab workflow with split panes
+  - 🤖 **claude**: Main development workspace (70% + 30% split for commands)
+  - 💰 **cost**: Usage monitoring + system resources  
+  - 🌲 **git**: Interactive git operations with auto-refresh
+  - 🐚 **shell**: Development tasks + file explorer
+- **`claude-compact`**: Minimal 4-tab layout for smaller screens
+  - Single panes per tab with essential functionality
+- **`claudetainer`**: Basic 2-tab layout (claude + usage)
+
+**Custom Layouts:**
+```json
+{
+  "features": {
+    "claudetainer": {
+      "multiplexer": "zellij", 
+      "zellij_layout": "/path/to/custom-layout.kdl"
+    }
+  }
+}
+```
+
+See the [Zellij layouts documentation](src/claudetainer/multiplexers/zellij/README.md) for creating custom layouts.
+
 ### CLI Commands
 
 Claudetainer provides a complete set of commands for container lifecycle management:
@@ -204,7 +267,7 @@ claudetainer up                 # Start container (creates if missing)
 claudetainer start              # Same as up
 
 # Container management  
-claudetainer ssh                # Connect with tmux session
+claudetainer ssh                # Connect with Zellij session
 claudetainer list               # List running containers (aliases: ps, ls)
 claudetainer rm                 # Remove containers for this project
 claudetainer rm --config        # Also remove .devcontainer directory
@@ -226,7 +289,7 @@ Connect to your container from any terminal:
 claudetainer ssh
 ```
 
-Includes tmux for persistent sessions that survive disconnections: perfect for talking to Claude Code from your iPhone.
+Includes Zellij terminal multiplexer for persistent sessions that survive disconnections, with configurable layouts optimized for different screen sizes: perfect for talking to Claude Code from your iPhone or desktop.
 
 ## Requirements
 

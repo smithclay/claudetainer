@@ -85,15 +85,18 @@ chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
 
 **Generated DevContainer Features:**
 - Claude Code integration (`ghcr.io/anthropics/devcontainer-features/claude-code:1.0`)
-- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.1.3`)
+- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.2.5`)
 - SSH daemon for remote access (`ghcr.io/devcontainers/features/sshd:1`)
 - Tmux for session management (`ghcr.io/duduribeiro/devcontainer-features/tmux:1`) - when using tmux multiplexer
 
 **Shell Multiplexer Support:**
 - **Zellij (default)**: Modern terminal workspace with intuitive UI, floating windows, WebAssembly plugins, and multiplayer collaboration
+  - **Configurable layouts**: claude-dev (enhanced), claude-compact (minimal), claudetainer (basic)
+  - **Custom layout support**: Via `zellij_layout` option with KDL format
+  - **Auto-start integration**: Automatically starts with configured layout on SSH login
 - **tmux**: Traditional, mature multiplexer with familiar keybindings and wide compatibility
 - **none**: Simple bash environment for minimal setups or when multiplexers aren't needed
-- Automatic session management with `claude` and `usage` environments
+- Automatic session management with optimized workspace configuration
 - Consistent interface across all multiplexer options
 
 **Notification System:**
@@ -195,7 +198,7 @@ ls ~/.claude/commands/
 - Standalone `claudetainer` CLI tool at `bin/claudetainer` (v0.1.2)
 - Ergonomic devcontainer management with automatic language detection
 - Dynamic port allocation system (2220-2299 range) with collision avoidance
-- Robust SSH access with tmux integration and session persistence
+- Robust SSH access with Zellij/tmux integration and session persistence
 - Comprehensive health checking via `claudetainer doctor` command
 - Automatic notification channel generation and configuration
 
@@ -350,33 +353,37 @@ claudetainer/
 ## Recent Updates (Latest Session)
 
 **Major Features Added:**
-- ✅ **Shell Multiplexer Abstraction**: Support for Zellij (default), tmux, and none with unified interface
-- ✅ **Zellij Integration**: Modern terminal workspace with KDL configuration, floating windows, and plugins
-- ✅ **Dynamic Port Allocation System**: Hash-based port calculation with collision detection and atomic file operations
-- ✅ **Notification Channel Generation**: Automatic ntfy channel creation with easy-to-type format (claude-projectname-hash)
-- ✅ **Comprehensive Health Checking**: Multi-phase doctor command with 8 diagnostic areas
-- ✅ **Enhanced CLI Tool**: Robust error handling, user guidance, and recovery procedures
-- ✅ **Version Management**: Updated to v0.1.3 with multiplexer support
+- ✅ **Zellij Layout Configuration**: Added `zellij_layout` option to devcontainer feature for custom layout support
+  - **Bundled layouts**: claude-dev (enhanced 4-tab), claude-compact (minimal 4-tab), claudetainer (basic 2-tab)
+  - **Custom layout support**: Specify custom `.kdl` layout files via file path
+  - **Auto-start integration**: Configured layout automatically used on SSH login
+  - **Progressive fallback**: Falls back through available layouts if configured layout fails
+- ✅ **Enhanced Test Coverage**: Fixed all failing test scenarios for layout configuration
+  - Debugged environment variable flow from DevContainer CLI to auto-start scripts
+  - Fixed HERE document variable escaping issues in bash script templates
+  - Resolved function execution order problems in multiplexer installation
+- ✅ **Documentation Updates**: Updated README.md and CLAUDE.md to reflect new layout functionality
+- ✅ **Version Management**: Updated to v0.2.5 with zellij layout configuration support
 
 **Files Modified:**
-- `bin/claudetainer` - Added multiplexer abstraction, Zellij support, and updated CLI interface
-- `src/claudetainer/devcontainer-feature.json` - Version bump to 0.1.3 with multiplexer option
-- `src/claudetainer/install.sh` - Replaced tmux-specific logic with multiplexer abstraction
-- `src/claudetainer/multiplexers/` - New directory structure with Zellij, tmux, and none implementations
-- `CLAUDE.md` - Updated documentation to reflect multiplexer architecture
-- Removed old tmux-specific files for clean implementation
+- `src/claudetainer/devcontainer-feature.json` - Added `zellij_layout` option and version bump to 0.2.5
+- `src/claudetainer/multiplexers/zellij/install.sh` - Fixed auto-start script generation with proper variable substitution
+- `src/claudetainer/multiplexers/zellij/layouts/claude-compact.kdl` - Fixed KDL syntax for test compatibility
+- `test/claudetainer/test_*.sh` - All Zellij layout tests now passing
+- `README.md` - Updated to document new layout configuration options
+- `CLAUDE.md` - Updated to reflect latest Zellij layout functionality
 
 **Infrastructure Improvements:**
-- **Multiplexer Abstraction**: Clean interface supporting multiple terminal multiplexers
-- **Zellij as Default**: Modern terminal workspace with superior UX and features
-- **Port Management**: 2220-2299 range with project-specific allocation and persistence
-- **Container Lifecycle**: Automatic notification and multiplexer setup during container startup
-- **Debugging Tools**: Comprehensive diagnostics for all system components
-- **Error Recovery**: Clear guidance and automated fixes for common issues
+- **Layout Configuration System**: Robust handling of custom and bundled Zellij layouts
+- **Environment Variable Flow**: Proper propagation from DevContainer CLI to auto-start scripts
+- **Bash Script Templates**: Fixed HERE document variable escaping for runtime execution
+- **Test Coverage**: Comprehensive validation of layout configuration functionality
+- **Documentation**: Updated to reflect new layout configuration capabilities
+- **Version Management**: Semantic versioning with feature-based releases
 
 **Track session progress:**
-- Major architectural improvements: multiplexer abstraction, Zellij integration, notification system
-- Enhanced user experience: modern terminal workspace, comprehensive debugging, better error messages
-- Infrastructure hardening: clean codebase without backward compatibility, atomic operations
-- Documentation updates: multiplexer architecture, feature comparisons, usage examples
-- Version management: semantic versioning with multiplexer support (v0.1.3)
+- Layout configuration feature: Added `zellij_layout` option with bundled and custom layout support
+- Test debugging and fixes: Resolved all failing test scenarios for layout configuration
+- Environment variable flow fixes: Proper propagation from DevContainer options to auto-start scripts
+- Documentation updates: README.md and CLAUDE.md reflect new layout functionality
+- Version management: Updated to v0.2.5 with Zellij layout configuration support

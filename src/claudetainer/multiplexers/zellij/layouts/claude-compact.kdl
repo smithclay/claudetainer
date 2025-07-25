@@ -1,6 +1,6 @@
+layout {
 // Claude Code Compact Layout - Optimized for smaller screens
 // Four-tab layout with minimal UI for efficient space usage
-layout {
     default_tab_template {
         pane size=1 borderless=true {
             plugin location="zellij:compact-bar"

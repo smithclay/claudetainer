@@ -1,7 +1,7 @@
 {
   "name": "claudetainer",
   "id": "claudetainer",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Opinionated Claude Code workflows via preconfigured hooks and commands",
   "options": {
     "include": {
@@ -26,6 +26,11 @@
       "enum": ["zellij", "tmux", "none"],
       "default": "zellij",
       "description": "Shell multiplexer for remote sessions (zellij=modern, tmux=traditional, none=simple)"
+    },
+    "zellij_layout": {
+      "type": "string",
+      "default": "claude-dev",
+      "description": "Zellij layout to use: bundled layouts (claude-dev, claude-compact, claudetainer) or custom path (/path/to/layout.kdl)"
     }
   }
 }

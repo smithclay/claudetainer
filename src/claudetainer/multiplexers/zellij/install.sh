@@ -166,12 +166,55 @@ EOF
     log_success "Created Zellij configuration at $ZELLIJ_CONFIG_DIR/config.kdl"
 }
 
+# Handle custom layout installation
+handle_custom_layout() {
+    local layout_spec="$1"
+
+    # Check if it's a file path (contains / or starts with .)
+    if [[ "$layout_spec" == *"/"* ]] || [[ "$layout_spec" == "."* ]]; then
+        log_info "Installing custom layout from: $layout_spec"
+
+        # Check if custom layout file exists
+        if [ -f "$layout_spec" ]; then
+            local layout_name
+            layout_name=$(basename "$layout_spec" .kdl)
+            cp "$layout_spec" "$ZELLIJ_LAYOUTS_DIR/${layout_name}.kdl"
+            log_success "Installed custom layout: $layout_name"
+
+            # Update the default layout to use custom one
+            export ZELLIJ_DEFAULT_LAYOUT="$layout_name"
+        else
+            log_warning "Custom layout file not found: $layout_spec"
+            log_info "Falling back to bundled layout: claude-dev"
+            export ZELLIJ_DEFAULT_LAYOUT="claude-dev"
+        fi
+    else
+        # It's a bundled layout name
+        case "$layout_spec" in
+            claude-dev | claude-compact | claudetainer)
+                log_info "Using bundled layout: $layout_spec"
+                export ZELLIJ_DEFAULT_LAYOUT="$layout_spec"
+                ;;
+            *)
+                log_warning "Unknown bundled layout: $layout_spec"
+                log_info "Available bundled layouts: claude-dev, claude-compact, claudetainer"
+                log_info "Falling back to: claude-dev"
+                export ZELLIJ_DEFAULT_LAYOUT="claude-dev"
+                ;;
+        esac
+    fi
+}
+
 # Create Claudetainer layouts
 create_claudetainer_layouts() {
     log_info "Creating Claudetainer layouts..."
 
     # Create layouts directory
     mkdir -p "$ZELLIJ_LAYOUTS_DIR"
+
+    # Handle custom layout if specified
+    local custom_layout="${ZELLIJ_LAYOUT:-claude-dev}"
+    handle_custom_layout "$custom_layout"
 
     # Default Claudetainer layout (basic 2-tab)
     cat >"$ZELLIJ_LAYOUTS_DIR/claudetainer.kdl" <<'EOF'
@@ -233,24 +276,28 @@ setup_auto_start() {
 
     # Create the auto-start script
     mkdir -p "$target_home/.claude/scripts"
-    cat >"$target_home/.claude/scripts/bashrc-multiplexer.sh" <<'EOF'
+    log_info "Setting up Zellij auto-start script..."
+    cat >"$target_home/.claude/scripts/bashrc-multiplexer.sh" <<EOF
 #!/usr/bin/env bash
 
 # bashrc-multiplexer.sh - Auto-start Zellij session for remote connections
 # This gets appended to ~/.bashrc in the container
 
+# Configure default Zellij layout
+export ZELLIJ_DEFAULT_LAYOUT=\"${ZELLIJ_DEFAULT_LAYOUT:-claude-dev}\""
+
 # Only run for interactive, remote SSH sessions, and not already in Zellij
-if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]] && [[ -z "$ZELLIJ" ]]; then
+if [[ \$- == *i* ]] && [[ -n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" ]] && [[ -z "\$ZELLIJ" ]]; then
     
     # Function to start regular shell with helpful message
     start_fallback_shell() {
-        local reason="$1"
-        echo "⚠️  Zellij startup failed: $reason"
+        local reason="\$1"
+        echo "⚠️  Zellij startup failed: \$reason"
         echo "🐚 Falling back to regular shell..."
-        echo "💡 You can try manually: zellij --layout claude-dev --session claudetainer"
+        echo "💡 You can try manually: zellij --layout \${ZELLIJ_DEFAULT_LAYOUT:-claude-dev} --session claudetainer"
         echo "🔧 Or use basic shell commands as normal"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "📁 Working directory: $(pwd)"
+        echo "📁 Working directory: \$(pwd)"
         echo "🚀 Ready for development!"
         echo ""
         # Continue with normal shell - do NOT exec to avoid terminating session
@@ -271,22 +318,30 @@ if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]] && 
                 start_fallback_shell "Failed to attach to existing session"
             fi
         else
-            echo "🆕 Creating new claudetainer session with enhanced layout..."
+            echo "🆕 Creating new claudetainer session with configured layout..."
             echo "💡 Available layouts: claudetainer (basic), claude-dev (enhanced), claude-compact (minimal)"
             
-            # Determine which layout to use
-            local layout_to_use="claudetainer"
-            if [ -f ~/.config/zellij/layouts/claude-dev.kdl ]; then
-                layout_to_use="claude-dev"
-                echo "✅ Using enhanced development layout (claude-dev)"
+            # Determine which layout to use based on configuration
+            local layout_to_use="\${ZELLIJ_DEFAULT_LAYOUT:-claude-dev}"
+            
+            # Check if the configured layout exists
+            if [ -f ~/.config/zellij/layouts/"\$layout_to_use".kdl ]; then
+                echo "✅ Using configured layout: \$layout_to_use"
             else
-                echo "ℹ️  Enhanced layout not found, using basic layout (claudetainer)"
+                # Fallback sequence: claude-dev -> claudetainer
+                if [ -f ~/.config/zellij/layouts/claude-dev.kdl ]; then
+                    layout_to_use="claude-dev"
+                    echo "⚠️  Configured layout not found, falling back to: claude-dev"
+                else
+                    layout_to_use="claudetainer"
+                    echo "ℹ️  Falling back to basic layout: claudetainer"
+                fi
             fi
             
             # Try to start new session with error handling
-            if ! zellij --new-session-with-layout "$layout_to_use" -s claudetainer 2>/dev/null; then
+            if ! zellij --new-session-with-layout "\$layout_to_use" -s claudetainer 2>/dev/null; then
                 # If layout fails, try basic layout
-                if [ "$layout_to_use" = "claude-dev" ]; then
+                if [ "\$layout_to_use" = "claude-dev" ]; then
                     echo "⚠️  Enhanced layout failed, trying basic layout..."
                     if ! zellij --new-session-with-layout claudetainer -s claudetainer 2>/dev/null; then
                         start_fallback_shell "Both enhanced and basic layouts failed"
@@ -320,9 +375,12 @@ install_multiplexer() {
     create_claudetainer_layouts
 
     log_success "Zellij multiplexer installation complete"
-    log_info "Session will start automatically on SSH login"
+    log_info "Session will start automatically on SSH login with layout: ${ZELLIJ_DEFAULT_LAYOUT:-claude-dev}"
     log_info "Available layouts:"
     log_info "  • zellij --layout claudetainer --session claudetainer    # Basic 2-tab"
     log_info "  • zellij --layout claude-dev --session claudetainer      # Enhanced 4-tab"
     log_info "  • zellij --layout claude-compact --session claudetainer  # Compact 4-tab"
+    if [ -n "$ZELLIJ_DEFAULT_LAYOUT" ] && [ "$ZELLIJ_DEFAULT_LAYOUT" != "claude-dev" ]; then
+        log_info "  • zellij --layout $ZELLIJ_DEFAULT_LAYOUT --session claudetainer  # Custom/configured layout"
+    fi
 }

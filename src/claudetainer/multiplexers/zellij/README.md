@@ -4,6 +4,30 @@ This directory contains Zellij layout configurations optimized for Claude Code d
 
 ## Available Layouts
 
+You can specify which layout to use via the `zellij_layout` option in your devcontainer.json:
+
+```json
+{
+  "features": {
+    "ghcr.io/smithclay/claudetainer": {
+      "zellij_layout": "claude-compact"
+    }
+  }
+}
+```
+
+Or provide a custom layout file path:
+
+```json
+{
+  "features": {
+    "ghcr.io/smithclay/claudetainer": {
+      "zellij_layout": "/path/to/my-custom-layout.kdl"
+    }
+  }
+}
+```
+
 ### 🤖 claude-dev.kdl (Enhanced Development Layout)
 **Default for new sessions** - A comprehensive 4-tab workflow with split panes:
 
@@ -87,6 +111,56 @@ zellij --layout claude-compact --session dev-compact
 - **claude-dev** - Best for development with monitoring and git workflow
 - **claude-compact** - Best for small screens or minimal setups
 - **claudetainer** - Best for simple Claude Code usage
+
+## Custom Layouts
+
+### Creating Your Own Layout
+You can create custom Zellij layouts in KDL format and specify them in your devcontainer.json:
+
+1. **Create a custom layout file** (e.g., `my-workflow.kdl`):
+```kdl
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    
+    tab name="main" focus=true {
+        pane {
+            command "bash"
+            args "-c" "echo 'My custom layout!' && exec bash"
+        }
+    }
+}
+```
+
+2. **Reference it in devcontainer.json**:
+```json
+{
+  "features": {
+    "ghcr.io/smithclay/claudetainer": {
+      "zellij_layout": "./custom-layouts/my-workflow.kdl"
+    }
+  }
+}
+```
+
+3. **Layout Resolution**:
+   - **Relative paths**: Resolved relative to the devcontainer build context
+   - **Absolute paths**: Used as-is
+   - **Bundled names**: `claude-dev`, `claude-compact`, `claudetainer`
+   - **Fallback**: If custom layout not found, falls back to `claude-dev`
+
+### Layout Options
+- **`claude-dev`** (default) - Full 4-tab development workflow
+- **`claude-compact`** - Minimal 4-tab layout for small screens
+- **`claudetainer`** - Basic 2-tab layout
+- **Custom path** - Your own `.kdl` layout file
 
 ## Customization
 

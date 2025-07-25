@@ -110,28 +110,53 @@ cmd_up() {
     fi
 
     # Build devcontainer with appropriate options
-    if [[ "$clean_build" == "true" ]]; then
-        ui_print_info "Starting clean devcontainer build (no cache, may take a few minutes)..."
-        if [[ "$verbose" == "true" ]]; then
+    ui_print_info "Starting devcontainer (may take a few minutes on first run)..."
+    echo ""
+    
+    # Run devcontainer command and capture exit code
+    local exit_code=0
+    
+    if [[ "$verbose" == "true" ]]; then
+        # Show all output when verbose
+        if [[ "$clean_build" == "true" ]]; then
             npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container
         else
-            npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container >/dev/null 2>&1
-        fi
-    else
-        ui_print_info "Starting devcontainer (may take a few minutes on first run)..."
-        if [[ "$verbose" == "true" ]]; then
             npx @devcontainers/cli up --workspace-folder .
+        fi
+        exit_code=$?
+    else
+        # Suppress output by default, but show errors
+        if [[ "$clean_build" == "true" ]]; then
+            npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container >/dev/null 2>&1
         else
             npx @devcontainers/cli up --workspace-folder . >/dev/null 2>&1
         fi
-    fi
-
-    # Check if devcontainer command succeeded
-    if [[ $? -ne 0 ]]; then
-        ui_print_error "Failed to start devcontainer"
-        if [[ "$verbose" != "true" ]]; then
-            echo "Run with --verbose to see detailed error output"
+        exit_code=$?
+        
+        # If there was an error, run again to show the error output
+        if [[ $exit_code -ne 0 ]]; then
+            echo ""
+            ui_print_error "❌ DevContainer failed. Running again to show error details..."
+            echo ""
+            if [[ "$clean_build" == "true" ]]; then
+                npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container
+            else
+                npx @devcontainers/cli up --workspace-folder .
+            fi
         fi
+    fi
+    
+    # Check if devcontainer command succeeded
+    if [[ $exit_code -ne 0 ]]; then
+        echo ""
+        ui_print_error "❌ DevContainer failed to start (exit code: $exit_code)"
+        echo ""
+        ui_print_info "💡 Common solutions:"
+        echo "  • Check that Docker is running: docker ps"
+        echo "  • Verify devcontainer.json syntax is valid"
+        echo "  • Try a clean rebuild: claudetainer up --clean"
+        echo "  • Run with verbose output: claudetainer up --verbose"
+        echo ""
         return 1
     fi
 

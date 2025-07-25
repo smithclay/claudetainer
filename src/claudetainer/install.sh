@@ -209,6 +209,7 @@ fi
 
 # Setup multiplexer (zellij, tmux, or none)
 MULTIPLEXER="${MULTIPLEXER:-zellij}"
+ZELLIJ_LAYOUT="${ZELLIJ_LAYOUT:-claude-dev}"
 echo "🔧 Setting up $MULTIPLEXER multiplexer..."
 
 # Validate multiplexer choice
@@ -219,6 +220,12 @@ case "$MULTIPLEXER" in
         MULTIPLEXER="zellij"
         ;;
 esac
+
+# Export zellij layout for multiplexer scripts
+if [ "$MULTIPLEXER" = "zellij" ]; then
+    export ZELLIJ_LAYOUT
+    echo "📋 Using Zellij layout: $ZELLIJ_LAYOUT"
+fi
 
 # Source multiplexer utilities
 # shellcheck source=multiplexers/base.sh
