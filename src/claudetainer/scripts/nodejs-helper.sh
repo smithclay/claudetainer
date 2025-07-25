@@ -51,7 +51,7 @@ install_nodejs() {
     case "$pkg_manager" in
         apt)
             # Debian/Ubuntu - install more recent Node.js LTS
-            install_packages apt "ca-certificates curl gnupg"
+            install_packages apt "ca-certificates" "curl" "gnupg"
             mkdir -p /etc/apt/keyrings
             curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
             echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
@@ -60,11 +60,11 @@ install_nodejs() {
             ;;
         apk)
             # Alpine
-            install_packages apk "nodejs npm"
+            install_packages apk "nodejs" "npm"
             ;;
         dnf)
             # Fedora/RHEL
-            install_packages dnf "nodejs npm"
+            install_packages dnf "nodejs" "npm"
             ;;
         yum)
             # CentOS/RHEL
