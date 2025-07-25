@@ -85,7 +85,7 @@ chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
 
 **Generated DevContainer Features:**
 - Claude Code integration (`ghcr.io/anthropics/devcontainer-features/claude-code:1.0`)
-- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.2.5`)
+- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.2.6`)
 - SSH daemon for remote access (`ghcr.io/devcontainers/features/sshd:1`)
 - Tmux for session management (`ghcr.io/duduribeiro/devcontainer-features/tmux:1`) - when using tmux multiplexer
 
@@ -157,14 +157,24 @@ devcontainer features test .
 ./bin/claudetainer --version          # Test modular
 ./build.sh && ./dist/claudetainer --version  # Test built
 
+# External CLI Lifecycle Testing (27 comprehensive tests)
+./test/cli/lifecycle.sh ./bin/claudetainer  # Test full CLI functionality
+
 # Integration Testing
 ./bin/claudetainer init python        # Test modular CLI
 ./bin/claudetainer up                  # Test container startup
 ./bin/claudetainer ssh                 # Test connection
 
-# CI Testing (automatically runs both)
+# Makefile Testing
+make test-cli                         # Test CLI (modular + built)
+make test-feature                     # Test DevContainer features
+make test-lifecycle                   # Test CLI lifecycle (external)
+make test                            # Run all tests
+
+# CI Testing (automatically runs all)
 # - test-cli job: Tests modular and built versions
 # - test-scenarios job: Tests devcontainer features
+# - test-cli-lifecycle job: Tests external CLI functionality
 
 # Test GitHub preset functionality
 export INCLUDE="github:owner/repo,github:owner/repo/path/preset"
@@ -248,9 +258,14 @@ claudetainer/
 │   │   └── merge-json.js        # JSON merging utility for settings
 │   └── scripts/
 │       └── nodejs-helper.sh     # Node.js installation helper
-└── test/claudetainer/           # Automated tests (DevContainer CLI)
-    ├── test.sh                  # Main test script
-    └── scenarios.json           # Test scenarios for different preset combinations
+├── test/                        # Testing infrastructure
+│   ├── claudetainer/            # DevContainer feature tests
+│   │   ├── test.sh              # Main test script
+│   │   ├── scenarios.json       # Test scenarios for different preset combinations
+│   │   └── test_*.sh           # Individual scenario tests
+│   └── cli/                     # External CLI tests
+│       └── lifecycle.sh         # Comprehensive CLI lifecycle test (27 tests)
+└── tmp/                         # Test artifacts (gitignored)
 ```
 
 ## Coding Standards
@@ -308,10 +323,11 @@ claudetainer/
 ## CI/CD Integration
 
 **GitHub Actions Workflows:**
-- `.github/workflows/test.yaml` - PR testing with DevContainer CLI
-  - Tests claudetainer feature with Node.js 18 base image
-  - Runs all test scenarios automatically
-  - Matrix testing for different preset combinations
+- `.github/workflows/test.yaml` - Comprehensive PR testing
+  - **test-cli job**: Tests modular and built CLI versions
+  - **test-scenarios job**: Tests devcontainer features with Node.js 18 base image
+  - **test-cli-lifecycle job**: Runs external CLI lifecycle test (27 comprehensive tests)
+  - Tests across all test scenarios and preset combinations
 - `.github/workflows/release.yaml` - Automated publishing
   - Tests before deployment
   - Publishes to GitHub Container Registry (GHCR)
@@ -353,37 +369,38 @@ claudetainer/
 ## Recent Updates (Latest Session)
 
 **Major Features Added:**
-- ✅ **Zellij Layout Configuration**: Added `zellij_layout` option to devcontainer feature for custom layout support
-  - **Bundled layouts**: claude-dev (enhanced 4-tab), claude-compact (minimal 4-tab), claudetainer (basic 2-tab)
-  - **Custom layout support**: Specify custom `.kdl` layout files via file path
-  - **Auto-start integration**: Configured layout automatically used on SSH login
-  - **Progressive fallback**: Falls back through available layouts if configured layout fails
-- ✅ **Enhanced Test Coverage**: Fixed all failing test scenarios for layout configuration
-  - Debugged environment variable flow from DevContainer CLI to auto-start scripts
-  - Fixed HERE document variable escaping issues in bash script templates
-  - Resolved function execution order problems in multiplexer installation
-- ✅ **Documentation Updates**: Updated README.md and CLAUDE.md to reflect new layout functionality
-- ✅ **Version Management**: Updated to v0.2.5 with zellij layout configuration support
+- ✅ **External CLI Lifecycle Testing**: Comprehensive 27-test validation system
+  - **Moved to test/cli/**: Relocated external CLI test from root to proper test directory structure
+  - **Makefile Integration**: Added `make test-lifecycle` target and integrated into main `test` target
+  - **CI Integration**: Added dedicated `test-cli-lifecycle` job in GitHub Actions
+  - **macOS Compatibility**: Fixed timeout command issues and directory navigation problems
+  - **Full Coverage**: Tests CLI functionality, language detection, multiplexer configuration, error handling
+- ✅ **Test Infrastructure Improvements**: Enhanced testing organization and reliability
+  - **Separated test types**: DevContainer feature tests vs external CLI tests
+  - **Gitignore updates**: Added tmp/ directory to ignore test artifacts
+  - **Removed legacy tests**: Cleaned up old CLI lifecycle test from scenarios
+- ✅ **Documentation Updates**: Updated CLAUDE.md and file structure documentation
+- ✅ **Version Management**: Maintained v0.2.6 with enhanced testing infrastructure
 
 **Files Modified:**
-- `src/claudetainer/devcontainer-feature.json` - Added `zellij_layout` option and version bump to 0.2.5
-- `src/claudetainer/multiplexers/zellij/install.sh` - Fixed auto-start script generation with proper variable substitution
-- `src/claudetainer/multiplexers/zellij/layouts/claude-compact.kdl` - Fixed KDL syntax for test compatibility
-- `test/claudetainer/test_*.sh` - All Zellij layout tests now passing
-- `README.md` - Updated to document new layout configuration options
-- `CLAUDE.md` - Updated to reflect latest Zellij layout functionality
+- `test/cli/lifecycle.sh` - Moved from root directory, fixed macOS timeout issues and directory navigation
+- `test/claudetainer/scenarios.json` - Removed legacy `test_cli_lifecycle` scenario
+- `.gitignore` - Added tmp/ directory for test artifacts
+- `Makefile` - Added `test-lifecycle` target and updated main `test` target
+- `.github/workflows/test.yaml` - Added `test-cli-lifecycle` job and updated path triggers
+- `CLAUDE.md` - Updated testing strategy, file structure, and CI documentation
 
 **Infrastructure Improvements:**
-- **Layout Configuration System**: Robust handling of custom and bundled Zellij layouts
-- **Environment Variable Flow**: Proper propagation from DevContainer CLI to auto-start scripts
-- **Bash Script Templates**: Fixed HERE document variable escaping for runtime execution
-- **Test Coverage**: Comprehensive validation of layout configuration functionality
-- **Documentation**: Updated to reflect new layout configuration capabilities
-- **Version Management**: Semantic versioning with feature-based releases
+- **Testing Architecture**: Separated DevContainer feature tests from external CLI tests
+- **Test Organization**: Clear separation between container-based and external testing approaches
+- **macOS Compatibility**: Fixed timeout command dependencies and path resolution issues
+- **CI/CD Pipeline**: Three-tier testing with CLI, feature, and lifecycle validation
+- **Error Handling**: Robust directory navigation and cleanup in test scripts
+- **Documentation**: Comprehensive updates to testing strategy and file structure
 
 **Track session progress:**
-- Layout configuration feature: Added `zellij_layout` option with bundled and custom layout support
-- Test debugging and fixes: Resolved all failing test scenarios for layout configuration
-- Environment variable flow fixes: Proper propagation from DevContainer options to auto-start scripts
-- Documentation updates: README.md and CLAUDE.md reflect new layout functionality
-- Version management: Updated to v0.2.5 with Zellij layout configuration support
+- External CLI testing system: Moved comprehensive 27-test CLI validation to proper test directory structure
+- Test infrastructure improvements: Separated DevContainer feature tests from external CLI tests for better organization
+- macOS compatibility fixes: Resolved timeout command dependencies and directory navigation issues
+- CI/CD integration: Added dedicated test-cli-lifecycle job for comprehensive CLI validation in GitHub Actions
+- Documentation updates: Updated CLAUDE.md testing strategy, file structure, and CI documentation to reflect new testing architecture

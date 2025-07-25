@@ -1,3 +1,4 @@
+#!/bin/bash
 # via https://github.com/anthropics/devcontainer-features/blob/main/src/claude-code/install.sh
 
 # Function to detect the package manager and OS type
@@ -19,21 +20,21 @@ detect_package_manager() {
 install_packages() {
     local pkg_manager="$1"
     shift
-    local packages="$@"
+    local packages=("$@")
 
     case "$pkg_manager" in
         apt)
             apt-get update
-            apt-get install -y $packages
+            apt-get install -y "${packages[@]}"
             ;;
         apk)
-            apk add --no-cache $packages
+            apk add --no-cache "${packages[@]}"
             ;;
         dnf | yum)
-            $pkg_manager install -y $packages
+            $pkg_manager install -y "${packages[@]}"
             ;;
         *)
-            echo "WARNING: Unsupported package manager. Cannot install packages: $packages"
+            echo "WARNING: Unsupported package manager. Cannot install packages: ${packages[*]}"
             return 1
             ;;
     esac

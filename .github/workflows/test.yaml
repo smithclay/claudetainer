@@ -4,6 +4,7 @@ on:
     paths:
       - 'src/claudetainer/**'
       - 'test/claudetainer/**'
+      - 'test/cli/**'
       - 'bin/**'
       - 'build.sh'
       - 'CLAUDE.md'
@@ -15,6 +16,7 @@ on:
     paths:
       - 'src/claudetainer/**'
       - 'test/claudetainer/**'
+      - 'test/cli/**'
       - 'bin/**'
       - 'build.sh'
       - 'CLAUDE.md'
@@ -54,3 +56,30 @@ jobs:
 
       - name: "Test All Scenarios"
         run: devcontainer features test .
+
+  test-cli-lifecycle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: "Install Docker"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo usermod -aG docker $USER
+
+      - name: "Install DevContainer CLI"
+        run: npm install -g @devcontainers/cli
+
+      - name: "Test CLI Full Lifecycle"
+        run: |
+          # Make test executable
+          chmod +x test/cli/lifecycle.sh
+          # Run with built-in retry for Docker startup
+          ./test/cli/lifecycle.sh ./bin/claudetainer

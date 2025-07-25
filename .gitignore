@@ -3,3 +3,6 @@
 
 # Build artifacts
 dist/
+
+# Test artifacts
+tmp/

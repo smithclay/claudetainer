@@ -4,7 +4,7 @@
 # Shell to use for commands
 SHELL := /bin/bash
 
-.PHONY: help build test lint fmt clean install uninstall dev check prereqs all test-cli test-feature smoke-test dist
+.PHONY: help build test lint fmt clean install uninstall dev check prereqs all test-cli test-feature test-lifecycle smoke-test dist
 
 # Default target
 .DEFAULT_GOAL := help
@@ -53,6 +53,7 @@ help:
 	@echo -e "$(GREEN)Testing:$(RESET)"
 	@echo -e "  $(YELLOW)test-cli$(RESET)      - Test CLI functionality (modular + built)"
 	@echo -e "  $(YELLOW)test-feature$(RESET)  - Test DevContainer feature"
+	@echo -e "  $(YELLOW)test-lifecycle$(RESET) - Test CLI full lifecycle (external)"
 	@echo -e "  $(YELLOW)smoke-test$(RESET)    - Quick smoke test of CLI"
 	@echo ""
 	@echo -e "$(GREEN)Installation:$(RESET)"
@@ -110,8 +111,14 @@ test-feature:
 		cd $(TEST_DIR) && bash test.sh; \
 	fi
 
+## test-lifecycle: Test CLI full lifecycle (external test)
+test-lifecycle:
+	@echo -e "$(BLUE)🧪 Testing CLI full lifecycle...$(RESET)"
+	@./test/cli/lifecycle.sh ./$(BIN_DIR)/claudetainer
+	@echo -e "$(GREEN)✅ CLI lifecycle test completed$(RESET)"
+
 ## test: Run all tests
-test: test-cli test-feature
+test: test-cli test-feature test-lifecycle
 	@echo -e "$(GREEN)✅ All tests completed$(RESET)"
 
 ## smoke-test: Quick smoke test of CLI
@@ -235,7 +242,8 @@ info:
 	@echo -e "Libraries: $(shell find $(LIB_DIR) -name "*.sh" 2>/dev/null | wc -l || echo 0) files"
 	@echo -e "Commands: $(shell find $(CMD_DIR) -name "*.sh" 2>/dev/null | wc -l || echo 0) files"
 	@echo -e "Presets: $(shell find $(SRC_DIR)/presets -name "metadata.json" 2>/dev/null | wc -l || echo 0) available"
-	@echo -e "Tests: $(shell find $(TEST_DIR) -name "*.sh" 2>/dev/null | wc -l || echo 0) scripts"
+	@echo -e "DevContainer Tests: $(shell find $(TEST_DIR) -name "*.sh" 2>/dev/null | wc -l || echo 0) scripts"
+	@echo -e "CLI Tests: $(shell find test/cli -name "*.sh" 2>/dev/null | wc -l || echo 0) scripts"
 
 ## debug: Show debug information for troubleshooting
 debug:
