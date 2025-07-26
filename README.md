@@ -16,27 +16,6 @@ claudetainer **doesn't change your system or existing Claude Code configuration*
 
 Get up and running in under 60 seconds on Linux, macOS or WSL:
 
-### Option 1: Download Binary (Recommended)
-
-```bash
-# 1. Download and install latest release
-curl -L https://github.com/smithclay/claudetainer/releases/latest/download/claudetainer -o claudetainer
-chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
-
-cd ~/your-project # node, python, go, rust, shell (PRs welcome for others)
-
-# 2. Initialize your project (auto-detects language)
-claudetainer init
-
-# 3. Start your container
-claudetainer up
-
-# 4. Connect via SSH with multiplexer
-claudetainer ssh
-```
-
-### Option 2: Homebrew
-
 ```bash
 # 1. Add the tap and install
 brew tap smithclay/tap
@@ -50,17 +29,11 @@ claudetainer init
 # 3. Start the container  
 claudetainer up
 
-# 4. Connect with full tooling
+# 4. Connect with full tooling and terminal multiplexer
 claudetainer ssh
 
 # Once in the container, navigate to /workspaces and start `claude` in your project directory.
-# Hooks, commands, CLAUDE.md instructions and notifications are automatically configured.
-
-# 5. List running containers
-claudetainer list
-
-# 6. Clean up when done
-claudetainer rm
+# Hooks, commands, CLAUDE.md instructions and push notifications are automatically configured.
 ```
 
 ### Option 2: Direct Download
