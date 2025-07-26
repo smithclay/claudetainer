@@ -33,11 +33,11 @@ log() {
 }
 
 check_tool() {
-    command -v "$1" &> /dev/null
+    command -v "$1" &>/dev/null
 }
 
 check_npx_tool() {
-    npx --version &> /dev/null && npx "$1" --version &> /dev/null 2>&1
+    npx --version &>/dev/null && npx "$1" --version &>/dev/null 2>&1
 }
 
 find_source_files() {
@@ -48,7 +48,7 @@ find_source_files() {
         -not -path "./build/*" \
         -not -path "./.next/*" \
         -not -path "./coverage/*" \
-        2> /dev/null || true
+        2>/dev/null || true
 }
 
 detect_config() {
@@ -95,14 +95,14 @@ format_code() {
     detect_config
 
     # Check if formatting needed
-    if echo "${files}" | xargs npx prettier --check ${prettier_config} &> /dev/null; then
+    if echo "${files}" | xargs npx prettier --check ${prettier_config} &>/dev/null; then
         log "✓ Code already formatted"
         return 0
     fi
 
     # Apply formatting
     log "Applying prettier formatting..."
-    echo "${files}" | xargs npx prettier --write ${prettier_config} &> /dev/null
+    echo "${files}" | xargs npx prettier --write ${prettier_config} &>/dev/null
     format_applied=true
     log "✓ Code formatted"
     return 0
@@ -124,7 +124,7 @@ lint_code() {
 
     detect_config
 
-    if echo "${files}" | xargs npx eslint ${eslint_config} &> /dev/null; then
+    if echo "${files}" | xargs npx eslint ${eslint_config} &>/dev/null; then
         log "✓ No linting issues found"
         return 0
     else
@@ -154,7 +154,7 @@ fix_issues() {
 
     # Apply fixes
     log "Running eslint auto-fixes..."
-    echo "${files}" | xargs npx eslint ${eslint_config} --fix &> /dev/null
+    echo "${files}" | xargs npx eslint ${eslint_config} --fix &>/dev/null
     issues_fixed=true
     log "✓ Auto-fixes applied"
     return 0
@@ -175,7 +175,7 @@ verify_final() {
 
     detect_config
 
-    if echo "${files}" | xargs npx eslint ${eslint_config} &> /dev/null; then
+    if echo "${files}" | xargs npx eslint ${eslint_config} &>/dev/null; then
         log "✓ All issues resolved"
         issues_remaining=false
         return 0

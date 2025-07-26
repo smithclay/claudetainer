@@ -33,7 +33,7 @@ log() {
 }
 
 check_tool() {
-    command -v "$1" &> /dev/null
+    command -v "$1" &>/dev/null
 }
 
 find_shell_files() {
@@ -42,7 +42,7 @@ find_shell_files() {
         # Find .sh files
         find . -name "*.sh" \
             -not -path "./.git/*" \
-            2> /dev/null || true
+            2>/dev/null || true
 
         # Find files with shell shebangs that aren't in .git
         find . -type f -executable \
@@ -55,7 +55,7 @@ find_shell_files() {
             -not -name "*.cpp" \
             -not -name "*.go" \
             -not -name "*.rs" \
-            -exec file {} \; 2> /dev/null |
+            -exec file {} \; 2>/dev/null |
             grep -E "(shell script|bash script)" |
             cut -d: -f1 || true
 
@@ -70,9 +70,9 @@ detect_shell_dialect() {
     local file="$1"
 
     # Check shebang
-    if head -1 "${file}" 2> /dev/null | grep -q "#!/bin/sh"; then
+    if head -1 "${file}" 2>/dev/null | grep -q "#!/bin/sh"; then
         echo "sh"
-    elif head -1 "${file}" 2> /dev/null | grep -q "bash"; then
+    elif head -1 "${file}" 2>/dev/null | grep -q "bash"; then
         echo "bash"
     else
         # Default to bash for .sh files, sh for others
@@ -111,11 +111,11 @@ format_code() {
     # Check if any files need formatting
     while IFS= read -r file; do
         [[ -z "${file}" ]] && continue
-        if ! shfmt -d "${file}" &> /dev/null; then
+        if ! shfmt -d "${file}" &>/dev/null; then
             needs_formatting=true
             break
         fi
-    done <<< "${files}"
+    done <<<"${files}"
 
     if [[ "${needs_formatting}" == "false" ]]; then
         log "✓ Code already formatted"
@@ -131,13 +131,13 @@ format_code() {
 
         case "${dialect}" in
             "bash")
-                shfmt -w -i 4 -bn -ci -sr "${file}" &> /dev/null || true
+                shfmt -w -i 4 -bn -ci -sr "${file}" &>/dev/null || true
                 ;;
             "sh")
-                shfmt -w -i 4 -bn -ci -sr -p "${file}" &> /dev/null || true
+                shfmt -w -i 4 -bn -ci -sr -p "${file}" &>/dev/null || true
                 ;;
         esac
-    done <<< "${files}"
+    done <<<"${files}"
 
     format_applied=true
     log "✓ Code formatted"
@@ -163,11 +163,11 @@ lint_code() {
 
     while IFS= read -r file; do
         [[ -z "${file}" ]] && continue
-        if ! shellcheck "${file}" &> /dev/null; then
+        if ! shellcheck "${file}" &>/dev/null; then
             has_issues=true
             break
         fi
-    done <<< "${files}"
+    done <<<"${files}"
 
     if [[ "${has_issues}" == "false" ]]; then
         log "✓ No linting issues found"
@@ -180,7 +180,7 @@ lint_code() {
             echo "--- Issues in ${file} ---"
             shellcheck "${file}" || true
             echo ""
-        done <<< "${files}"
+        done <<<"${files}"
         issues_remaining=true
         return 1
     fi
@@ -218,8 +218,8 @@ fix_issues() {
         if grep -q '\$[A-Za-z_][A-Za-z0-9_]*' "${file}" &&
             ! grep -q '"\$[A-Za-z_][A-Za-z0-9_]*"' "${file}"; then
             # This is a very conservative fix - only apply in simple cases
-            sed 's/echo \$\([A-Za-z_][A-Za-z0-9_]*\)/echo "$\1"/g' "${file}" > "${temp_file}"
-            if [[ -s "${temp_file}" ]] && diff "${file}" "${temp_file}" &> /dev/null; then
+            sed 's/echo \$\([A-Za-z_][A-Za-z0-9_]*\)/echo "$\1"/g' "${file}" >"${temp_file}"
+            if [[ -s "${temp_file}" ]] && diff "${file}" "${temp_file}" &>/dev/null; then
                 # No changes made, skip
                 rm "${temp_file}"
             else
@@ -229,7 +229,7 @@ fix_issues() {
         else
             rm "${temp_file}"
         fi
-    done <<< "${files}"
+    done <<<"${files}"
 
     if [[ "${fixed_any}" == "true" ]]; then
         issues_fixed=true
@@ -258,11 +258,11 @@ verify_final() {
 
     while IFS= read -r file; do
         [[ -z "${file}" ]] && continue
-        if ! shellcheck "${file}" &> /dev/null; then
+        if ! shellcheck "${file}" &>/dev/null; then
             has_issues=true
             break
         fi
-    done <<< "${files}"
+    done <<<"${files}"
 
     if [[ "${has_issues}" == "false" ]]; then
         log "✓ All issues resolved"
@@ -273,12 +273,12 @@ verify_final() {
         # Show remaining issues
         while IFS= read -r file; do
             [[ -z "${file}" ]] && continue
-            if ! shellcheck "${file}" &> /dev/null; then
+            if ! shellcheck "${file}" &>/dev/null; then
                 echo "--- Remaining issues in ${file} ---"
                 shellcheck "${file}" || true
                 echo ""
             fi
-        done <<< "${files}"
+        done <<<"${files}"
         issues_remaining=true
         return 1
     fi

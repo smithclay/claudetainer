@@ -14,11 +14,11 @@ claudetainer_workspace_nav() {
             if [[ $workspace_count -eq 1 ]]; then
                 # Single workspace directory - navigate to it
                 local workspace_dir="${workspace_dirs[0]}"
-                cd "$workspace_dir" 2> /dev/null
+                cd "$workspace_dir" 2>/dev/null
                 echo "📁 Navigated to workspace: $(basename "$workspace_dir")"
             elif [[ $workspace_count -gt 1 ]]; then
                 # Multiple directories - navigate to /workspaces and list options
-                cd /workspaces 2> /dev/null
+                cd /workspaces 2>/dev/null
                 echo "📁 Multiple workspaces found:"
                 ls -la /workspaces/
                 echo "💡 Use 'cd <workspace-name>' to enter your project"
@@ -27,6 +27,41 @@ claudetainer_workspace_nav() {
                 echo "📁 No workspace directories found in /workspaces"
             fi
         fi
+    fi
+}
+
+# Function to load preset aliases
+claudetainer_load_aliases() {
+    local preset_file="$HOME/.config/claudetainer/installed-presets.txt"
+    local alias_count=0
+
+    # Only load for interactive shells
+    if [[ $- != *i* ]]; then
+        return 0
+    fi
+
+    # Check if preset file exists
+    if [[ ! -f "$preset_file" ]]; then
+        return 0
+    fi
+
+    # Load aliases from each installed preset
+    while IFS= read -r preset_name; do
+        # Skip empty lines
+        [[ -z "$preset_name" ]] && continue
+
+        local alias_file="$HOME/.config/claudetainer/presets/$preset_name/aliases.sh"
+        if [[ -f "$alias_file" ]]; then
+            # Source the alias file safely
+            if source "$alias_file" 2>/dev/null; then
+                ((alias_count++))
+            fi
+        fi
+    done <"$preset_file"
+
+    # Show summary if aliases were loaded
+    if [[ $alias_count -gt 0 ]]; then
+        echo "🔗 Loaded aliases from $alias_count preset(s)"
     fi
 }
 
@@ -55,6 +90,7 @@ claudetainer_welcome() {
     fi
 }
 
-# Execute workspace navigation and welcome
+# Execute workspace navigation, alias loading, and welcome
+claudetainer_load_aliases
 claudetainer_workspace_nav
 claudetainer_welcome

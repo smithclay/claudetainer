@@ -72,7 +72,7 @@ setup_multiplexer() {
     fi
 
     # Call multiplexer-specific installation
-    if command -v install_multiplexer > /dev/null 2>&1; then
+    if command -v install_multiplexer >/dev/null 2>&1; then
         if ! install_multiplexer; then
             log_warning "$multiplexer installation failed, continuing without multiplexer"
             return 0
@@ -83,7 +83,7 @@ setup_multiplexer() {
     fi
 
     # Setup auto-start if function exists
-    if command -v setup_auto_start > /dev/null 2>&1; then
+    if command -v setup_auto_start >/dev/null 2>&1; then
         setup_auto_start
     fi
 
@@ -98,7 +98,7 @@ check_multiplexer() {
         return 1
     fi
 
-    if command -v is_multiplexer_available > /dev/null 2>&1; then
+    if command -v is_multiplexer_available >/dev/null 2>&1; then
         is_multiplexer_available
     else
         log_error "is_multiplexer_available function not found for $multiplexer"
@@ -117,8 +117,8 @@ post_install_multiplexer() {
 
     # Set ownership if running as root
     if [[ "$(whoami)" = "root" ]] && [[ "$TARGET_USER" != "root" ]] && [[ -n "${TARGET_USER:-}" ]]; then
-        chown -R "$TARGET_USER:$TARGET_USER" "$target_home/.config" 2> /dev/null || true
-        chown -R "$TARGET_USER:$TARGET_USER" "$target_home/.claude" 2> /dev/null || true
+        chown -R "$TARGET_USER:$TARGET_USER" "$target_home/.config" 2>/dev/null || true
+        chown -R "$TARGET_USER:$TARGET_USER" "$target_home/.claude" 2>/dev/null || true
     fi
 }
 

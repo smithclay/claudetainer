@@ -44,20 +44,20 @@ if [[ (-n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" || -n "${VSCODE_IPC_HOOK
     # Navigate to workspace directory before starting Zellij
     local workspace_dir=$(get_workspace_dir)
     if [[ "$(pwd)" != "$workspace_dir" ]]; then
-        cd "$workspace_dir" 2> /dev/null && echo "📁 Navigated to: $(basename "$workspace_dir")"
+        cd "$workspace_dir" 2>/dev/null && echo "📁 Navigated to: $(basename "$workspace_dir")"
     fi
 
     # Check if Zellij is available
-    if ! command -v zellij > /dev/null 2>&1; then
+    if ! command -v zellij >/dev/null 2>&1; then
         start_fallback_shell "Zellij not installed or not in PATH"
     else
         echo "🚀 Starting/attaching to claudetainer session with Zellij..."
 
         # Check if claudetainer session exists, attach if it does
-        if zellij list-sessions 2> /dev/null | grep -q "claudetainer"; then
+        if zellij list-sessions 2>/dev/null | grep -q "claudetainer"; then
             echo "🔗 Attaching to existing claudetainer session..."
             # Try to attach, fallback to shell if it fails
-            if ! zellij attach claudetainer 2> /dev/null; then
+            if ! zellij attach claudetainer 2>/dev/null; then
                 start_fallback_shell "Failed to attach to existing session"
             fi
         else
@@ -76,7 +76,7 @@ if [[ (-n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" || -n "${VSCODE_IPC_HOOK
             fi
 
             # Try to start new session with error handling
-            if ! zellij --new-session-with-layout "$layout_to_use" -s claudetainer 2> /dev/null; then
+            if ! zellij --new-session-with-layout "$layout_to_use" -s claudetainer 2>/dev/null; then
                 start_fallback_shell "Starting zellij with layout $layout_to_use failed to start"
             fi
         fi
