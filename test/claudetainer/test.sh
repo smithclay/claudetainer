@@ -38,13 +38,13 @@ for hook_script in ~/.claude/hooks/*.sh; do
 done
 
 # Test 8: Check multiplexer auto-start script if it exists
-if [ -f ~/.claude/scripts/bashrc-multiplexer.sh ]; then
-    check "auto-start script has valid bash syntax" bash -n ~/.claude/scripts/bashrc-multiplexer.sh
+if [ -f ~/.config/claudetainer/scripts/bashrc-multiplexer.sh ]; then
+    check "auto-start script has valid bash syntax" bash -n ~/.config/claudetainer/scripts/bashrc-multiplexer.sh
 fi
 
 # Test 9: Check that gitui was installed to user bin directory
-check "gitui installed to user bin" test -f "$HOME/bin/gitui"
-check "gitui is executable" test -x "$HOME/bin/gitui"
+check "gitui installed to user bin" test -f "$HOME/.local/bin/gitui"
+check "gitui is executable" test -x "$HOME/.local/bin/gitui"
 
 echo "✅ All tests passed!"
 

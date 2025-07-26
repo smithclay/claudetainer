@@ -237,19 +237,18 @@ if ! command -v gitui > /dev/null 2>&1; then
 
         echo "     Downloading gitui for $GITUI_ARCH..."
         if curl -sL "$GITUI_URL" | tar -xz -C "$GITUI_TMP_DIR"; then
-            # Create user bin directory if it doesn't exist
-            mkdir -p "$TARGET_HOME/bin"
+            mkdir -p "$TARGET_HOME/.local/bin"
 
             # Move gitui binary to user's bin directory
-            mv "$GITUI_TMP_DIR/gitui" "$TARGET_HOME/bin/"
-            chmod +x "$TARGET_HOME/bin/gitui"
+            mv "$GITUI_TMP_DIR/gitui" "$TARGET_HOME/.local/bin/"
+            chmod +x "$TARGET_HOME/.local/bin/gitui"
 
             # Fix ownership if needed
             if [ "$(whoami)" = "root" ] && [ "$TARGET_USER" != "root" ] && [ "$TARGET_USER" != "$(whoami)" ]; then
-                chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/bin/gitui" 2> /dev/null || true
+                chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.local/bin/gitui" 2> /dev/null || true
             fi
 
-            echo "     ✓ gitui installed to $TARGET_HOME/bin/gitui"
+            echo "     ✓ gitui installed to $TARGET_HOME/.local/bin/gitui"
         else
             echo "     ⚠️  Failed to download or extract gitui"
         fi
@@ -296,30 +295,30 @@ fi
 # Setup custom workspace navigation and welcome message
 echo "🏠 Setting up workspace navigation and welcome message..."
 
-# Create .claude/scripts directory if it doesn't exist
-mkdir -p "$TARGET_HOME/.claude/scripts"
+# Create .config/claudetainer/scripts directory if it doesn't exist
+mkdir -p "$TARGET_HOME/.config/claudetainer/scripts"
 
 # Install workspace setup script
-cp "scripts/workspace-setup.sh" "$TARGET_HOME/.claude/scripts/workspace-setup.sh" 2>/dev/null || {
+cp "scripts/workspace-setup.sh" "$TARGET_HOME/.config/claudetainer/scripts/workspace-setup.sh" 2> /dev/null || {
     echo "⚠️  Failed to copy workspace setup script (non-critical)"
 }
 
 # Set proper ownership and permissions for workspace setup script
-if [ -f "$TARGET_HOME/.claude/scripts/workspace-setup.sh" ]; then
+if [ -f "$TARGET_HOME/.config/claudetainer/scripts/workspace-setup.sh" ]; then
     if [ "$TARGET_USER" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
-        chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.claude/scripts/workspace-setup.sh" 2> /dev/null || {
+        chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.config/claudetainer/scripts/workspace-setup.sh" 2> /dev/null || {
             echo "⚠️  Could not set ownership for workspace-setup.sh"
         }
     fi
-    chmod +x "$TARGET_HOME/.claude/scripts/workspace-setup.sh"
+    chmod +x "$TARGET_HOME/.config/claudetainer/scripts/workspace-setup.sh"
 fi
 
 # Add workspace setup to bashrc for all SSH sessions
-if ! grep -q "workspace-setup.sh" "$TARGET_HOME/.bashrc" 2>/dev/null; then
+if ! grep -q "workspace-setup.sh" "$TARGET_HOME/.bashrc" 2> /dev/null; then
     {
         echo ""
         echo "# Claudetainer: Workspace navigation and custom welcome"
-        echo "source ~/.claude/scripts/workspace-setup.sh"
+        echo "source ~/.config/claudetainer/scripts/workspace-setup.sh"
     } >> "$TARGET_HOME/.bashrc"
     echo "✅ Added workspace setup to ~/.bashrc"
 else

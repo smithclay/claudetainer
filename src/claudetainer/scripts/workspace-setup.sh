@@ -10,15 +10,15 @@ claudetainer_workspace_nav() {
             # Count directories in /workspaces
             local workspace_dirs=($(find /workspaces -maxdepth 1 -type d ! -path /workspaces))
             local workspace_count=${#workspace_dirs[@]}
-            
+
             if [[ $workspace_count -eq 1 ]]; then
                 # Single workspace directory - navigate to it
                 local workspace_dir="${workspace_dirs[0]}"
-                cd "$workspace_dir" 2>/dev/null
+                cd "$workspace_dir" 2> /dev/null
                 echo "📁 Navigated to workspace: $(basename "$workspace_dir")"
             elif [[ $workspace_count -gt 1 ]]; then
                 # Multiple directories - navigate to /workspaces and list options
-                cd /workspaces 2>/dev/null
+                cd /workspaces 2> /dev/null
                 echo "📁 Multiple workspaces found:"
                 ls -la /workspaces/
                 echo "💡 Use 'cd <workspace-name>' to enter your project"
@@ -55,7 +55,7 @@ claudetainer_welcome() {
         echo "  • Available Memory: $(free -h | awk '/^Mem:/ {print $7}') free"
         echo
         echo "🆘 Help & Debug:"
-        echo "  • ~/.claude/scripts/debug-zellij.sh  # Debug Zellij issues"
+        echo "  • ~/.config/claudetainer/scripts/debug-zellij.sh  # Debug Zellij issues"
         echo "  • claudetainer doctor                # Host-side health check"
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

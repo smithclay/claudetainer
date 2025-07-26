@@ -11,7 +11,7 @@ get_workspace_dir() {
     if [[ -d /workspaces ]]; then
         local workspace_dirs=($(find /workspaces -maxdepth 1 -type d ! -path /workspaces))
         local workspace_count=${#workspace_dirs[@]}
-        
+
         if [[ $workspace_count -eq 1 ]]; then
             echo "${workspace_dirs[0]}"
         else
@@ -23,13 +23,13 @@ get_workspace_dir() {
 }
 
 # Only run for remote SSH sessions (including VS Code terminals), and not already in Zellij
-# Check for SSH connection OR VS Code remote connection, and ensure we have a terminal
-if [[ (-n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" || -n "\${VSCODE_IPC_HOOK_CLI:-}") ]] && [[ -z "\$ZELLIJ" ]] && [[ -t 0 ]]; then
+# Check for SSH connection OR VS Code remote connection
+if [[ (-n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" || -n "${VSCODE_IPC_HOOK_CLI:-}") ]] && [[ -z "$ZELLIJ" ]]; then
 
     # Function to start regular shell with helpful message
     start_fallback_shell() {
-        local reason="\$1"
-        echo "⚠️  Zellij startup failed: \$reason"
+        local reason="$1"
+        echo "⚠️  Zellij startup failed: $reason"
         echo "🐚 Falling back to regular shell..."
         echo "💡 You can try manually: zellij --layout $ZELLIJ_LAYOUT --session claudetainer"
         echo "🔧 Or use basic shell commands as normal"
@@ -44,7 +44,7 @@ if [[ (-n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" || -n "\${VSCODE_IPC_H
     # Navigate to workspace directory before starting Zellij
     local workspace_dir=$(get_workspace_dir)
     if [[ "$(pwd)" != "$workspace_dir" ]]; then
-        cd "$workspace_dir" 2>/dev/null && echo "📁 Navigated to: $(basename "$workspace_dir")"
+        cd "$workspace_dir" 2> /dev/null && echo "📁 Navigated to: $(basename "$workspace_dir")"
     fi
 
     # Check if Zellij is available

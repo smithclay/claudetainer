@@ -25,10 +25,10 @@ check "zellij tablet layout exists" test -f ~/.config/zellij/layouts/tablet.kdl
 check "zellij auto-start configured in bashrc" grep -q "bashrc-multiplexer.sh" ~/.bashrc
 
 # Test 6: Check that auto-start script exists
-check "zellij auto-start script exists" test -f ~/.claude/scripts/bashrc-multiplexer.sh
+check "zellij auto-start script exists" test -f ~/.config/claudetainer/scripts/bashrc-multiplexer.sh
 
 # Test 7: Check that auto-start script contains zellij-specific code
-check "auto-start script contains zellij commands" grep -q "zellij" ~/.claude/scripts/bashrc-multiplexer.sh
+check "auto-start script contains zellij commands" grep -q "zellij" ~/.config/claudetainer/scripts/bashrc-multiplexer.sh
 
 # Test 8: Check that layout contains claude tab
 check "tablet layout contains claude tab" grep -q 'tab name="🤖 claude"' ~/.config/zellij/layouts/tablet.kdl
@@ -57,15 +57,15 @@ check "layout file has no obvious syntax errors" bash -c '
 '
 
 # Test 13: Validate bash script syntax
-check "auto-start script has valid bash syntax" bash -n "$HOME/.claude/scripts/bashrc-multiplexer.sh"
+check "auto-start script has valid bash syntax" bash -n "$HOME/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
 # Test 14: Auto-start script can be sourced without syntax errors
 check "auto-start script can be sourced safely" bash -c '
     # Create a safe test environment and source the script
     export SSH_CONNECTION="test" ZELLIJ="" HOME="$HOME"
-    timeout 5s bash -c "source ~/.claude/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 || 
+    timeout 5s bash -c "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 || 
     # Check if it failed due to syntax vs runtime issues
-    bash -n ~/.claude/scripts/bashrc-multiplexer.sh
+    bash -n ~/.config/claudetainer/scripts/bashrc-multiplexer.sh
 '
 
 echo "✅ zellij multiplexer tests passed!"

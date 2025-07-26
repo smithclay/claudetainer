@@ -25,10 +25,10 @@ check "phone layout exists" test -f "$HOME/.config/zellij/layouts/phone.kdl"
 check "zellij auto-start configured in bashrc" grep -q "bashrc-multiplexer.sh" "$HOME/.bashrc"
 
 # Test 6: Auto-start script exists
-check "zellij auto-start script exists" test -f "$HOME/.claude/scripts/bashrc-multiplexer.sh"
+check "zellij auto-start script exists" test -f "$HOME/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
 # Test 7: Auto-start script contains compact layout configuration
-check "auto-start script references compact layout" grep -q "phone" "$HOME/.claude/scripts/bashrc-multiplexer.sh"
+check "auto-start script references compact layout" grep -q "phone" "$HOME/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
 # Test 8: Compact layout contains expected structure
 check "compact layout contains main tab" grep -q 'tab name="🤖"' "$HOME/.config/zellij/layouts/phone.kdl"
@@ -40,15 +40,15 @@ check "compact layout uses compact-bar" grep -q "compact-bar" "$HOME/.config/zel
 check "compact layout is valid KDL syntax" bash -c 'head -1 ~/.config/zellij/layouts/phone.kdl | grep -q "layout"'
 
 # Test 11: Validate bash script syntax
-check "auto-start script has valid bash syntax" bash -n "$HOME/.claude/scripts/bashrc-multiplexer.sh"
+check "auto-start script has valid bash syntax" bash -n "$HOME/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
 # Test 12: Auto-start script references compact layout correctly
 check "auto-start script can be sourced safely" bash -c '
     # Create a safe test environment and source the script
     export SSH_CONNECTION="test" ZELLIJ="" HOME="$HOME"
-    timeout 5s bash -c "source ~/.claude/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 || 
+    timeout 5s bash -c "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 || 
     # Check if it failed due to syntax vs runtime issues
-    bash -n ~/.claude/scripts/bashrc-multiplexer.sh
+    bash -n ~/.config/claudetainer/scripts/bashrc-multiplexer.sh
 '
 
 echo "✅ Zellij compact layout tests passed!"

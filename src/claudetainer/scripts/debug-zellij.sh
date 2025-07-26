@@ -40,9 +40,9 @@ check_with_details() {
     local command="$2"
     local success_msg="$3"
     local failure_msg="$4"
-    
+
     echo -n "Checking $description... "
-    if eval "$command" >/dev/null 2>&1; then
+    if eval "$command" > /dev/null 2>&1; then
         log_success "$success_msg"
         return 0
     else
@@ -66,7 +66,7 @@ main() {
     echo -e "Shell: $SHELL"
     echo -e "PWD: $(pwd)"
     echo -e "Container ID: $(hostname)"
-    
+
     # Check if we're in SSH session
     if [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]]; then
         log_success "SSH connection detected"
@@ -75,7 +75,7 @@ main() {
     else
         log_warning "No SSH connection detected"
     fi
-    
+
     # Check for VS Code connection
     if [[ -n "${VSCODE_IPC_HOOK_CLI:-}" ]]; then
         log_info "VS Code remote connection detected"
@@ -84,10 +84,10 @@ main() {
 
     # 2. Zellij Installation Check
     log_header "🔧 Zellij Installation"
-    if command -v zellij >/dev/null 2>&1; then
+    if command -v zellij > /dev/null 2>&1; then
         log_success "Zellij binary found at: $(which zellij)"
         echo -e "Version: $(zellij --version)"
-        
+
         # Check if it's executable
         if [[ -x "$(which zellij)" ]]; then
             log_success "Zellij binary is executable"
@@ -102,15 +102,15 @@ main() {
 
     # 3. Configuration Check
     log_header "⚙️  Zellij Configuration"
-    
+
     # Check config directory
     if [[ -d "$HOME/.config/zellij" ]]; then
         log_success "Zellij config directory exists: $HOME/.config/zellij"
-        
+
         # List config contents
         echo -e "Config directory contents:"
         ls -la "$HOME/.config/zellij/"
-        
+
         # Check main config
         if [[ -f "$HOME/.config/zellij/config.kdl" ]]; then
             log_success "Main config file exists"
@@ -118,8 +118,8 @@ main() {
         else
             log_warning "Main config file missing"
         fi
-        
-        # Check layouts directory  
+
+        # Check layouts directory
         if [[ -d "$HOME/.config/zellij/layouts" ]]; then
             log_success "Layouts directory exists"
             echo -e "Available layouts:"
@@ -127,25 +127,25 @@ main() {
         else
             log_error "Layouts directory missing"
         fi
-        
+
     else
         log_error "Zellij config directory missing: $HOME/.config/zellij"
     fi
 
     # 4. Layout Validation
     log_header "📐 Layout File Validation"
-    
+
     local default_layout="${ZELLIJ_LAYOUT:-tablet}"
     echo -e "Default layout: $default_layout"
-    
+
     local layout_file="$HOME/.config/zellij/layouts/${default_layout}.kdl"
     if [[ -f "$layout_file" ]]; then
         log_success "Layout file exists: $layout_file"
         echo -e "Layout file size: $(du -h "$layout_file" | cut -f1)"
-        
+
         # Validate layout syntax
         echo -n "Validating layout syntax... "
-        if zellij --layout "$layout_file" setup --check >/dev/null 2>&1; then
+        if zellij --layout "$layout_file" setup --check > /dev/null 2>&1; then
             log_success "Layout syntax is valid"
         else
             log_error "Layout syntax validation failed"
@@ -154,7 +154,7 @@ main() {
         fi
     else
         log_error "Layout file missing: $layout_file"
-        
+
         # Check for other common layouts
         echo "Looking for alternative layouts:"
         for layout in tablet phone claude-dev claude-compact; do
@@ -167,10 +167,10 @@ main() {
 
     # 5. Bashrc Integration Check
     log_header "🐚 Bashrc Integration"
-    
+
     if [[ -f "$HOME/.bashrc" ]]; then
         log_success "Bashrc exists"
-        
+
         # Check for claudetainer integration
         if grep -q "claudetainer" "$HOME/.bashrc"; then
             log_success "Claudetainer integration found in bashrc"
@@ -179,17 +179,17 @@ main() {
         else
             log_warning "No claudetainer integration found in bashrc"
         fi
-        
+
         # Check for multiplexer script
         if grep -q "bashrc-multiplexer.sh" "$HOME/.bashrc"; then
             log_success "Multiplexer auto-start script referenced"
-            
+
             # Check if the script exists
-            local script_path="$HOME/.claude/scripts/bashrc-multiplexer.sh"
+            local script_path="$HOME/.config/claudetainer/scripts/bashrc-multiplexer.sh"
             if [[ -f "$script_path" ]]; then
                 log_success "Multiplexer script exists: $script_path"
                 echo -e "Script size: $(du -h "$script_path" | cut -f1)"
-                
+
                 # Check script syntax
                 echo -n "Validating script syntax... "
                 if bash -n "$script_path"; then
@@ -209,12 +209,12 @@ main() {
 
     # 6. Environment Variables
     log_header "🌍 Environment Variables"
-    
+
     echo "Zellij-related environment variables:"
     echo -e "ZELLIJ: ${ZELLIJ:-not set}"
     echo -e "ZELLIJ_LAYOUT: ${ZELLIJ_LAYOUT:-not set}"
     echo -e "ZELLIJ_SESSION_NAME: ${ZELLIJ_SESSION_NAME:-not set}"
-    
+
     # Check for conflicting terminal multiplexers
     echo
     echo "Other multiplexer checks:"
@@ -223,17 +223,17 @@ main() {
 
     # 7. Terminal Environment
     log_header "💻 Terminal Environment"
-    
+
     echo -e "TERM: ${TERM:-not set}"
     echo -e "Terminal size: $(tput cols)x$(tput lines) (if supported)"
-    
+
     # Check if we have a TTY
     if [[ -t 0 ]]; then
         log_success "Interactive terminal detected (stdin is a TTY)"
     else
         log_warning "Non-interactive terminal (stdin is not a TTY)"
     fi
-    
+
     if [[ -t 1 ]]; then
         log_success "Output to terminal (stdout is a TTY)"
     else
@@ -242,30 +242,30 @@ main() {
 
     # 8. Process Check
     log_header "🔄 Process Information"
-    
+
     echo "Current running zellij processes:"
     pgrep -fl zellij || echo "No zellij processes found"
-    
+
     echo
     echo "Current shell process tree:"
-    pstree -p $$ 2>/dev/null || ps -ef | grep -E "($$|bash|zellij)" || true
+    pstree -p $$ 2> /dev/null || ps -ef | grep -E "($$|bash|zellij)" || true
 
     # 9. Manual Zellij Test
     log_header "🧪 Manual Zellij Test"
-    
+
     echo "Testing basic zellij functionality..."
-    
+
     # Test zellij help
     echo -n "Testing 'zellij --help'... "
-    if zellij --help >/dev/null 2>&1; then
+    if zellij --help > /dev/null 2>&1; then
         log_success "Help command works"
     else
         log_error "Help command failed"
     fi
-    
+
     # Test zellij setup
     echo -n "Testing 'zellij setup --check'... "
-    if zellij setup --check >/dev/null 2>&1; then
+    if zellij setup --check > /dev/null 2>&1; then
         log_success "Setup check passed"
     else
         log_error "Setup check failed"
@@ -275,7 +275,7 @@ main() {
 
     # 10. Troubleshooting Suggestions
     log_header "💡 Troubleshooting Suggestions"
-    
+
     echo "Based on the checks above, here are some things to try:"
     echo
     echo "1. Manual start test:"
@@ -302,17 +302,17 @@ main() {
 
     # 11. System Resource Check
     log_header "📊 System Resources"
-    
+
     echo "Available memory:"
-    free -h 2>/dev/null || echo "free command not available"
-    
+    free -h 2> /dev/null || echo "free command not available"
+
     echo
     echo "Disk space in home directory:"
-    du -sh "$HOME" 2>/dev/null || echo "du command failed"
-    
+    du -sh "$HOME" 2> /dev/null || echo "du command failed"
+
     echo
     echo "Load average:"
-    uptime 2>/dev/null || echo "uptime command not available"
+    uptime 2> /dev/null || echo "uptime command not available"
 
     # Final summary
     log_header "📝 Summary"
@@ -321,8 +321,8 @@ main() {
     echo
     echo "If you're still having issues, please share this debug output when asking for help."
     echo
-    log_info "You can also try: 'bash -x ~/.claude/scripts/bashrc-multiplexer.sh' for detailed startup tracing"
-    log_info "Quick test: 'source ~/.claude/scripts/bashrc-multiplexer.sh' to test auto-start"
+    log_info "You can also try: 'bash -x ~/.config/claudetainer/scripts/bashrc-multiplexer.sh' for detailed startup tracing"
+    log_info "Quick test: 'source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh' to test auto-start"
 }
 
 # Run the main function

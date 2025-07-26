@@ -159,30 +159,30 @@ setup_auto_start() {
     log_info "Setting up Zellij auto-start..."
 
     # Create the auto-start script with layout substitution
-    mkdir -p "$target_home/.claude/scripts"
+    mkdir -p "$target_home/.config/claudetainer/scripts"
     log_info "Setting up Zellij auto-start script with layout: ${ZELLIJ_DEFAULT_LAYOUT:-tablet}"
-    
+
     # Substitute the layout placeholder in the template
-    sed "s/__ZELLIJ_LAYOUT__/${ZELLIJ_DEFAULT_LAYOUT:-tablet}/g" "multiplexers/zellij/bash-multiplexer.sh" > "$target_home/.claude/scripts/bashrc-multiplexer.sh" || {
+    sed "s/__ZELLIJ_LAYOUT__/${ZELLIJ_DEFAULT_LAYOUT:-tablet}/g" "multiplexers/zellij/bash-multiplexer.sh" > "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" || {
         log_error "Failed to create Zellij auto-start script"
         return 1
     }
-    
+
     # Set proper ownership and permissions
     local target_user="${TARGET_USER:-$(whoami)}"
     if [ "$target_user" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
-        chown "$target_user:$target_user" "$target_home/.claude/scripts/bashrc-multiplexer.sh" 2> /dev/null || {
+        chown "$target_user:$target_user" "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" 2> /dev/null || {
             log_warning "Could not set ownership for bashrc-multiplexer.sh"
         }
     fi
-    chmod +x "$target_home/.claude/scripts/bashrc-multiplexer.sh"
+    chmod +x "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
     # Append to bashrc if not already present
     if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2> /dev/null; then
         {
             echo ""
             echo "# Claudetainer: Auto-start multiplexer session for remote connections"
-            echo "source ~/.claude/scripts/bashrc-multiplexer.sh"
+            echo "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh"
         } >> "$bashrc"
         log_success "Added Zellij auto-start to ~/.bashrc"
     else
