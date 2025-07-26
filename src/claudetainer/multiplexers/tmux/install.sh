@@ -13,7 +13,7 @@ TMUX_CONFIG_FILE="${TARGET_HOME:-$HOME}/.tmux.conf"
 
 # Check if tmux is available
 is_multiplexer_available() {
-    command -v tmux >/dev/null 2>&1
+    command -v tmux > /dev/null 2>&1
 }
 
 # Install tmux (usually pre-installed in most containers)
@@ -28,16 +28,16 @@ install_tmux_binary() {
     # Try different package managers with proper error handling
     local install_success=false
 
-    if command -v apt-get >/dev/null 2>&1; then
-        if sudo apt-get update >/dev/null 2>&1 && sudo apt-get install -y tmux >/dev/null 2>&1; then
+    if command -v apt-get > /dev/null 2>&1; then
+        if sudo apt-get update > /dev/null 2>&1 && sudo apt-get install -y tmux > /dev/null 2>&1; then
             install_success=true
         fi
-    elif command -v yum >/dev/null 2>&1; then
-        if sudo yum install -y tmux >/dev/null 2>&1; then
+    elif command -v yum > /dev/null 2>&1; then
+        if sudo yum install -y tmux > /dev/null 2>&1; then
             install_success=true
         fi
-    elif command -v apk >/dev/null 2>&1; then
-        if sudo apk add --no-cache tmux >/dev/null 2>&1; then
+    elif command -v apk > /dev/null 2>&1; then
+        if sudo apk add --no-cache tmux > /dev/null 2>&1; then
             install_success=true
         fi
     fi
@@ -57,7 +57,7 @@ install_tmux_binary() {
 create_tmux_config() {
     log_info "Creating tmux configuration..."
 
-    cat >"$TMUX_CONFIG_FILE" <<'EOF'
+    cat > "$TMUX_CONFIG_FILE" << 'EOF'
 # Claudetainer tmux Configuration
 # Optimized for remote Claude Code development
 
@@ -155,7 +155,7 @@ setup_auto_start() {
 
     # Create the auto-start script
     mkdir -p "$target_home/.claude/scripts"
-    cat >"$target_home/.claude/scripts/bashrc-multiplexer.sh" <<'EOF'
+    cat > "$target_home/.claude/scripts/bashrc-multiplexer.sh" << 'EOF'
 #!/usr/bin/env bash
 
 # bashrc-multiplexer.sh - Auto-start tmux session for remote connections
@@ -189,10 +189,10 @@ fi
 EOF
 
     # Append to bashrc if not already present
-    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2>/dev/null; then
-        echo "" >>"$bashrc"
-        echo "# Claudetainer: Auto-start multiplexer session for remote connections" >>"$bashrc"
-        echo "source ~/.claude/scripts/bashrc-multiplexer.sh" >>"$bashrc"
+    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2> /dev/null; then
+        echo "" >> "$bashrc"
+        echo "# Claudetainer: Auto-start multiplexer session for remote connections" >> "$bashrc"
+        echo "source ~/.claude/scripts/bashrc-multiplexer.sh" >> "$bashrc"
         log_success "Added tmux auto-start to ~/.bashrc"
     else
         log_info "tmux auto-start already configured in ~/.bashrc"

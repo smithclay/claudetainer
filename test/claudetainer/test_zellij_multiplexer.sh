@@ -18,8 +18,8 @@ check "zellij config directory exists" test -d ~/.config/zellij
 # Test 3: Check that zellij main config exists
 check "zellij configuration exists" test -f ~/.config/zellij/config.kdl
 
-# Test 4: Check that claudetainer layout exists
-check "zellij claudetainer layout exists" test -f ~/.config/zellij/layouts/claudetainer.kdl
+# Test 4: Check that claude-dev layout exists
+check "zellij claude-dev layout exists" test -f ~/.config/zellij/layouts/claude-dev.kdl
 
 # Test 5: Check that auto-start is configured in bashrc
 check "zellij auto-start configured in bashrc" grep -q "bashrc-multiplexer.sh" ~/.bashrc
@@ -31,10 +31,10 @@ check "zellij auto-start script exists" test -f ~/.claude/scripts/bashrc-multipl
 check "auto-start script contains zellij commands" grep -q "zellij" ~/.claude/scripts/bashrc-multiplexer.sh
 
 # Test 8: Check that layout contains claude tab
-check "claudetainer layout contains claude tab" grep -q 'tab name="claude"' ~/.config/zellij/layouts/claudetainer.kdl
+check "claude-dev layout contains claude tab" grep -q 'tab name="🤖 claude"' ~/.config/zellij/layouts/claude-dev.kdl
 
-# Test 9: Check that layout contains usage tab
-check "claudetainer layout contains usage tab" grep -q 'tab name="usage"' ~/.config/zellij/layouts/claudetainer.kdl
+# Test 9: Check that layout contains cost tab
+check "claude-dev layout contains cost tab" grep -q 'tab name="💰 cost"' ~/.config/zellij/layouts/claude-dev.kdl
 
 # Test 10: Validate zellij configuration syntax
 check "zellij main config is valid" bash -c '
@@ -42,18 +42,18 @@ check "zellij main config is valid" bash -c '
     zellij --config ~/.config/zellij/config.kdl setup --check >/dev/null 2>&1
 '
 
-# Test 11: Validate claudetainer layout syntax
-check "claudetainer layout is valid KDL syntax" bash -c '
+# Test 11: Validate claude-dev layout syntax
+check "claude-dev layout is valid KDL syntax" bash -c '
     # Use official Zellij layout validation command
-    zellij --layout ~/.config/zellij/layouts/claudetainer.kdl setup --check >/dev/null 2>&1
+    zellij --layout ~/.config/zellij/layouts/claude-dev.kdl setup --check >/dev/null 2>&1
 '
 
 # Test 12: Check for common KDL syntax errors in layout
 check "layout file has no obvious syntax errors" bash -c '
     # Basic checks for common syntax issues
-    ! grep -q "Cannot have both tabs and panes" ~/.config/zellij/layouts/claudetainer.kdl 2>/dev/null &&
+    ! grep -q "Cannot have both tabs and panes" ~/.config/zellij/layouts/claude-dev.kdl 2>/dev/null &&
     # Check for proper bracket balancing (basic check)
-    [ $(grep -c "{" ~/.config/zellij/layouts/claudetainer.kdl) -eq $(grep -c "}" ~/.config/zellij/layouts/claudetainer.kdl) ]
+    [ $(grep -c "{" ~/.config/zellij/layouts/claude-dev.kdl) -eq $(grep -c "}" ~/.config/zellij/layouts/claude-dev.kdl) ]
 '
 
 # Test 13: Validate bash script syntax

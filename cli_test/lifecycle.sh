@@ -13,16 +13,16 @@ check_prereqs() {
     local missing_optional=()
 
     # Check critical tools (required for core functionality)
-    if ! command -v node >/dev/null 2>&1; then
+    if ! command -v node > /dev/null 2>&1; then
         missing_critical+=("node")
     fi
 
-    if ! command -v docker >/dev/null 2>&1; then
+    if ! command -v docker > /dev/null 2>&1; then
         missing_critical+=("docker")
     fi
 
     # Check optional tools (used for language-specific testing)
-    if ! command -v python3 >/dev/null 2>&1; then
+    if ! command -v python3 > /dev/null 2>&1; then
         missing_optional+=("python3")
     fi
 
@@ -108,7 +108,7 @@ cleanup() {
         if [[ -d "$TEST_BASE_DIR" ]]; then
             for test_dir in "$TEST_BASE_DIR"/*; do
                 if [[ -d "$test_dir" ]]; then
-                    (cd "$test_dir" && "$CLI_BINARY" rm -f 2>/dev/null) || true
+                    (cd "$test_dir" && "$CLI_BINARY" rm -f 2> /dev/null) || true
                 fi
             done
 
@@ -145,7 +145,7 @@ cd "$NODE_TEST_DIR"
 NODE_TEST_DIR="$(pwd)" # Get absolute path
 
 # Create a simple Node.js project
-cat >package.json <<'EOF'
+cat > package.json << 'EOF'
 {
   "name": "test-claudetainer-project",
   "version": "1.0.0",
@@ -157,7 +157,7 @@ cat >package.json <<'EOF'
 }
 EOF
 
-cat >index.js <<'EOF'
+cat > index.js << 'EOF'
 console.log("Hello from claudetainer test!");
 EOF
 
@@ -169,19 +169,19 @@ run_test "devcontainer.json is valid JSON" "node -e \"JSON.parse(require('fs').r
 run_test "devcontainer.json contains claudetainer feature" "grep -q 'claudetainer' .devcontainer/devcontainer.json"
 
 # Test 3: Python project with specific options (if Python is available)
-if command -v python3 >/dev/null 2>&1; then
+if command -v python3 > /dev/null 2>&1; then
     PYTHON_TEST_DIR="$TEST_BASE_DIR/test-python-project"
     mkdir -p "$PYTHON_TEST_DIR"
     cd "$PYTHON_TEST_DIR"
     PYTHON_TEST_DIR="$(pwd)" # Get absolute path
 
     # Create a Python project
-    cat >requirements.txt <<'EOF'
+    cat > requirements.txt << 'EOF'
 flask>=2.0.0
 requests>=2.25.0
 EOF
 
-    cat >app.py <<'EOF'
+    cat > app.py << 'EOF'
 print("Hello from Python claudetainer test!")
 EOF
 
@@ -198,8 +198,8 @@ mkdir -p "$TMUX_TEST_DIR"
 cd "$TMUX_TEST_DIR"
 TMUX_TEST_DIR="$(pwd)" # Get absolute path
 
-echo "#!/bin/bash" >script.sh
-echo "echo 'Shell script test'" >>script.sh
+echo "#!/bin/bash" > script.sh
+echo "echo 'Shell script test'" >> script.sh
 
 run_test "CLI init with tmux multiplexer" "printf 'y\\n' | $CLI_BINARY init shell --multiplexer tmux >/dev/null 2>&1"
 run_test "tmux multiplexer configured" "grep -q 'tmux' .devcontainer/devcontainer.json"
@@ -215,7 +215,7 @@ else
 fi
 
 # Test 6: Container lifecycle validation (lightweight tests)
-if command -v docker >/dev/null 2>&1 && docker ps >/dev/null 2>&1 && [[ -d "$NODE_TEST_DIR" ]]; then
+if command -v docker > /dev/null 2>&1 && docker ps > /dev/null 2>&1 && [[ -d "$NODE_TEST_DIR" ]]; then
     log_info "Docker is available - testing container commands (without actually starting containers)"
     cd "$NODE_TEST_DIR"
 

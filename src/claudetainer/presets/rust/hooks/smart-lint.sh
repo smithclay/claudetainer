@@ -33,7 +33,7 @@ log() {
 }
 
 check_tool() {
-    command -v "$1" &>/dev/null
+    command -v "$1" &> /dev/null
 }
 
 find_source_files() {
@@ -41,7 +41,7 @@ find_source_files() {
         -not -path "./target/*" \
         -not -path "./.git/*" \
         -not -path "./vendor/*" \
-        2>/dev/null || true
+        2> /dev/null || true
 }
 
 check_cargo_project() {
@@ -70,14 +70,14 @@ format_code() {
     fi
 
     # Check if formatting needed
-    if cargo fmt --check &>/dev/null; then
+    if cargo fmt --check &> /dev/null; then
         log " Code already formatted"
         return 0
     fi
 
     # Apply formatting
     log "Applying cargo fmt formatting..."
-    cargo fmt &>/dev/null
+    cargo fmt &> /dev/null
     format_applied=true
     log " Code formatted"
     return 0
@@ -98,12 +98,12 @@ lint_code() {
     fi
 
     # Check if clippy is available
-    if ! cargo clippy --version &>/dev/null; then
+    if ! cargo clippy --version &> /dev/null; then
         log "WARNING: cargo clippy not found, skipping lint"
         return 0
     fi
 
-    if cargo clippy --all-targets --all-features -- -D warnings &>/dev/null; then
+    if cargo clippy --all-targets --all-features -- -D warnings &> /dev/null; then
         log " No linting issues found"
         return 0
     else
@@ -131,7 +131,7 @@ fix_issues() {
 
     # Apply fixes using cargo fix
     log "Running cargo fix auto-fixes..."
-    if cargo fix --allow-dirty --allow-staged &>/dev/null; then
+    if cargo fix --allow-dirty --allow-staged &> /dev/null; then
         issues_fixed=true
         log " Auto-fixes applied"
     else
@@ -139,9 +139,9 @@ fix_issues() {
     fi
 
     # Also try clippy fixes
-    if cargo clippy --version &>/dev/null; then
+    if cargo clippy --version &> /dev/null; then
         log "Running cargo clippy --fix..."
-        if cargo clippy --fix --allow-dirty --allow-staged &>/dev/null; then
+        if cargo clippy --fix --allow-dirty --allow-staged &> /dev/null; then
             issues_fixed=true
             log " Clippy auto-fixes applied"
         else
@@ -166,11 +166,11 @@ verify_final() {
     fi
 
     # Check if clippy is available
-    if ! cargo clippy --version &>/dev/null; then
+    if ! cargo clippy --version &> /dev/null; then
         return 0
     fi
 
-    if cargo clippy --all-targets --all-features -- -D warnings &>/dev/null; then
+    if cargo clippy --all-targets --all-features -- -D warnings &> /dev/null; then
         log " All issues resolved"
         issues_remaining=false
         return 0

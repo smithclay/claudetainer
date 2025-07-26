@@ -51,15 +51,5 @@
         "zellij_layout": "claude-compact"
       }
     }
-  },
-  "test_zellij_basic_layout": {
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
-    "user": "node",
-    "features": {
-      "claudetainer": {
-        "multiplexer": "zellij",
-        "zellij_layout": "claudetainer"
-      }
-    }
   }
 }

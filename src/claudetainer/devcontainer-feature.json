@@ -1,7 +1,7 @@
 {
   "name": "claudetainer",
   "id": "claudetainer",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Opinionated Claude Code workflows via preconfigured hooks and commands",
   "options": {
     "include": {
@@ -30,7 +30,7 @@
     "zellij_layout": {
       "type": "string",
       "default": "claude-dev",
-      "description": "Zellij layout to use: bundled layouts (claude-dev, claude-compact, claudetainer) or custom path (/path/to/layout.kdl)"
+      "description": "Zellij layout to use: bundled layouts (claude-dev, claude-compact) or custom path (/path/to/layout.kdl)"
     }
   }
 }

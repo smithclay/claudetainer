@@ -25,7 +25,7 @@ layout {
             pane size="30%" {
                 name "quick-cmds"
                 command "bash" 
-                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ Quick Commands'; echo '━━━━━━━━━━━━━━━━━'; echo 'Development:'; echo '  • claude          # Start Claude Code'; echo '  • make test       # Run tests'; echo '  • make fmt        # Format code'; echo '  • make lint       # Lint code'; echo ''; echo 'Project:'; echo '  • ls -la          # List files'; echo '  • find . -name... # Find files'; echo '  • rg \"pattern\"    # Search code'; echo ''; echo 'Git (see git tab for interactive):'; echo '  • git status      # Check status'; echo '  • git log --oneline -10  # Recent commits'; echo ''; exec bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ Quick Commands'; echo '━━━━━━━━━━━━━━━━━'; echo 'Development:'; echo '  • claude          # Start Claude Code'; echo '  • ~/bin/gitui     # Git interface'; echo '  • git status      # Check status'; echo '  • git log --oneline -10  # Recent commits'; echo ''; exec bash"
             }
         }
     }
@@ -49,21 +49,21 @@ layout {
         }
     }
     
-    // Tab 3: Git Status - Interactive git operations
+    // Tab 3: Git Status - GitUI interface
     tab name="🌲 git" {
         pane split_direction="vertical" {
-            // Git status and log
-            pane size="50%" {
-                name "git-status"
+            // GitUI main interface
+            pane size="70%" {
+                name "gitui-main"
                 command "bash"
-                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🌲 Git Status & Operations'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo; git_loop() { while true; do clear; echo '🌲 Git Status & Log - $(date +\"%H:%M:%S\")'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo; echo '📊 Current Status:'; git status --short 2>/dev/null || echo 'Not a git repository'; echo; echo '📝 Recent Commits (last 8):'; git log --oneline --graph -8 2>/dev/null || echo 'No commits yet'; echo; echo '🌿 Current Branch:'; git branch --show-current 2>/dev/null || echo 'No branch'; echo; echo '🔄 Auto-refresh every 10s | Press Ctrl+C for interactive shell'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; sleep 10; done; }; echo 'Starting git monitoring...'; git_loop"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🌲 GitUI Interface'; echo '━━━━━━━━━━━━━━━━━━'; if [ -f ~/bin/gitui ]; then echo 'Starting GitUI...'; echo 'Press q to quit GitUI and return to shell'; sleep 1; ~/bin/gitui; else echo '❌ GitUI not found at ~/bin/gitui'; echo 'Falling back to git status monitoring...'; git_loop() { while true; do clear; echo '🌲 Git Status & Log - $(date +\"%H:%M:%S\")'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo; echo '📊 Current Status:'; git status --short 2>/dev/null || echo 'Not a git repository'; echo; echo '📝 Recent Commits (last 8):'; git log --oneline --graph -8 2>/dev/null || echo 'No commits yet'; echo; echo '🌿 Current Branch:'; git branch --show-current 2>/dev/null || echo 'No branch'; echo; echo '🔄 Auto-refresh every 10s | Press Ctrl+C for interactive shell'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; sleep 10; done; }; git_loop; fi; exec bash"
             }
             
-            // Git commands and operations
-            pane size="50%" {
-                name "git-commands"
+            // GitUI help and commands
+            pane size="30%" {
+                name "gitui-help"
                 command "bash"
-                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ Git Commands'; echo '━━━━━━━━━━━━━━━'; echo 'Quick Operations:'; echo ''; echo '📋 Status & Info:'; echo '  git status                    # Detailed status'; echo '  git log --oneline -20         # Recent commits'; echo '  git diff                      # Show changes'; echo '  git diff --cached             # Show staged'; echo '  git show HEAD                 # Latest commit'; echo ''; echo '🔄 Basic Operations:'; echo '  git add .                     # Stage all'; echo '  git add <file>                # Stage file'; echo '  git commit -m \"message\"       # Commit'; echo '  git push                      # Push changes'; echo '  git pull                      # Pull updates'; echo ''; echo '🌿 Branching:'; echo '  git branch                    # List branches'; echo '  git checkout -b <name>        # New branch'; echo '  git checkout <branch>         # Switch branch'; echo '  git merge <branch>            # Merge branch'; echo ''; echo '🔍 History & Search:'; echo '  git log --grep=\"text\"         # Search commits'; echo '  git log --author=\"name\"       # By author'; echo '  git blame <file>              # File history'; echo ''; echo '⚡ Ready for git commands!'; exec bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ GitUI Help & Commands'; echo '━━━━━━━━━━━━━━━━━━━━━━'; echo ''; echo '🚀 GitUI Controls:'; echo '  Tab         # Switch views'; echo '  Enter       # Select/Open'; echo '  Space       # Stage/Unstage'; echo '  c           # Commit'; echo '  p           # Push'; echo '  f           # Fetch'; echo '  l           # Pull'; echo '  r           # Refresh'; echo '  q           # Quit to shell'; echo '  ?           # Show help'; echo ''; echo '📁 Views Available:'; echo '  Status      # Working tree'; echo '  Log         # Commit history'; echo '  Stashing    # Stash management'; echo '  Files tree  # File browser'; echo ''; echo '📝 Alternative Commands:'; echo '  ~/bin/gitui             # Start GitUI'; echo '  git status              # Traditional status'; echo '  git log --oneline -10   # Recent commits'; echo ''; echo '⚡ Ready for commands!'; exec bash"
             }
         }
     }

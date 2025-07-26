@@ -33,7 +33,7 @@ log() {
 }
 
 check_tool() {
-    command -v "$1" &>/dev/null
+    command -v "$1" &> /dev/null
 }
 
 find_source_files() {
@@ -43,7 +43,7 @@ find_source_files() {
         -not -path "./.git/*" \
         -not -path "./__pycache__/*" \
         -not -path "./.pytest_cache/*" \
-        2>/dev/null || true
+        2> /dev/null || true
 }
 
 detect_config() {
@@ -79,14 +79,14 @@ format_code() {
     fi
 
     # Check if formatting needed
-    if echo "${files}" | xargs black --check --diff &>/dev/null; then
+    if echo "${files}" | xargs black --check --diff &> /dev/null; then
         log "✓ Code already formatted"
         return 0
     fi
 
     # Apply formatting
     log "Applying black formatting..."
-    echo "${files}" | xargs black &>/dev/null
+    echo "${files}" | xargs black &> /dev/null
     format_applied=true
     log "✓ Code formatted"
     return 0
@@ -108,7 +108,7 @@ lint_code() {
 
     detect_config
 
-    if echo "${files}" | xargs flake8 "${flake8_config}" &>/dev/null; then
+    if echo "${files}" | xargs flake8 "${flake8_config}" &> /dev/null; then
         log "✓ No linting issues found"
         return 0
     else
@@ -136,7 +136,7 @@ fix_issues() {
 
     # Apply fixes
     log "Running autopep8 auto-fixes..."
-    echo "${files}" | xargs autopep8 --in-place --aggressive &>/dev/null
+    echo "${files}" | xargs autopep8 --in-place --aggressive &> /dev/null
     issues_fixed=true
     log "✓ Auto-fixes applied"
     return 0
@@ -157,7 +157,7 @@ verify_final() {
 
     detect_config
 
-    if echo "${files}" | xargs flake8 "${flake8_config}" &>/dev/null; then
+    if echo "${files}" | xargs flake8 "${flake8_config}" &> /dev/null; then
         log "✓ All issues resolved"
         issues_remaining=false
         return 0

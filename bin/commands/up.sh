@@ -5,6 +5,7 @@
 cmd_up() {
     local clean_build=false
     local verbose=false
+    local language=""
 
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
@@ -17,11 +18,16 @@ cmd_up() {
                 verbose=true
                 shift
                 ;;
+            --language)
+                language="$2"
+                shift 2
+                ;;
             *)
                 ui_print_error "Unknown option: $1"
-                echo "Usage: claudetainer up [--clean] [--verbose]"
-                echo "  --clean     Remove existing container and rebuild without cache"
-                echo "  --verbose   Show detailed devcontainer CLI output"
+                echo "Usage: claudetainer up [--clean] [--verbose] [--language <lang>]"
+                echo "  --clean         Remove existing container and rebuild without cache"
+                echo "  --verbose       Show detailed devcontainer CLI output"
+                echo "  --language      Specify language for devcontainer creation (python, node, rust, go, shell)"
                 return 1
                 ;;
         esac
@@ -29,40 +35,42 @@ cmd_up() {
     if [[ ! -f ".devcontainer/devcontainer.json" ]]; then
         ui_print_warning "No .devcontainer/devcontainer.json found"
 
-        # Try to auto-detect language
-        local detected_lang=$(validation_detect_language)
-        if [[ -n "$detected_lang" ]]; then
-            ui_print_info "Detected project language: $detected_lang"
-            read -p "Create devcontainer for $detected_lang? [Y/n]: " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Nn]$ ]]; then
-                ui_print_info "Aborted"
-                return 1
-            fi
+        local lang_to_use=""
 
-            # Create devcontainer
-            if cmd_init "$detected_lang"; then
-                ui_print_success "Created devcontainer, now starting..."
-            else
-                ui_print_error "Failed to create devcontainer"
-                return 1
-            fi
+        # Use explicit language if provided
+        if [[ -n "$language" ]]; then
+            lang_to_use="$language"
+            ui_print_info "Using specified language: $lang_to_use"
         else
-            ui_print_error "Could not auto-detect project language"
-            echo "Available languages: python, node, rust, go, shell"
-            read -r -p "Enter language to create devcontainer for (or press Enter to abort): " lang
-            if [[ -z "$lang" ]]; then
-                ui_print_info "Aborted"
-                return 1
-            fi
+            # Try to auto-detect language
+            local detected_lang=$(validation_detect_language)
+            if [[ -n "$detected_lang" ]]; then
+                ui_print_info "Detected project language: $detected_lang"
 
-            # Create devcontainer with specified language
-            if cmd_init "$lang"; then
-                ui_print_success "Created devcontainer, now starting..."
+                # In interactive mode, ask for confirmation
+                if ui_is_interactive; then
+                    read -p "Create devcontainer for $detected_lang? [Y/n]: " -n 1 -r
+                    echo
+                    if [[ $REPLY =~ ^[Nn]$ ]]; then
+                        ui_print_info "Aborted"
+                        return 1
+                    fi
+                fi
+
+                lang_to_use="$detected_lang"
             else
-                ui_print_error "Failed to create devcontainer"
-                return 1
+                # Failed to auto-detect language - default to base devcontainer
+                ui_print_info "Could not auto-detect project language, creating base devcontainer"
+                lang_to_use="base"
             fi
+        fi
+
+        # Create devcontainer with determined language
+        if cmd_init "$lang_to_use"; then
+            ui_print_success "Created devcontainer, now starting..."
+        else
+            ui_print_error "Failed to create devcontainer"
+            return 1
         fi
     fi
 
@@ -89,7 +97,7 @@ cmd_up() {
             ui_print_info "Clean build requested - removing existing container(s): $existing_containers"
             for container in $existing_containers; do
                 ui_print_info "Removing container: $container"
-                docker rm -f "$container" 2>/dev/null || true
+                docker rm -f "$container" 2> /dev/null || true
             done
         else
             ui_print_error "A devcontainer already exists for this directory"
@@ -110,7 +118,7 @@ cmd_up() {
     fi
 
     # Build devcontainer with appropriate options
-    ui_print_info "Starting devcontainer (may take a few minutes on first run)..."
+    ui_print_info "Starting devcontainer (may take a few minutes on first run, use --verbose to see container logs)..."
     echo ""
 
     # Run devcontainer command and capture exit code
@@ -127,9 +135,9 @@ cmd_up() {
     else
         # Suppress output by default, but show errors
         if [[ "$clean_build" == "true" ]]; then
-            npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container >/dev/null 2>&1
+            npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container > /dev/null 2>&1
         else
-            npx @devcontainers/cli up --workspace-folder . >/dev/null 2>&1
+            npx @devcontainers/cli up --workspace-folder . > /dev/null 2>&1
         fi
         exit_code=$?
 
@@ -172,7 +180,7 @@ cmd_up() {
         # Check credentials and set onboarding flag
         local credentials_file=$(config_get_credentials_file)
         if [[ -f "$credentials_file" ]]; then
-            local file_content=$(cat "$credentials_file" 2>/dev/null)
+            local file_content=$(cat "$credentials_file" 2> /dev/null)
             if [[ "$file_content" != "{}" ]] && [[ -n "$file_content" ]] && [[ "$file_content" != "" ]]; then
                 ui_print_info "Setting Claude Code onboarding complete flag in container..."
                 docker_exec_in_container "$container_name" "echo '{\"hasCompletedOnboarding\": true}' > /home/vscode/.claude.json" || ui_print_warning "Could not set onboarding flag in container"

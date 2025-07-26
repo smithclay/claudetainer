@@ -13,7 +13,7 @@ cmd_check_prerequisites() {
 
     # Check Docker
     if ui_command_exists docker; then
-        if docker info >/dev/null 2>&1; then
+        if docker info > /dev/null 2>&1; then
             if [[ "$verbose" == "true" ]]; then
                 ui_print_success "Docker is installed and running"
             fi
@@ -140,7 +140,7 @@ cmd_doctor() {
 				} catch (e) {
 					// Silently ignore errors
 				}
-			" 2>/dev/null)
+			" 2> /dev/null)
         fi
 
         if [[ -n "$feature_version" ]]; then
@@ -155,7 +155,7 @@ cmd_doctor() {
 
     # 1. Check prerequisites
     ui_print_info "1. Checking prerequisites..."
-    if cmd_check_prerequisites >/dev/null 2>&1; then
+    if cmd_check_prerequisites > /dev/null 2>&1; then
         ui_print_success "All prerequisites satisfied"
     else
         ui_print_warning "Some prerequisites missing - run 'claudetainer prereqs' for details"
@@ -184,7 +184,7 @@ cmd_doctor() {
             ui_print_success "devcontainer.json found"
 
             # Check if it's a claudetainer devcontainer
-            if grep -q "claudetainer" ".devcontainer/devcontainer.json" 2>/dev/null; then
+            if grep -q "claudetainer" ".devcontainer/devcontainer.json" 2> /dev/null; then
                 ui_print_success "claudetainer feature detected in devcontainer.json"
             else
                 ui_print_warning "devcontainer.json exists but doesn't use claudetainer feature"
@@ -193,7 +193,7 @@ cmd_doctor() {
 
             # Validate JSON syntax
             if ui_command_exists node; then
-                if node -e "JSON.parse(require('fs').readFileSync('.devcontainer/devcontainer.json', 'utf8'))" 2>/dev/null; then
+                if node -e "JSON.parse(require('fs').readFileSync('.devcontainer/devcontainer.json', 'utf8'))" 2> /dev/null; then
                     ui_print_success "devcontainer.json is valid JSON"
                 else
                     ui_print_error "devcontainer.json has invalid JSON syntax"
@@ -213,7 +213,7 @@ cmd_doctor() {
     # 3. Check Docker status
     ui_print_info "3. Checking Docker status..."
     if ui_command_exists docker; then
-        if docker info >/dev/null 2>&1; then
+        if docker info > /dev/null 2>&1; then
             ui_print_success "Docker is running"
 
             # Check for existing containers
@@ -251,11 +251,11 @@ cmd_doctor() {
     # 5. Check SSH connectivity (if container should be running)
     ui_print_info "5. Checking SSH connectivity..."
     local ssh_port=$(pm_get_current_project_port)
-    if nc -z localhost "$ssh_port" 2>/dev/null; then
+    if nc -z localhost "$ssh_port" 2> /dev/null; then
         ui_print_success "SSH port $ssh_port is accessible"
 
         # Test actual SSH connection
-        if timeout 5 ssh -p "$ssh_port" -o ConnectTimeout=3 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no vscode@localhost "echo 'SSH test successful'" 2>/dev/null; then
+        if timeout 5 ssh -p "$ssh_port" -o ConnectTimeout=3 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no vscode@localhost "echo 'SSH test successful'" 2> /dev/null; then
             ui_print_success "SSH connection test passed"
         else
             ui_print_warning "SSH port open but connection failed"
@@ -304,11 +304,19 @@ cmd_doctor() {
 
                 # Check if multiplexer is properly configured
                 if [[ "$multiplexer_check" == "zellij" ]]; then
-                    local zellij_layout_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/claudetainer.kdl 2>/dev/null")
-                    if [[ -n "$zellij_layout_check" ]]; then
-                        ui_print_success "Zellij claudetainer layout configured"
+                    local zellij_layouts_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/*.kdl 2>/dev/null")
+                    if [[ -n "$zellij_layouts_check" ]]; then
+                        ui_print_success "Zellij layouts configured"
+                        # Check for specific bundled layouts
+                        local claude_dev_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/claude-dev.kdl 2>/dev/null")
+                        local claude_compact_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/claude-compact.kdl 2>/dev/null")
+                        if [[ -n "$claude_dev_check" ]] && [[ -n "$claude_compact_check" ]]; then
+                            ui_print_success "Bundled layouts available: claude-dev, claude-compact"
+                        else
+                            ui_print_warning "Some bundled layouts missing - check installation"
+                        fi
                     else
-                        ui_print_warning "Zellij layout not found - sessions may not work properly"
+                        ui_print_warning "Zellij layouts not found - sessions may not work properly"
                     fi
                 elif [[ "$multiplexer_check" == "tmux" ]]; then
                     local tmux_config_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.tmux.conf 2>/dev/null")
@@ -360,7 +368,7 @@ cmd_doctor() {
     fi
 
     # Check for port conflicts
-    local port_check=$(lsof -i :"$ssh_port" 2>/dev/null | wc -l)
+    local port_check=$(lsof -i :"$ssh_port" 2> /dev/null | wc -l)
     if [[ "$port_check" -gt 0 ]]; then
         ui_print_success "Port $ssh_port is in use (likely by claudetainer)"
     else

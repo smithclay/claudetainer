@@ -1,36 +1,16 @@
 name: "Release"
 on:
   workflow_dispatch:
-  push:
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
     branches:
       - main
-    paths:
-      - 'src/claudetainer/**'
-      - 'bin/**'
-      - 'build.sh'
-      - 'CLAUDE.md'
-      - 'README.md'
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: "Setup Node.js"
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: "Install DevContainer CLI"
-        run: npm install -g @devcontainers/cli
-
-      - name: "Test Claudetainer Feature"
-        run: devcontainer features test .
-
   deploy:
-    needs: test
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -12,7 +12,7 @@ mkdir -p "$TARGET_HOME/.claude/commands"
 mkdir -p "$TARGET_HOME/.claude/hooks"
 
 # Try to install Node.js if it's not available
-if ! command -v node >/dev/null || ! command -v npm >/dev/null; then
+if ! command -v node > /dev/null || ! command -v npm > /dev/null; then
     source scripts/nodejs-helper.sh
 
     # Detect package manager
@@ -58,7 +58,7 @@ fetch_github_preset() {
 
     # Clone repo if not already done
     if [ ! -d "$clone_dir" ]; then
-        git clone --depth=1 "https://github.com/$owner_repo.git" "$clone_dir" >/dev/null 2>&1 || {
+        git clone --depth=1 "https://github.com/$owner_repo.git" "$clone_dir" > /dev/null 2>&1 || {
             echo "❌ Failed to fetch GitHub repo: $owner_repo"
             return 1
         }
@@ -89,7 +89,7 @@ fetch_github_preset() {
 
 # Check if git is available for GitHub presets
 github_presets_exist=false
-IFS=',' read -ra CHECK_PRESET_LIST <<<"$PRESETS"
+IFS=',' read -ra CHECK_PRESET_LIST <<< "$PRESETS"
 for preset in "${CHECK_PRESET_LIST[@]}"; do
     preset=$(echo "$preset" | xargs)
     if [[ "$preset" == github:* ]]; then
@@ -99,7 +99,7 @@ for preset in "${CHECK_PRESET_LIST[@]}"; do
 done
 
 if [ "$github_presets_exist" = true ]; then
-    if ! command -v git >/dev/null 2>&1; then
+    if ! command -v git > /dev/null 2>&1; then
         echo "❌ Error: git is required for GitHub presets but not found"
         echo "   Please install git or remove GitHub preset references"
         exit 1
@@ -111,7 +111,7 @@ if [ "$github_presets_exist" = true ]; then
 fi
 
 # Apply each preset
-IFS=',' read -ra PRESET_LIST <<<"$PRESETS"
+IFS=',' read -ra PRESET_LIST <<< "$PRESETS"
 for preset in "${PRESET_LIST[@]}"; do
     preset=$(echo "$preset" | xargs) # trim whitespace
 
@@ -155,7 +155,7 @@ done
     echo "Merged from presets: $PRESETS"
     echo ""
 
-    IFS=',' read -ra PRESET_LIST <<<"$PRESETS"
+    IFS=',' read -ra PRESET_LIST <<< "$PRESETS"
     for preset in "${PRESET_LIST[@]}"; do
         preset=$(echo "$preset" | xargs)
 
@@ -178,11 +178,11 @@ done
             echo ""
         fi
     done
-} >"$TARGET_HOME/.claude/CLAUDE.md"
+} > "$TARGET_HOME/.claude/CLAUDE.md"
 
 # Merge settings.json files
 settings_files=""
-IFS=',' read -ra PRESET_LIST <<<"$PRESETS"
+IFS=',' read -ra PRESET_LIST <<< "$PRESETS"
 for preset in "${PRESET_LIST[@]}"; do
     preset=$(echo "$preset" | xargs)
 
@@ -208,7 +208,57 @@ fi
 # Fix ownership if running as root and target user is different
 if [ "$(whoami)" = "root" ] && [ "$TARGET_USER" != "root" ] && [ "$TARGET_USER" != "$(whoami)" ]; then
     echo "🔐 Setting ownership for user $TARGET_USER..."
-    chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.claude" 2>/dev/null || true
+    chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.claude" 2> /dev/null || true
+fi
+
+# Install gitui if not already available
+if ! command -v gitui > /dev/null 2>&1; then
+    echo "📦 Installing gitui..."
+
+    # Detect architecture
+    ARCH=$(uname -m)
+    case "$ARCH" in
+        x86_64 | amd64)
+            GITUI_ARCH="x86_64"
+            ;;
+        aarch64 | arm64)
+            GITUI_ARCH="aarch64"
+            ;;
+        *)
+            echo "⚠️  Unsupported architecture: $ARCH, skipping gitui installation"
+            GITUI_ARCH=""
+            ;;
+    esac
+
+    if [ -n "$GITUI_ARCH" ]; then
+        GITUI_VERSION="v0.27.0"
+        GITUI_URL="https://github.com/gitui-org/gitui/releases/download/${GITUI_VERSION}/gitui-linux-${GITUI_ARCH}.tar.gz"
+        GITUI_TMP_DIR=$(mktemp -d)
+
+        echo "     Downloading gitui for $GITUI_ARCH..."
+        if curl -sL "$GITUI_URL" | tar -xz -C "$GITUI_TMP_DIR"; then
+            # Create user bin directory if it doesn't exist
+            mkdir -p "$TARGET_HOME/bin"
+
+            # Move gitui binary to user's bin directory
+            mv "$GITUI_TMP_DIR/gitui" "$TARGET_HOME/bin/"
+            chmod +x "$TARGET_HOME/bin/gitui"
+
+            # Fix ownership if needed
+            if [ "$(whoami)" = "root" ] && [ "$TARGET_USER" != "root" ] && [ "$TARGET_USER" != "$(whoami)" ]; then
+                chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/bin/gitui" 2> /dev/null || true
+            fi
+
+            echo "     ✓ gitui installed to $TARGET_HOME/bin/gitui"
+        else
+            echo "     ⚠️  Failed to download or extract gitui"
+        fi
+
+        # Cleanup
+        rm -rf "$GITUI_TMP_DIR"
+    fi
+else
+    echo "📦 gitui is already installed"
 fi
 
 # Setup multiplexer (zellij, tmux, or none)

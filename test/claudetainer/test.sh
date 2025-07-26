@@ -28,7 +28,7 @@ check "settings.json contains PostToolUse hook" grep -q '"PostToolUse"' ~/.claud
 check "settings.json contains PostToolUse hook" grep -q '"Notification"' ~/.claude/settings.json
 
 # Test 6: Validate syntax of generated shell scripts
-check "settings.json is valid JSON" python3 -c "import json; json.load(open('$HOME/.claude/settings.json'))" 2>/dev/null
+check "settings.json is valid JSON" python3 -c "import json; json.load(open('$HOME/.claude/settings.json'))" 2> /dev/null
 
 # Test 7: Check bash syntax of hook scripts
 for hook_script in ~/.claude/hooks/*.sh; do
@@ -41,6 +41,10 @@ done
 if [ -f ~/.claude/scripts/bashrc-multiplexer.sh ]; then
     check "auto-start script has valid bash syntax" bash -n ~/.claude/scripts/bashrc-multiplexer.sh
 fi
+
+# Test 9: Check that gitui was installed to user bin directory
+check "gitui installed to user bin" test -f "$HOME/bin/gitui"
+check "gitui is executable" test -x "$HOME/bin/gitui"
 
 echo "✅ All tests passed!"
 

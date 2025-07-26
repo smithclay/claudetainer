@@ -26,12 +26,12 @@ layout {
         }
     }
     
-    // Tab 3: Git - Minimal git interface
+    // Tab 3: Git - GitUI interface
     tab name="🌲" {
         pane {
             name "git"
             command "bash"
-            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🌲 Git Status'; echo '━━━━━━━━━━━━'; git status --short 2>/dev/null || echo 'Not a git repo'; echo; git log --oneline -5 2>/dev/null || echo 'No commits'; echo; echo '⚡ Ready for git commands'; exec bash"
+            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🌲 GitUI Interface'; echo '━━━━━━━━━━━━━━━'; if [ -f ~/bin/gitui ]; then echo 'Starting GitUI...'; ~/bin/gitui; else echo '❌ GitUI not found at ~/bin/gitui'; echo 'Falling back to git status...'; git status --short 2>/dev/null || echo 'Not a git repo'; echo; git log --oneline -5 2>/dev/null || echo 'No commits'; echo; echo '⚡ Ready for git commands'; fi; exec bash"
         }
     }
     

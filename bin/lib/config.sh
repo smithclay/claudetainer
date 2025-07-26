@@ -66,7 +66,7 @@ config_get_language_config() {
 config_load_user_config() {
     local user_config="$HOME/.claudetainer/config"
     if [[ -f "$user_config" ]]; then
-        source "$user_config" 2>/dev/null || true
+        source "$user_config" 2> /dev/null || true
     fi
 }
 

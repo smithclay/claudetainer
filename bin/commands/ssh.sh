@@ -12,7 +12,7 @@ cmd_ssh() {
     fi
 
     # Check if container is running by trying to connect
-    if ! nc -z localhost "$port" 2>/dev/null; then
+    if ! nc -z localhost "$port" 2> /dev/null; then
         ui_print_error "Container not running or SSH not available on port $port"
         echo "Run 'claudetainer up' first to start the container"
         return 1

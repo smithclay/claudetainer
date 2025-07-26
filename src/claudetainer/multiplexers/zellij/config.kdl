@@ -1,0 +1,77 @@
+// Claudetainer Zellij Configuration
+// Human-readable configuration for optimal remote development
+
+// Keybindings - keep familiar but intuitive
+keybinds {
+    normal {
+        // Quick access to common actions
+        bind "Ctrl g" { SwitchToMode "Locked"; }
+        bind "Ctrl p" { SwitchToMode "Pane"; }
+        bind "Ctrl t" { SwitchToMode "Tab"; }
+        bind "Ctrl s" { SwitchToMode "Session"; }
+        
+        // Quick navigation
+        bind "Alt h" "Alt Left" { MoveFocusOrTab "Left"; }
+        bind "Alt l" "Alt Right" { MoveFocusOrTab "Right"; }
+        bind "Alt j" "Alt Down" { MoveFocus "Down"; }
+        bind "Alt k" "Alt Up" { MoveFocus "Up"; }
+        
+        // Quick actions
+        bind "Alt =" { Resize "Increase"; }
+        bind "Alt -" { Resize "Decrease"; }
+        bind "Alt [" { PreviousSwapLayout; }
+        bind "Alt ]" { NextSwapLayout; }
+    }
+    
+    locked {
+        bind "Ctrl g" { SwitchToMode "Normal"; }
+    }
+}
+
+// UI Configuration
+ui {
+    pane_frames {
+        rounded_corners true
+        hide_session_name false
+    }
+}
+
+// Mouse support for easier navigation
+mouse_mode true
+
+// Copy to system clipboard
+copy_clipboard "system"
+
+// Default shell
+default_shell "bash"
+
+// Session serialization for persistence
+session_serialization true
+
+// Plugin configuration
+plugins {
+    tab-bar { path "tab-bar"; }
+    status-bar { path "status-bar"; }
+    strider { path "strider"; }
+    compact-bar { path "compact-bar"; }
+}
+
+// Theme configuration - professional dark theme
+themes {
+    claudetainer {
+        fg "#D8DEE9"
+        bg "#2E3440" 
+        black "#3B4252"
+        red "#BF616A"
+        green "#A3BE8C"
+        yellow "#EBCB8B"
+        blue "#81A1C1"
+        magenta "#B48EAD"
+        cyan "#88C0D0"
+        white "#E5E9F0"
+        orange "#D08770"
+    }
+}
+
+// Use our custom theme
+theme "claudetainer"

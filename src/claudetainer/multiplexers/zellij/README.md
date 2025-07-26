@@ -52,12 +52,6 @@ Or provide a custom layout file path:
 - **🌲** - Basic git status
 - **🐚** - Simple shell
 
-### 🏠 claudetainer.kdl (Basic Layout)
-**Simple 2-tab layout** for basic needs:
-
-- **claude** - Main development workspace
-- **usage** - Usage monitoring via ccusage
-
 ## Key Features
 
 ### Navigation
@@ -95,7 +89,6 @@ ssh into container  # Automatically uses claude-dev layout
 # Manual start with specific layout
 zellij --layout claude-dev --session claudetainer      # Enhanced 4-tab
 zellij --layout claude-compact --session claudetainer  # Compact 4-tab  
-zellij --layout claudetainer --session claudetainer    # Basic 2-tab
 ```
 
 ### Switching Layouts
@@ -110,7 +103,6 @@ zellij --layout claude-compact --session dev-compact
 ### Layout Selection Guide
 - **claude-dev** - Best for development with monitoring and git workflow
 - **claude-compact** - Best for small screens or minimal setups
-- **claudetainer** - Best for simple Claude Code usage
 
 ## Custom Layouts
 
@@ -173,9 +165,6 @@ nano ~/.config/zellij/layouts/claude-dev.kdl
 
 # Edit compact layout  
 nano ~/.config/zellij/layouts/claude-compact.kdl
-
-# Edit basic layout
-nano ~/.config/zellij/layouts/claudetainer.kdl
 ```
 
 ### Configuration

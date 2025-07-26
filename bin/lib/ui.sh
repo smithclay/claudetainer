@@ -33,12 +33,18 @@ ui_print_warning() {
 
 # Check if a command exists
 ui_command_exists() {
-    command -v "$1" >/dev/null 2>&1
+    command -v "$1" > /dev/null 2>&1
+}
+
+# Check if we're in an interactive environment
+ui_is_interactive() {
+    # Check if stdin is a terminal and we have a controlling terminal
+    [[ -t 0 ]] && [[ -t 1 ]] && [[ -z "${CI:-}" ]] && [[ -z "${GITHUB_ACTIONS:-}" ]] && [[ -z "${BUILDKITE:-}" ]] && [[ -z "${JENKINS_URL:-}" ]]
 }
 
 # Show help message
 ui_show_help() {
-    cat <<EOF
+    cat << EOF
 claudetainer CLI v${VERSION}
 Easy and opinionated Claude Code in a dev container.
 
@@ -57,6 +63,7 @@ COMMANDS:
     run, up, start   Start the devcontainer (uses npx @devcontainers/cli)
                      Options: --clean (remove existing container and rebuild without cache)
                               --verbose (show detailed devcontainer CLI output)
+                              --language <lang> (specify language for devcontainer creation)
     ssh              SSH into running container with configured multiplexer session
     rm               Remove claudetainer containers and optionally config
                      Options: --all (remove all claudetainer containers)
@@ -75,6 +82,7 @@ EXAMPLES:
     claudetainer run             # Start the devcontainer (quiet by default)
     claudetainer run --clean     # Clean rebuild (remove existing container, no cache)
     claudetainer run --verbose   # Start with detailed output
+    claudetainer run --language python  # Force create Python devcontainer
     claudetainer up              # Same as run (alias)
     claudetainer start           # Same as run (alias)
     claudetainer ssh             # Connect to running container

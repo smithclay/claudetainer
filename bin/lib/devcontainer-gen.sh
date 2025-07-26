@@ -7,7 +7,7 @@ devcontainer_get_feature_version() {
     local feature_json="$script_dir/../../src/claudetainer/devcontainer-feature.json"
 
     if [[ -f "$feature_json" ]]; then
-        node -e "console.log(JSON.parse(require('fs').readFileSync('$feature_json', 'utf8')).version)" 2>/dev/null || echo "unknown"
+        node -e "console.log(JSON.parse(require('fs').readFileSync('$feature_json', 'utf8')).version)" 2> /dev/null || echo "unknown"
     else
         echo "unknown" # fallback version
     fi
@@ -36,7 +36,7 @@ devcontainer_generate_json() {
         claudetainer_config='"includeBase": true, "include": "'${lang}'", "multiplexer": "'${multiplexer}'"'
     fi
 
-    cat <<EOF
+    cat << EOF
 {
     "name": "${name}",
     "image": "${image}",
@@ -107,7 +107,7 @@ devcontainer_create_config() {
     fi
 
     # Generate devcontainer.json with allocated port and multiplexer
-    devcontainer_generate_json "$language" "$port" "$multiplexer" >.devcontainer/devcontainer.json
+    devcontainer_generate_json "$language" "$port" "$multiplexer" > .devcontainer/devcontainer.json
 
     ui_print_success "Created .devcontainer/devcontainer.json for $language"
     ui_print_info "Allocated SSH port: $port"

@@ -1,0 +1,28 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{js,json,md,yaml,yml}]
+indent_style = space
+indent_size = 2
+
+[*.sh]
+indent_style = space
+indent_size = 4
+# Enable case statement indentation (like -ci)
+switch_case_indent = true
+# Put redirect operators on same line (like -sr)
+space_redirects = true
+# Shell language variant
+shell_variant = bash
+
+[Makefile]
+indent_style = tab
+
+# Ignore generated/third-party files
+[{node_modules,dist,tmp}/**]
+ignore = true

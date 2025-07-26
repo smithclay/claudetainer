@@ -3,17 +3,17 @@
 
 # Find containers for current directory
 docker_find_project_containers() {
-    docker ps -a --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" 2>/dev/null
+    docker ps -a --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" 2> /dev/null
 }
 
 # Find running containers for current directory
 docker_find_running_project_containers() {
-    docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" 2>/dev/null
+    docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" 2> /dev/null
 }
 
 # Find all claudetainer containers
 docker_find_all_claudetainer_containers() {
-    docker ps -a --filter "label=devcontainer.type=claudetainer" --format "{{.Names}}" 2>/dev/null
+    docker ps -a --filter "label=devcontainer.type=claudetainer" --format "{{.Names}}" 2> /dev/null
 }
 
 # Get container name for current project
@@ -24,7 +24,7 @@ docker_get_project_container_name() {
 # Check if Docker is running
 docker_is_running() {
     if ui_command_exists docker; then
-        docker info >/dev/null 2>&1
+        docker info > /dev/null 2>&1
         return $?
     else
         return 1
@@ -51,7 +51,7 @@ docker_exec_in_container() {
     local command="$*"
 
     if [[ -n "$container_name" ]]; then
-        docker exec "$container_name" sh -c "$command" 2>/dev/null
+        docker exec "$container_name" sh -c "$command" 2> /dev/null
     else
         return 1
     fi
@@ -75,7 +75,7 @@ docker_get_container_label() {
     local label="$2"
 
     if [[ -n "$container_name" ]]; then
-        docker inspect "$container_name" --format "{{index .Config.Labels \"$label\"}}" 2>/dev/null
+        docker inspect "$container_name" --format "{{index .Config.Labels \"$label\"}}" 2> /dev/null
     fi
 }
 
@@ -103,8 +103,8 @@ docker_remove_project_containers() {
     # Remove containers
     echo "$containers" | while read -r container; do
         ui_print_info "Stopping and removing container: $container"
-        docker stop "$container" >/dev/null 2>&1 || true
-        docker rm "$container" >/dev/null 2>&1 || true
+        docker stop "$container" > /dev/null 2>&1 || true
+        docker rm "$container" > /dev/null 2>&1 || true
     done
     ui_print_success "Removed containers"
 
@@ -127,7 +127,7 @@ docker_remove_all_claudetainer_containers() {
 
     ui_print_info "Found claudetainer containers:"
     echo "$containers" | while read -r container; do
-        local folder=$(docker inspect --format '{{index .Config.Labels "devcontainer.local_folder"}}' "$container" 2>/dev/null)
+        local folder=$(docker inspect --format '{{index .Config.Labels "devcontainer.local_folder"}}' "$container" 2> /dev/null)
         echo "  • $container (from: $folder)"
     done
 
@@ -143,8 +143,8 @@ docker_remove_all_claudetainer_containers() {
     # Remove containers
     echo "$containers" | while read -r container; do
         ui_print_info "Stopping and removing container: $container"
-        docker stop "$container" >/dev/null 2>&1 || true
-        docker rm "$container" >/dev/null 2>&1 || true
+        docker stop "$container" > /dev/null 2>&1 || true
+        docker rm "$container" > /dev/null 2>&1 || true
     done
     ui_print_success "Removed all claudetainer containers"
 }

@@ -15,7 +15,7 @@ notifications_ensure_credentials_file() {
 
     if [[ ! -f "$credentials_file" ]]; then
         ui_print_info "Creating empty credentials file at $credentials_file"
-        echo '{}' >"$credentials_file"
+        echo '{}' > "$credentials_file"
         ui_print_success "Created $credentials_file"
     fi
 }
@@ -28,11 +28,11 @@ notifications_setup_channel() {
     # Generate or reuse existing notification channel
     local ntfy_channel
     if [[ -f "$ntfy_channel_file" ]]; then
-        ntfy_channel=$(cat "$ntfy_channel_file" 2>/dev/null | tr -d '\n\r ')
+        ntfy_channel=$(cat "$ntfy_channel_file" 2> /dev/null | tr -d '\n\r ')
         ui_print_info "Using existing ntfy channel: $ntfy_channel"
     else
         ntfy_channel=$(notifications_generate_channel)
-        echo "$ntfy_channel" >"$ntfy_channel_file"
+        echo "$ntfy_channel" > "$ntfy_channel_file"
         ui_print_success "Generated ntfy channel: $ntfy_channel"
         ui_print_info "Saved to: $ntfy_channel_file"
     fi
@@ -47,7 +47,7 @@ ntfy_topic: $ntfy_channel
 ntfy_server: https://ntfy.sh
 EOF
             chown -R vscode:vscode /home/vscode/.config/claudetainer
-        " 2>/dev/null && ui_print_success "Created ntfy config in container" || ui_print_warning "Could not create ntfy config in container"
+        " 2> /dev/null && ui_print_success "Created ntfy config in container" || ui_print_warning "Could not create ntfy config in container"
 
         ui_print_info "Notification setup complete!"
         echo "  • Channel: $ntfy_channel"
@@ -64,7 +64,7 @@ notifications_check_setup() {
 
     # Check host notification channel file
     if [[ -f "$ntfy_channel_file" ]]; then
-        local ntfy_channel=$(cat "$ntfy_channel_file" 2>/dev/null | tr -d '\n\r ')
+        local ntfy_channel=$(cat "$ntfy_channel_file" 2> /dev/null | tr -d '\n\r ')
         if [[ -n "$ntfy_channel" ]]; then
             ui_print_success "Notification channel configured: $ntfy_channel"
             echo "  • Subscribe at: https://ntfy.sh/$ntfy_channel"
@@ -92,7 +92,7 @@ notifications_check_setup() {
 
                 # Check if host and container topics match
                 if [[ -f "$ntfy_channel_file" ]]; then
-                    local host_channel=$(cat "$ntfy_channel_file" 2>/dev/null | tr -d '\n\r ')
+                    local host_channel=$(cat "$ntfy_channel_file" 2> /dev/null | tr -d '\n\r ')
                     if [[ "$host_channel" = "$container_topic" ]]; then
                         ui_print_success "Host and container notification channels match"
                     else

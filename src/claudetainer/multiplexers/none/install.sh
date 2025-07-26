@@ -22,7 +22,7 @@ setup_simple_environment() {
 
     # Create a simple welcome script
     mkdir -p "$target_home/.claude/scripts"
-    cat >"$target_home/.claude/scripts/bashrc-multiplexer.sh" <<'EOF'
+    cat > "$target_home/.claude/scripts/bashrc-multiplexer.sh" << 'EOF'
 #!/usr/bin/env bash
 
 # bashrc-multiplexer.sh - Simple environment setup (no multiplexer)
@@ -45,10 +45,10 @@ fi
 EOF
 
     # Append to bashrc if not already present
-    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2>/dev/null; then
-        echo "" >>"$bashrc"
-        echo "# Claudetainer: Simple environment setup (no multiplexer)" >>"$bashrc"
-        echo "source ~/.claude/scripts/bashrc-multiplexer.sh" >>"$bashrc"
+    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2> /dev/null; then
+        echo "" >> "$bashrc"
+        echo "# Claudetainer: Simple environment setup (no multiplexer)" >> "$bashrc"
+        echo "source ~/.claude/scripts/bashrc-multiplexer.sh" >> "$bashrc"
         log_success "Added simple environment setup to ~/.bashrc"
     else
         log_info "Simple environment already configured in ~/.bashrc"
