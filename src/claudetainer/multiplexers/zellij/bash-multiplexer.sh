@@ -3,10 +3,8 @@
 # bashrc-multiplexer.sh - Auto-start Zellij session for remote connections
 # This gets appended to ~/.bashrc in the container
 
-# Configure default Zellij layout
-export ZELLIJ_DEFAULT_LAYOUT=\"\${ZELLIJ_DEFAULT_LAYOUT:-tablet}\"
-# Strip any embedded quotes from the variable
-export ZELLIJ_DEFAULT_LAYOUT=\"\${ZELLIJ_DEFAULT_LAYOUT//\\\"/}\"
+# Configure default Zellij layout - will be substituted during installation
+export ZELLIJ_LAYOUT="__ZELLIJ_LAYOUT__"
 
 # Only run for remote SSH sessions (including VS Code terminals), and not already in Zellij
 # Check for SSH connection OR VS Code remote connection, and ensure we have a terminal
@@ -17,7 +15,7 @@ if [[ (-n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" || -n "\${VSCODE_IPC_H
         local reason="\$1"
         echo "⚠️  Zellij startup failed: \$reason"
         echo "🐚 Falling back to regular shell..."
-        echo "💡 You can try manually: zellij --layout \${ZELLIJ_DEFAULT_LAYOUT:-tablet} --session claudetainer"
+        echo "💡 You can try manually: zellij --layout \$ZELLIJ_LAYOUT --session claudetainer"
         echo "🔧 Or use basic shell commands as normal"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "📁 Working directory: \$(pwd)"
@@ -45,7 +43,7 @@ if [[ (-n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" || -n "\${VSCODE_IPC_H
             echo "💡 Available layouts: tablet \\(enhanced\\), phone \\(minimal\\)"
 
             # Determine which layout to use based on configuration
-            local layout_to_use=\"\$ZELLIJ_DEFAULT_LAYOUT\"
+            local layout_to_use=\"\$ZELLIJ_LAYOUT\"
 
             # Check if the configured layout exists
             if [ -f ~/.config/zellij/layouts/\"\$layout_to_use\".kdl ]; then

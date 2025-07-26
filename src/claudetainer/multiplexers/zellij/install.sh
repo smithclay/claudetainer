@@ -150,11 +150,13 @@ setup_auto_start() {
 
     log_info "Setting up Zellij auto-start..."
 
-    # Create the auto-start script
+    # Create the auto-start script with layout substitution
     mkdir -p "$target_home/.claude/scripts"
-    log_info "Setting up Zellij auto-start script..."
-    cp "multiplexers/zellij/bash-multiplexer.sh" "$target_home/.claude/scripts/bashrc-multiplexer.sh" 2> /dev/null || {
-        log_error "Failed to copy Zellij auto-start script"
+    log_info "Setting up Zellij auto-start script with layout: ${ZELLIJ_DEFAULT_LAYOUT:-tablet}"
+    
+    # Substitute the layout placeholder in the template
+    sed "s/__ZELLIJ_LAYOUT__/${ZELLIJ_DEFAULT_LAYOUT:-tablet}/g" "multiplexers/zellij/bash-multiplexer.sh" > "$target_home/.claude/scripts/bashrc-multiplexer.sh" || {
+        log_error "Failed to create Zellij auto-start script"
         return 1
     }
 
