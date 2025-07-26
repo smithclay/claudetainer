@@ -293,4 +293,39 @@ else
     post_install_multiplexer
 fi
 
+# Setup custom workspace navigation and welcome message
+echo "🏠 Setting up workspace navigation and welcome message..."
+
+# Create .claude/scripts directory if it doesn't exist
+mkdir -p "$TARGET_HOME/.claude/scripts"
+
+# Install workspace setup script
+cp "scripts/workspace-setup.sh" "$TARGET_HOME/.claude/scripts/workspace-setup.sh" 2>/dev/null || {
+    echo "⚠️  Failed to copy workspace setup script (non-critical)"
+}
+
+# Add workspace setup to bashrc for all SSH sessions
+if ! grep -q "workspace-setup.sh" "$TARGET_HOME/.bashrc" 2>/dev/null; then
+    {
+        echo ""
+        echo "# Claudetainer: Workspace navigation and custom welcome"
+        echo "source ~/.claude/scripts/workspace-setup.sh"
+    } >> "$TARGET_HOME/.bashrc"
+    echo "✅ Added workspace setup to ~/.bashrc"
+else
+    echo "📋 Workspace setup already configured in ~/.bashrc"
+fi
+
+# Disable system welcome messages for cleaner SSH experience
+echo "🔇 Disabling system welcome messages..."
+
+# Create or update .hushlogin to suppress system messages
+touch "$TARGET_HOME/.hushlogin"
+
+# Disable Ubuntu-specific welcome messages
+if [ -f "/etc/update-motd.d" ]; then
+    echo "📵 Found update-motd.d, attempting to disable system messages..."
+    # We can't modify system files, but we can silence them with .hushlogin
+fi
+
 echo "✅ Claudetainer installed successfully!"

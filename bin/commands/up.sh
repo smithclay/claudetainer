@@ -197,12 +197,6 @@ cmd_up() {
     echo "  2. Use 'claudetainer list' to see running containers"
     echo "  3. Run 'claudetainer doctor' if you encounter issues"
     echo
-    ui_print_info "Inside the container, try these Claude Code features:"
-    echo "  • Type 'claude' to interact with Claude directly"
-    echo "  • Use slash commands like '/commit' and '/check'"
-    echo "  • All your files are automatically linted and formatted"
-    echo "  • Push notifications are configured and ready to use"
-    echo
     local ssh_port=$(pm_get_current_project_port)
     ui_print_info "Container details:"
     echo "  • SSH port: $ssh_port"

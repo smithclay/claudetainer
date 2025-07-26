@@ -6,6 +6,22 @@
 # Configure default Zellij layout - will be substituted during installation
 export ZELLIJ_LAYOUT="__ZELLIJ_LAYOUT__"
 
+# Helper function to get workspace directory
+get_workspace_dir() {
+    if [[ -d /workspaces ]]; then
+        local workspace_dirs=($(find /workspaces -maxdepth 1 -type d ! -path /workspaces))
+        local workspace_count=${#workspace_dirs[@]}
+        
+        if [[ $workspace_count -eq 1 ]]; then
+            echo "${workspace_dirs[0]}"
+        else
+            echo "/workspaces"
+        fi
+    else
+        echo "$HOME"
+    fi
+}
+
 # Only run for remote SSH sessions (including VS Code terminals), and not already in Zellij
 # Check for SSH connection OR VS Code remote connection, and ensure we have a terminal
 if [[ (-n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" || -n "\${VSCODE_IPC_HOOK_CLI:-}") ]] && [[ -z "\$ZELLIJ" ]] && [[ -t 0 ]]; then
@@ -15,15 +31,21 @@ if [[ (-n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" || -n "\${VSCODE_IPC_H
         local reason="\$1"
         echo "⚠️  Zellij startup failed: \$reason"
         echo "🐚 Falling back to regular shell..."
-        echo "💡 You can try manually: zellij --layout \$ZELLIJ_LAYOUT --session claudetainer"
+        echo "💡 You can try manually: zellij --layout $ZELLIJ_LAYOUT --session claudetainer"
         echo "🔧 Or use basic shell commands as normal"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "📁 Working directory: \$(pwd)"
+        echo "📁 Working directory: $(pwd)"
         echo "🚀 Ready for development!"
         echo ""
         # Continue with normal shell - do NOT exec to avoid terminating session
         return 0
     }
+
+    # Navigate to workspace directory before starting Zellij
+    local workspace_dir=$(get_workspace_dir)
+    if [[ "$(pwd)" != "$workspace_dir" ]]; then
+        cd "$workspace_dir" 2>/dev/null && echo "📁 Navigated to: $(basename "$workspace_dir")"
+    fi
 
     # Check if Zellij is available
     if ! command -v zellij > /dev/null 2>&1; then
@@ -43,19 +65,19 @@ if [[ (-n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" || -n "\${VSCODE_IPC_H
             echo "💡 Available layouts: tablet \\(enhanced\\), phone \\(minimal\\)"
 
             # Determine which layout to use based on configuration
-            local layout_to_use=\"\$ZELLIJ_LAYOUT\"
+            local layout_to_use="$ZELLIJ_LAYOUT"
 
             # Check if the configured layout exists
-            if [ -f ~/.config/zellij/layouts/\"\$layout_to_use\".kdl ]; then
-                echo "✅ Using configured layout: \$layout_to_use"
+            if [ -f ~/.config/zellij/layouts/"$layout_to_use".kdl ]; then
+                echo "✅ Using configured layout: $layout_to_use"
             else
                 echo "⚠️  Configured layout not found, falling back to: tablet"
-                layout_to_use=\"tablet\"
+                layout_to_use="tablet"
             fi
 
             # Try to start new session with error handling
-            if ! zellij --new-session-with-layout \"\$layout_to_use\" -s claudetainer 2> /dev/null; then
-                start_fallback_shell "Starting zellij with layout \$layout_to_use failed to start"
+            if ! zellij --new-session-with-layout "$layout_to_use" -s claudetainer 2> /dev/null; then
+                start_fallback_shell "Starting zellij with layout $layout_to_use failed to start"
             fi
         fi
     fi

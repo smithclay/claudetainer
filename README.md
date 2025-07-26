@@ -10,7 +10,9 @@
 
 Opinionated [Claude Code](https://www.anthropic.com/claude-code) workflows: built-in instructions, slash commands, and hooks for common programming languages with built-in remote session and Zellij multiplexer support. Created for using Claude Code from anywhere (even your phone).
 
-claudetainer **doesn't change your system or existing Claude Code configuration**: everything runs inside of an isolated Docker container using Anthrophic's [Claude Code dev container feature](https://github.com/anthropics/devcontainer-features). Opinionated workflows  ("presets") are opt-in. You also use claudetainer to bootstrap .devcontainer configuration and customize it yourself.
+claudetainer **doesn't change your system or existing Claude Code configuration**: everything runs inside of an isolated Docker container using Anthrophic's [Claude Code dev container feature](https://github.com/anthropics/devcontainer-features). 
+
+Don't like the slash commands? Need support for Erlang? Hate the mobile layouts? Just override with your own configuration or use claudecontainer as a feature in your own custom .devcontainer. All built-in opinionated workflows ("presets") are optional. 
 
 ## Quick Start
 

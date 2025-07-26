@@ -51,5 +51,14 @@
         "zellij_layout": "phone"
       }
     }
+  },
+  "test_workspace_navigation": {
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "user": "node",
+    "features": {
+      "claudetainer": {
+        "include": "base"
+      }
+    }
   }
 }
