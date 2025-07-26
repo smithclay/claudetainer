@@ -18,6 +18,7 @@ Opinionated Claude Code workflows via preconfigured hooks and commands
 | include | Comma-separated list of presets to include (python, nodejs, go, shell, etc.) | string | - |
 | includeBase | Include universal commands and hooks | boolean | true |
 | multiplexer | Shell multiplexer for remote sessions (zellij=modern, tmux=traditional, none=simple) | string | zellij |
+| zellij_layout | Zellij layout to use: bundled layouts (claude-dev, claude-compact) or custom path (/path/to/layout.kdl) | string | claude-dev |
 
 
 
