@@ -304,6 +304,16 @@ cp "scripts/workspace-setup.sh" "$TARGET_HOME/.claude/scripts/workspace-setup.sh
     echo "⚠️  Failed to copy workspace setup script (non-critical)"
 }
 
+# Set proper ownership and permissions for workspace setup script
+if [ -f "$TARGET_HOME/.claude/scripts/workspace-setup.sh" ]; then
+    if [ "$TARGET_USER" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
+        chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.claude/scripts/workspace-setup.sh" 2> /dev/null || {
+            echo "⚠️  Could not set ownership for workspace-setup.sh"
+        }
+    fi
+    chmod +x "$TARGET_HOME/.claude/scripts/workspace-setup.sh"
+fi
+
 # Add workspace setup to bashrc for all SSH sessions
 if ! grep -q "workspace-setup.sh" "$TARGET_HOME/.bashrc" 2>/dev/null; then
     {

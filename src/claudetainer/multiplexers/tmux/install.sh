@@ -143,6 +143,14 @@ set -g status-right '#[fg=#D8DEE9]%Y-%m-%d #[fg=#88C0D0,bold]%H:%M'
 set -g message-style 'bg=#EBCB8B fg=#2E3440 bold'
 EOF
 
+    # Set proper ownership for tmux config file
+    local target_user="${TARGET_USER:-$(whoami)}"
+    if [ "$target_user" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
+        chown "$target_user:$target_user" "$TMUX_CONFIG_FILE" 2> /dev/null || {
+            log_warning "Could not set ownership for .tmux.conf"
+        }
+    fi
+
     log_success "Created tmux configuration at $TMUX_CONFIG_FILE"
 }
 
@@ -187,6 +195,15 @@ if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]] && 
     fi
 fi
 EOF
+
+    # Set proper ownership and permissions
+    local target_user="${TARGET_USER:-$(whoami)}"
+    if [ "$target_user" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
+        chown "$target_user:$target_user" "$target_home/.claude/scripts/bashrc-multiplexer.sh" 2> /dev/null || {
+            log_warning "Could not set ownership for bashrc-multiplexer.sh"
+        }
+    fi
+    chmod +x "$target_home/.claude/scripts/bashrc-multiplexer.sh"
 
     # Append to bashrc if not already present
     if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2> /dev/null; then

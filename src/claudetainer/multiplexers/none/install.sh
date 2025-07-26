@@ -44,6 +44,15 @@ if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]]; th
 fi
 EOF
 
+    # Set proper ownership and permissions
+    local target_user="${TARGET_USER:-$(whoami)}"
+    if [ "$target_user" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
+        chown "$target_user:$target_user" "$target_home/.claude/scripts/bashrc-multiplexer.sh" 2> /dev/null || {
+            log_warning "Could not set ownership for bashrc-multiplexer.sh"
+        }
+    fi
+    chmod +x "$target_home/.claude/scripts/bashrc-multiplexer.sh"
+
     # Append to bashrc if not already present
     if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2> /dev/null; then
         echo "" >> "$bashrc"
