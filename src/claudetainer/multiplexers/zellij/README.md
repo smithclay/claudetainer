@@ -10,7 +10,7 @@ You can specify which layout to use via the `zellij_layout` option in your devco
 {
   "features": {
     "ghcr.io/smithclay/claudetainer": {
-      "zellij_layout": "claude-compact"
+      "zellij_layout": "phone"
     }
   }
 }
@@ -28,7 +28,7 @@ Or provide a custom layout file path:
 }
 ```
 
-### 🤖 claude-dev.kdl (Enhanced Development Layout)
+### 🤖 tablet.kdl (Enhanced Development Layout)
 **Default for new sessions** - A comprehensive 4-tab workflow with split panes:
 
 - **🤖 claude** (Tab 1) - Main development workspace
@@ -44,7 +44,7 @@ Or provide a custom layout file path:
   - Main shell for development (70% height)
   - File explorer with auto-refresh (30% height)
 
-### 📱 claude-compact.kdl (Compact Layout)
+### 📱 phone.kdl (Compact Layout)
 **For smaller screens** - Minimal 4-tab layout with single panes:
 
 - **🤖** - Claude Code workspace (simplified)
@@ -84,11 +84,11 @@ Or provide a custom layout file path:
 ### Starting Sessions
 ```bash
 # Auto-start (enhanced layout by default)
-ssh into container  # Automatically uses claude-dev layout
+ssh into container  # Automatically uses tablet layout
 
 # Manual start with specific layout
-zellij --layout claude-dev --session claudetainer      # Enhanced 4-tab
-zellij --layout claude-compact --session claudetainer  # Compact 4-tab  
+zellij --layout tablet --session claudetainer      # Enhanced 4-tab
+zellij --layout phone --session claudetainer  # Compact 4-tab  
 ```
 
 ### Switching Layouts
@@ -97,12 +97,12 @@ zellij --layout claude-compact --session claudetainer  # Compact 4-tab
 Ctrl+t → n → type layout name
 
 # Or start new session
-zellij --layout claude-compact --session dev-compact
+zellij --layout phone --session dev-compact
 ```
 
 ### Layout Selection Guide
-- **claude-dev** - Best for development with monitoring and git workflow
-- **claude-compact** - Best for small screens or minimal setups
+- **tablet** - Best for development with monitoring and git workflow
+- **phone** - Best for small screens or minimal setups
 
 ## Custom Layouts
 
@@ -145,12 +145,12 @@ layout {
 3. **Layout Resolution**:
    - **Relative paths**: Resolved relative to the devcontainer build context
    - **Absolute paths**: Used as-is
-   - **Bundled names**: `claude-dev`, `claude-compact`, `claudetainer`
-   - **Fallback**: If custom layout not found, falls back to `claude-dev`
+   - **Bundled names**: `tablet`, `phone`, `claudetainer`
+   - **Fallback**: If custom layout not found, falls back to `tablet`
 
 ### Layout Options
-- **`claude-dev`** (default) - Full 4-tab development workflow
-- **`claude-compact`** - Minimal 4-tab layout for small screens
+- **`tablet`** (default) - Full 4-tab development workflow
+- **`phone`** - Minimal 4-tab layout for small screens
 - **`claudetainer`** - Basic 2-tab layout
 - **Custom path** - Your own `.kdl` layout file
 
@@ -161,10 +161,10 @@ Edit the `.kdl` files in `~/.config/zellij/layouts/` after installation:
 
 ```bash
 # Edit enhanced layout
-nano ~/.config/zellij/layouts/claude-dev.kdl
+nano ~/.config/zellij/layouts/tablet.kdl
 
 # Edit compact layout  
-nano ~/.config/zellij/layouts/claude-compact.kdl
+nano ~/.config/zellij/layouts/phone.kdl
 ```
 
 ### Configuration

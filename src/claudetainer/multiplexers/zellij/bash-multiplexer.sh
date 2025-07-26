@@ -4,17 +4,20 @@
 # This gets appended to ~/.bashrc in the container
 
 # Configure default Zellij layout
-export ZELLIJ_DEFAULT_LAYOUT=\"${ZELLIJ_DEFAULT_LAYOUT:-claude-dev}\"
+export ZELLIJ_DEFAULT_LAYOUT=\"\${ZELLIJ_DEFAULT_LAYOUT:-tablet}\"
+# Strip any embedded quotes from the variable
+export ZELLIJ_DEFAULT_LAYOUT=\"\${ZELLIJ_DEFAULT_LAYOUT//\\\"/}\"
 
-# Only run for interactive, remote SSH sessions, and not already in Zellij
-if [[ \$- == *i* ]] && [[ -n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" ]] && [[ -z "\$ZELLIJ" ]]; then
+# Only run for remote SSH sessions (including VS Code terminals), and not already in Zellij
+# Check for SSH connection OR VS Code remote connection, and ensure we have a terminal
+if [[ (-n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" || -n "\${VSCODE_IPC_HOOK_CLI:-}") ]] && [[ -z "\$ZELLIJ" ]] && [[ -t 0 ]]; then
 
     # Function to start regular shell with helpful message
     start_fallback_shell() {
         local reason="\$1"
         echo "⚠️  Zellij startup failed: \$reason"
         echo "🐚 Falling back to regular shell..."
-        echo "💡 You can try manually: zellij --layout \${ZELLIJ_DEFAULT_LAYOUT:-claude-dev} --session claudetainer"
+        echo "💡 You can try manually: zellij --layout \${ZELLIJ_DEFAULT_LAYOUT:-tablet} --session claudetainer"
         echo "🔧 Or use basic shell commands as normal"
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "📁 Working directory: \$(pwd)"
@@ -39,21 +42,21 @@ if [[ \$- == *i* ]] && [[ -n "\${SSH_CONNECTION:-}" || -n "\${SSH_CLIENT:-}" ]] 
             fi
         else
             echo "🆕 Creating new claudetainer session with configured layout..."
-            echo "💡 Available layouts: claude-dev \\(enhanced\\), claude-compact \\(minimal\\)"
+            echo "💡 Available layouts: tablet \\(enhanced\\), phone \\(minimal\\)"
 
             # Determine which layout to use based on configuration
-            local layout_to_use="\${ZELLIJ_DEFAULT_LAYOUT:-claude-dev}"
+            local layout_to_use=\"\$ZELLIJ_DEFAULT_LAYOUT\"
 
             # Check if the configured layout exists
-            if [ -f ~/.config/zellij/layouts/"\$layout_to_use".kdl ]; then
+            if [ -f ~/.config/zellij/layouts/\"\$layout_to_use\".kdl ]; then
                 echo "✅ Using configured layout: \$layout_to_use"
             else
-                echo "⚠️  Configured layout not found, falling back to: claude-dev"
-                layout_to_use="claude-dev"
+                echo "⚠️  Configured layout not found, falling back to: tablet"
+                layout_to_use=\"tablet\"
             fi
 
             # Try to start new session with error handling
-            if ! zellij --new-session-with-layout "\$layout_to_use" -s claudetainer 2> /dev/null; then
+            if ! zellij --new-session-with-layout \"\$layout_to_use\" -s claudetainer 2> /dev/null; then
                 start_fallback_shell "Starting zellij with layout \$layout_to_use failed to start"
             fi
         fi

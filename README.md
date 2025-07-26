@@ -82,8 +82,8 @@ That's it! You now have a fully configured Claude Code development environment w
 - **Pre-configured linting** - black, flake8, eslint, gofmt, shellcheck 
 - **Smart formatting** - Fixes code style issues automatically
 - **SSH + Zellij** - Remote development with persistent sessions and configurable layouts:
-  - **claude-dev** layout (default): 4-tab enhanced workflow with GitUI integration
-  - **claude-compact** layout: Minimal 4-tab layout optimized for smaller screens
+  - **tablet** layout (default): 4-tab enhanced workflow with GitUI integration
+  - **phone** layout: Minimal 4-tab layout optimized for smaller screens
   - Custom layout support via `zellij_layout` option
 
 ### **Claude Code Slash Commands**
@@ -164,7 +164,7 @@ Add to your existing `.devcontainer/devcontainer.json`:
       "include": "python",
       "includeBase": true,
       "multiplexer": "zellij",
-      "zellij_layout": "claude-dev"
+      "zellij_layout": "tablet"
     }
   }
 }
@@ -231,19 +231,19 @@ When using `multiplexer: "zellij"`, customize the layout:
   "features": {
     "claudetainer": {
       "multiplexer": "zellij",
-      "zellij_layout": "claude-dev"  // Layout to use
+      "zellij_layout": "tablet"  // Layout to use
     }
   }
 }
 ```
 
 **Bundled Layouts:**
-- **`claude-dev`** (default): Enhanced 4-tab workflow with GitUI integration
+- **`tablet`** (default): Enhanced 4-tab workflow with GitUI integration
   - 🤖 **claude**: Main development workspace (70% + 30% split for commands)
   - 💰 **cost**: Usage monitoring + system resources  
   - 🌲 **git**: GitUI visual interface with fallback to traditional git commands
   - 🐚 **shell**: Development tasks + file explorer
-- **`claude-compact`**: Minimal 4-tab layout optimized for smaller screens
+- **`phone`**: Minimal 4-tab layout optimized for smaller screens
   - Single panes per tab with GitUI integration and essential functionality
 
 **Custom Layouts:**

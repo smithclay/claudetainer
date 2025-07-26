@@ -48,7 +48,7 @@
     "features": {
       "claudetainer": {
         "multiplexer": "zellij",
-        "zellij_layout": "claude-compact"
+        "zellij_layout": "phone"
       }
     }
   }

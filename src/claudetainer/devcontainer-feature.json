@@ -29,8 +29,8 @@
     },
     "zellij_layout": {
       "type": "string",
-      "default": "claude-dev",
-      "description": "Zellij layout to use: bundled layouts (claude-dev, claude-compact) or custom path (/path/to/layout.kdl)"
+      "default": "tablet",
+      "description": "Zellij layout to use: bundled layouts (tablet, phone) or custom path (/path/to/layout.kdl)"
     }
   }
 }

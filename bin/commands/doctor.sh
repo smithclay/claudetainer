@@ -308,10 +308,10 @@ cmd_doctor() {
                     if [[ -n "$zellij_layouts_check" ]]; then
                         ui_print_success "Zellij layouts configured"
                         # Check for specific bundled layouts
-                        local claude_dev_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/claude-dev.kdl 2>/dev/null")
-                        local claude_compact_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/claude-compact.kdl 2>/dev/null")
+                        local claude_dev_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/tablet.kdl 2>/dev/null")
+                        local claude_compact_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/phone.kdl 2>/dev/null")
                         if [[ -n "$claude_dev_check" ]] && [[ -n "$claude_compact_check" ]]; then
-                            ui_print_success "Bundled layouts available: claude-dev, claude-compact"
+                            ui_print_success "Bundled layouts available: tablet, phone"
                         else
                             ui_print_warning "Some bundled layouts missing - check installation"
                         fi

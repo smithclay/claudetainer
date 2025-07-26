@@ -91,7 +91,7 @@ chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
 
 **Shell Multiplexer Support:**
 - **Zellij (default)**: Modern terminal workspace with intuitive UI, floating windows, WebAssembly plugins, and multiplayer collaboration
-  - **Configurable layouts**: claude-dev (enhanced with GitUI), claude-compact (minimal with GitUI)
+  - **Configurable layouts**: tablet (enhanced with GitUI), phone (minimal with GitUI)
   - **Custom layout support**: Via `zellij_layout` option with KDL format
   - **Auto-start integration**: Automatically starts with configured layout on SSH login
   - **GitUI integration**: Visual git interface with keyboard shortcuts and fallback support
@@ -234,39 +234,65 @@ ls ~/.claude/commands/
 - CLAUDE.md sections concatenate
 - GitHub presets processed identically to local presets
 
-## File Structure (Target Implementation)
+## File Structure (Current Implementation)
 
 ```
 claudetainer/
-├── bin/
-│   └── claudetainer             # Standalone CLI tool for devcontainer management
-├── src/claudetainer/            # Feature source (DevContainer CLI structure)
-│   ├── devcontainer-feature.json    # Feature definition
-│   ├── install.sh               # Main installation script with GitHub preset support
-│   ├── presets/                 # Built-in language presets
-│   │   ├── base/                # Universal commands and hooks
-│   │   ├── go/                  # Go development support
-│   │   ├── node/                # Node.js/JavaScript/TypeScript support
-│   │   ├── python/              # Python-specific tooling and hooks
-│   │   ├── rust/                # Rust development support
-│   │   └── shell/               # Shell script development support
-│   ├── multiplexers/            # Shell multiplexer implementations
-│   │   ├── base.sh              # Common multiplexer interface
-│   │   ├── zellij/              # Zellij configuration and setup
-│   │   ├── tmux/                # tmux configuration and setup
-│   │   └── none/                # No multiplexer setup
+├── .devcontainer/                   # Development configuration
+├── .github/workflows/               # CI/CD workflows
+├── bin/                            # CLI tool implementation (modular)
+│   ├── claudetainer                # Main CLI entry point (143 lines)
+│   ├── commands/                   # CLI command implementations
+│   │   ├── doctor.sh              # Health check and debugging
+│   │   ├── init.sh                # Initialize devcontainer setup
+│   │   ├── list.sh                # List running containers
+│   │   ├── ssh.sh                 # SSH into container with multiplexer
+│   │   └── up.sh                  # Start devcontainer
+│   ├── config/                    # CLI configuration
+│   └── lib/                       # Core CLI libraries
+│       ├── config.sh              # Configuration management
+│       ├── devcontainer-gen.sh    # DevContainer JSON generation
+│       ├── docker-ops.sh          # Docker operations
+│       ├── notifications.sh       # Notification system
+│       ├── port-manager.sh        # Dynamic port allocation
+│       ├── ui.sh                  # User interface utilities
+│       └── validation.sh          # Input validation
+├── src/claudetainer/              # DevContainer feature implementation
+│   ├── devcontainer-feature.json # Feature definition
+│   ├── install.sh                # Main installation script
 │   ├── lib/
-│   │   └── merge-json.js        # JSON merging utility for settings
-│   └── scripts/
-│       └── nodejs-helper.sh     # Node.js installation helper
-├── test/                        # Testing infrastructure
-│   ├── claudetainer/            # DevContainer feature tests
+│   │   └── merge-json.js         # JSON merging utility
+│   ├── multiplexers/             # Shell multiplexer implementations
+│   │   ├── base.sh               # Common multiplexer interface
+│   │   ├── none/                 # No multiplexer setup
+│   │   ├── tmux/                 # tmux configuration and setup
+│   │   └── zellij/               # Zellij configuration and setup
+│   │       ├── bash-multiplexer.sh # Auto-start script
+│   │       ├── config.kdl        # Zellij configuration
+│   │       ├── install.sh        # Zellij installation logic
+│   │       └── layouts/          # Layout definitions
+│   │           ├── phone.kdl     # Compact layout
+│   │           └── tablet.kdl    # Enhanced layout
+│   ├── presets/                  # Language-specific presets
+│   │   ├── base/                 # Universal commands and hooks
+│   │   ├── go/                   # Go development support
+│   │   ├── node/                 # Node.js/JavaScript/TypeScript
+│   │   ├── python/               # Python-specific tooling
+│   │   ├── rust/                 # Rust development support
+│   │   └── shell/                # Shell script development
+│   └── scripts/                  # Helper scripts
+│       └── nodejs-helper.sh      # Node.js installation
+├── test/                         # Testing infrastructure
+│   ├── claudetainer/             # DevContainer feature tests
+│   │   ├── scenarios.json        # Test scenarios
 │   │   ├── test.sh              # Main test script
-│   │   ├── scenarios.json       # Test scenarios for different preset combinations
-│   │   └── test_*.sh           # Individual scenario tests
-│   └── cli/                     # External CLI tests
-│       └── lifecycle.sh         # Comprehensive CLI lifecycle test (27 tests)
-└── tmp/                         # Test artifacts (gitignored)
+│   │   └── test_*.sh            # Individual scenario tests
+│   └── cli/                      # External CLI tests
+│       └── lifecycle.sh          # CLI lifecycle test (27 tests)
+├── build.sh                      # Build script (modular → single-file)
+├── dist/claudetainer             # Built single-file CLI (1,435 lines)
+├── Makefile                      # Development automation
+└── README.md                     # Main documentation
 ```
 
 ## Coding Standards
@@ -375,7 +401,7 @@ claudetainer/
 **Major Features Added:**
 - ✅ **GitUI Integration**: Automatic installation and visual git interface integration in zellij layouts
   - **GitUI Installation**: Downloaded and installed to `~/bin/gitui` for all containers
-  - **Zellij Layout Updates**: Both claude-dev and claude-compact layouts now use GitUI as primary git interface
+  - **Zellij Layout Updates**: Both tablet and phone layouts now use GitUI as primary git interface
   - **Fallback Support**: Graceful fallback to traditional git commands if GitUI unavailable
   - **User Documentation**: Added GitUI keyboard shortcuts and usage guidance in layouts
 - ✅ **Test Suite Improvements**: Fixed failing tests and removed obsolete scenarios

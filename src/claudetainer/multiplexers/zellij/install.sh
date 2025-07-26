@@ -123,21 +123,21 @@ handle_custom_layout() {
             export ZELLIJ_DEFAULT_LAYOUT="$layout_name"
         else
             log_warning "Custom layout file not found: $layout_spec"
-            log_info "Falling back to bundled layout: claude-dev"
-            export ZELLIJ_DEFAULT_LAYOUT="claude-dev"
+            log_info "Falling back to bundled layout: tablet"
+            export ZELLIJ_DEFAULT_LAYOUT="tablet"
         fi
     else
         # It's a bundled layout name
         case "$layout_spec" in
-            claude-dev | claude-compact)
+            tablet | phone)
                 log_info "Using bundled layout: $layout_spec"
                 export ZELLIJ_DEFAULT_LAYOUT="$layout_spec"
                 ;;
             *)
                 log_warning "Unknown bundled layout: $layout_spec"
-                log_info "Available bundled layouts: claude-dev, claude-compact"
-                log_info "Falling back to: claude-dev"
-                export ZELLIJ_DEFAULT_LAYOUT="claude-dev"
+                log_info "Available bundled layouts: tablet, phone"
+                log_info "Falling back to: tablet"
+                export ZELLIJ_DEFAULT_LAYOUT="tablet"
                 ;;
         esac
     fi
@@ -177,11 +177,11 @@ install_multiplexer() {
     create_zellij_config
 
     log_success "Zellij multiplexer installation complete"
-    log_info "Session will start automatically on SSH login with layout: ${ZELLIJ_DEFAULT_LAYOUT:-claude-dev}"
+    log_info "Session will start automatically on SSH login with layout: ${ZELLIJ_DEFAULT_LAYOUT:-tablet}"
     log_info "Available layouts:"
-    log_info "  • zellij --layout claude-dev --session claudetainer      # Enhanced 4-tab"
-    log_info "  • zellij --layout claude-compact --session claudetainer  # Compact 4-tab"
-    if [ -n "${ZELLIJ_DEFAULT_LAYOUT:-}" ] && [ "${ZELLIJ_DEFAULT_LAYOUT:-}" != "claude-dev" ]; then
+    log_info "  • zellij --layout tablet --session claudetainer      # Enhanced 4-tab"
+    log_info "  • zellij --layout phone --session claudetainer  # Compact 4-tab"
+    if [ -n "${ZELLIJ_DEFAULT_LAYOUT:-}" ] && [ "${ZELLIJ_DEFAULT_LAYOUT:-}" != "tablet" ]; then
         log_info "  • zellij --layout $ZELLIJ_DEFAULT_LAYOUT --session claudetainer  # Custom/configured layout"
     fi
 }

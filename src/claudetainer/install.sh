@@ -263,7 +263,7 @@ fi
 
 # Setup multiplexer (zellij, tmux, or none)
 MULTIPLEXER="${MULTIPLEXER:-zellij}"
-ZELLIJ_LAYOUT="${ZELLIJ_LAYOUT:-claude-dev}"
+ZELLIJ_LAYOUT="${ZELLIJ_LAYOUT:-tablet}"
 echo "🔧 Setting up $MULTIPLEXER multiplexer..."
 
 # Validate multiplexer choice
