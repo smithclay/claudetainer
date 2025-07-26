@@ -14,9 +14,9 @@ claudetainer **doesn't change your system or existing Claude Code configuration*
 
 Don't like the slash commands? Need support for Erlang? Hate the mobile layouts? Just override with your own configuration or use claudecontainer as a feature in your own custom .devcontainer. All built-in opinionated workflows ("presets") are optional. 
 
-## Quick Start
+## Quick Start (Recommended)
 
-Get up and running in under 60 seconds on Linux, macOS or WSL:
+Get up and running in under 2 minutes on Linux, macOS or WSL:
 
 ```bash
 # 1. Add the tap and install
@@ -25,27 +25,17 @@ brew install claudetainer
 
 cd ~/your-project # node, python, go, rust, shell (PRs welcome for others)
 
-# 2. Initialize your project (auto-detects language)
-claudetainer init
+# 2. Initialize your project with a language preset (go, node, python, rust)
+claudetainer init python
 
 # 3. Start the container  
 claudetainer up
 
-# 4. Connect with full tooling and terminal multiplexer
+# 4. Connect to the container full tooling and terminal multiplexer (default password is: vscode)
 claudetainer ssh
 
-# Once in the container, navigate to /workspaces and start `claude` in your project directory.
-# Hooks, commands, CLAUDE.md instructions and push notifications are automatically configured.
-```
-
-### Option 2: Direct Download
-
-```bash
-# 1. Download and install
-curl -o claudetainer https://raw.githubusercontent.com/smithclay/claudetainer/main/bin/claudetainer
-chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
-
-# 2. Follow steps 2-6 above
+# 5. Start Claude Code: all hooks and slash commands automatically load
+claude
 ```
 
 That's it! You now have a fully configured Claude Code development environment with automated linting, slash commands, and team workflows.
@@ -90,11 +80,6 @@ Claudetainer automatically detects your project type and configures the right to
 | **Rust** | `Cargo.toml` | rustfmt, clippy | Cargo integration |
 | **Shell** | `*.sh`, `install.sh`, `setup.sh`, `build.sh` | shellcheck, shfmt | POSIX/bash dialect detection, security linting |
 
-### **Git Integration**
-- **GitUI** - Modern terminal-based git interface automatically installed
-- **Visual git workflow** - Browse commits, stage files, and manage branches visually
-- **Fallback compatibility** - Traditional git commands available as alternatives
-- **Smart integration** - GitUI launches from zellij git tab with helpful controls documentation
 
 Don't see your language? Don't like the prompts? Claudetainer is [extensible](#extending-claudetainer) - create custom presets or request new ones.
 

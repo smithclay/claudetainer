@@ -21,11 +21,11 @@ layout {
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 Claude Code Development Environment'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo '💡 Tips:'; echo '  • Use claude for interactive coding'; echo '  • Alt+h/l to switch tabs quickly'; echo '  • Ctrl+p for pane management'; echo '  • Ctrl+t for tab management'; echo ''; echo '📁 Working in:' $(pwd); echo '🚀 Ready for development!'; echo ''; exec bash"
             }
             
-            // Quick commands and notes
+            // Claudetainer hooks and notifications info
             pane size="30%" {
-                name "quick-cmds"
+                name "claudetainer-info"
                 command "bash" 
-                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ Quick Commands'; echo '━━━━━━━━━━━━━━━━━'; echo 'Development:'; echo '  • claude          # Start Claude Code'; echo '  • ~/bin/gitui     # Git interface'; echo '  • git status      # Check status'; echo '  • git log --oneline -10  # Recent commits'; echo ''; exec bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ Claudetainer Hooks'; echo '━━━━━━━━━━━━━━━━━━━'; echo 'Slash Commands:'; echo '  • /commit         # Conventional commits'; echo '  • /check          # Project health check'; echo '  • /next           # Start new collaboration'; echo ''; echo '📱 Push Notifications:'; echo '  • Auto-generated channel'; echo '  • Subscribe: ntfy.sh/claude-project-xyz'; echo '  • Mobile app: ntfy.sh'; echo ''; echo '🔧 Features:'; echo '  • Auto-linting on file edits'; echo '  • Quality gates (blocks bad code)'; echo '  • Language-specific best practices'; echo ''; exec bash"
             }
         }
     }
@@ -37,7 +37,7 @@ layout {
             pane size="60%" {
                 name "claude-usage"
                 command "bash"
-                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '💰 Claude Code Usage Monitor'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo 'Starting ccusage for real-time usage tracking...'; echo ''; echo '💡 This shows:'; echo '  • Token usage per request'; echo '  • Cost estimates'; echo '  • Request patterns'; echo '  • Daily/weekly totals'; echo ''; echo 'Loading...'; sleep 2; if command -v npx >/dev/null 2>&1; then npx ccusage; else echo '❌ ccusage not available. Install with: npm install -g ccusage'; echo '📊 Alternative: Check Claude usage at https://console.anthropic.com'; exec bash; fi"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '💰 Claude Code Usage Monitor'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo 'Starting ccusage for real-time usage tracking...'; echo ''; echo '💡 This shows:'; echo '  • Token usage per request'; echo '  • Cost estimates'; echo '  • Request patterns'; echo '  • Daily/weekly totals'; echo ''; echo 'Loading...'; sleep 2; if command -v npx >/dev/null 2>&1; then npx ccusage blocks --live; else echo '❌ ccusage not available. Install with: npm install -g ccusage'; echo '📊 Alternative: Check Claude usage at https://console.anthropic.com'; exec bash; fi"
             }
             
             // System resources
@@ -53,17 +53,10 @@ layout {
     tab name="🌲 git" {
         pane split_direction="vertical" {
             // GitUI main interface
-            pane size="70%" {
+            pane size="100%" {
                 name "gitui-main"
                 command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🌲 Git Interface'; echo '━━━━━━━━━━━━━━━━━━'; if command -v gitui >/dev/null 2>&1; then echo 'Starting GitUI...'; echo 'Press q to quit GitUI and return to shell'; sleep 1; gitui; else echo '⚠️  GitUI not available - using standard git'; echo; git_loop() { while true; do clear; echo '🌲 Git Status & Log - $(date +\"%H:%M:%S\")'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo; echo '📊 Current Status:'; git status --short 2>/dev/null || echo 'Not a git repository'; echo; echo '📝 Recent Commits (last 8):'; git log --oneline --graph -8 2>/dev/null || echo 'No commits yet'; echo; echo '🌿 Current Branch:'; git branch --show-current 2>/dev/null || echo 'No branch'; echo; echo '🔄 Auto-refresh every 10s | Press Ctrl+C for interactive shell'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; sleep 10; done; }; git_loop; fi; exec bash"
-            }
-            
-            // GitUI help and commands
-            pane size="30%" {
-                name "gitui-help"
-                command "bash"
-                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ Git Help & Commands'; echo '━━━━━━━━━━━━━━━━━━━━━━'; echo ''; if command -v gitui >/dev/null 2>&1; then echo '🚀 GitUI Controls:'; echo '  Tab         # Switch views'; echo '  Enter       # Select/Open'; echo '  Space       # Stage/Unstage'; echo '  c           # Commit'; echo '  p           # Push'; echo '  f           # Fetch'; echo '  l           # Pull'; echo '  r           # Refresh'; echo '  q           # Quit to shell'; echo '  ?           # Show help'; echo ''; echo '📁 Views Available:'; echo '  Status      # Working tree'; echo '  Log         # Commit history'; echo '  Stashing    # Stash management'; echo '  Files tree  # File browser'; echo ''; else echo '⚠️  GitUI not available'; echo 'Using standard git commands:'; echo ''; fi; echo '📝 Standard Git Commands:'; echo '  git status              # Check status'; echo '  git add <file>          # Stage files'; echo '  git commit -m \"msg\"     # Commit'; echo '  git push                # Push changes'; echo '  git pull                # Pull changes'; echo '  git log --oneline -10   # Recent commits'; echo ''; echo '⚡ Ready for commands!'; exec bash"
             }
         }
     }

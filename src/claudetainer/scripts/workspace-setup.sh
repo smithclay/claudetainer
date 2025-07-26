@@ -41,13 +41,6 @@ claudetainer_welcome() {
         echo "🚀 Quick Start:"
         echo "  • claude                 # Start Claude Code interactive session"
         echo "  • claude --help          # View Claude Code help and options"
-        echo "  • ~/bin/gitui            # Launch visual Git interface"
-        echo
-        echo "🔧 Development Tools:"
-        echo "  • make                   # Run project Makefile (if available)"
-        echo "  • npm test / pytest      # Run tests (language-specific)"
-        echo "  • git status             # Check Git repository status"
-        echo "  • rg <pattern>           # Search in files (ripgrep)"
         echo
         echo "📋 Container Info:"
         echo "  • Working Directory: $(pwd)"
@@ -55,7 +48,6 @@ claudetainer_welcome() {
         echo "  • Available Memory: $(free -h | awk '/^Mem:/ {print $7}') free"
         echo
         echo "🆘 Help & Debug:"
-        echo "  • ~/.config/claudetainer/scripts/debug-zellij.sh  # Debug Zellij issues"
         echo "  • claudetainer doctor                # Host-side health check"
         echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

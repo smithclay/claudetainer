@@ -133,6 +133,8 @@ Smart-lint integrates with Claude Code through these hooks:
 }
 ```
 
+**Note**: Recent versions have migrated some scripts to `~/.config/claudetainer/scripts/` for better XDG compliance, while maintaining Claude Code hooks in the standard `~/.claude/` directory.
+
 ## JSON Merge Logic
 
 The `lib/merge-json.js` utility handles Claude Code-specific merging rules for combining multiple preset configurations.
@@ -169,9 +171,52 @@ The `lib/merge-json.js` utility handles Claude Code-specific merging rules for c
 node lib/merge-json.js target.json source1.json source2.json
 ```
 
+## Notification System
+
+Claudetainer includes an integrated push notification system using ntfy.sh for real-time development updates.
+
+### Configuration Format
+
+Notifications use JSON configuration files:
+
+```json
+{
+  "ntfy_topic": "claude-projectname-abc123",
+  "ntfy_server": "https://ntfy.sh"
+}
+```
+
+**Location**: `~/.config/claudetainer/ntfy.json`
+
+### Implementation
+
+- **Auto-generation**: Unique channels created per project using project name + hash
+- **Dependencies**: Requires `jq` for JSON parsing and `curl` for HTTP requests
+- **Hook Integration**: Triggered by Claude Code events (notification, stop, idle)
+- **Rate limiting**: Prevents notification spam (max 1 per 2 seconds)
+
+### Notification Events
+
+- **notification**: General Claude Code notifications (errors get high priority)
+- **stop**: Claude finished responding (low priority)
+- **idle-notification**: Claude waiting for input >60s (default priority)
+
 ## CLI Tool Architecture
 
-The `bin/claudetainer` CLI provides ergonomic devcontainer management with automatic language detection.
+The `bin/claudetainer` CLI provides ergonomic devcontainer management with automatic language detection and modular architecture.
+
+### Modular Architecture
+
+**Development Structure**:
+```
+bin/
+├── claudetainer              # Main CLI (143 lines)
+├── lib/                     # Core libraries (8 modules)
+├── commands/                # Command implementations (7 modules)
+└── dist/                   # Built single-file distribution
+```
+
+**Build Process**: `./build.sh` creates `dist/claudetainer` (1,435 lines) for distribution
 
 ### Command Structure
 
@@ -179,9 +224,11 @@ The `bin/claudetainer` CLI provides ergonomic devcontainer management with autom
 claudetainer <command> [options]
 
 Commands:
-  init [lang]    # Create .devcontainer with claudetainer feature
-  up             # Start devcontainer
-  ssh            # Connect via SSH with tmux
+  init [lang]         # Create .devcontainer with claudetainer feature
+  up                  # Start devcontainer  
+  ssh                 # Connect via SSH with multiplexer session
+  doctor              # Comprehensive health check and debugging
+  list/ps/ls          # List running containers
 ```
 
 ### Language Detection Logic
@@ -200,9 +247,48 @@ detect_language() {
 
 The CLI generates optimized devcontainer.json with:
 - **Base image** appropriate for language
-- **Features**: Claude Code + claudetainer + SSH + tmux
-- **Port forwarding**: 2223 for SSH access
+- **Features**: Claude Code + claudetainer + SSH + multiplexer (Zellij/tmux)
+- **Port forwarding**: Dynamic allocation (2220-2299 range) for SSH access
 - **Credential mounting**: `~/.claudetainer-credentials.json`
+- **Multiplexer support**: Configurable Zellij layouts (tablet/phone) or tmux
+
+## Multiplexer Architecture
+
+Claudetainer supports multiple terminal multiplexers with configurable layouts and auto-start functionality.
+
+### Supported Multiplexers
+
+| Multiplexer | Description | Key Features |
+|-------------|-------------|--------------|
+| **Zellij** (default) | Modern terminal workspace | WebAssembly plugins, intuitive UI, configurable layouts |
+| **tmux** | Traditional multiplexer | Mature, familiar keybindings, wide compatibility |
+| **none** | Simple bash | Minimal setup, no multiplexer overhead |
+
+### Zellij Layout System
+
+**Bundled Layouts**:
+- **tablet**: Enhanced 4-tab workflow (claude, cost, git, shell) with GitUI integration
+- **phone**: Minimal 4-tab layout optimized for smaller screens
+
+**Layout Features**:
+- **GitUI Integration**: Visual git interface with automatic installation to `~/.local/bin/gitui`
+- **Usage Monitoring**: Real-time Claude Code usage tracking via ccusage
+- **Smart Fallbacks**: Graceful degradation when tools unavailable
+- **Layout Switching**: `ct-layout phone|tablet` alias for runtime switching
+
+### Auto-start System
+
+**Configuration**: Scripts at `~/.config/claudetainer/scripts/bashrc-multiplexer.sh`
+
+**Trigger Conditions**:
+- SSH connection or VS Code remote session
+- Not already inside a multiplexer session
+- Valid multiplexer configuration
+
+**Behavior**:
+- Auto-navigates to workspace directory
+- Creates or attaches to named session (`claudetainer`)
+- Provides fallback shell with helpful messages on failure
 
 ## GitHub Preset Support
 
@@ -239,13 +325,25 @@ fi
 
 ### Automated Testing
 
+**Primary Methods**:
 ```bash
 # DevContainer CLI testing (primary method)
 devcontainer features test .
 
+# CLI Testing (modular + built)
+make test-cli
+
+# External CLI lifecycle testing (27 comprehensive tests)
+make test-lifecycle
+
 # Test specific scenarios
 devcontainer features test --feature claudetainer --base-image mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm .
 ```
+
+**CI/CD Testing**: Three-tier approach
+- **test-cli job**: Tests modular and built CLI versions
+- **test-scenarios job**: Tests devcontainer features
+- **test-cli-lifecycle job**: Tests external CLI functionality
 
 ### Test Scenarios
 
@@ -279,8 +377,11 @@ cat ~/.claude/settings.json | jq .
 - [ ] Hooks directory contains executable scripts  
 - [ ] CLAUDE.md exists and contains preset documentation
 - [ ] Smart-lint works for target language
-- [ ] SSH access works on port 2223
-- [ ] Tmux integration functions properly
+- [ ] SSH access works on dynamically allocated port
+- [ ] Multiplexer integration functions properly (Zellij/tmux)
+- [ ] Notification system configured with ntfy.json
+- [ ] GitUI installed and accessible
+- [ ] Layout switching alias (`ct-layout`) works
 
 ## CI/CD Integration
 

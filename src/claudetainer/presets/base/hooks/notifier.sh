@@ -14,9 +14,8 @@
 #   event_type    One of "notification", "stop", or "idle-notification"
 #
 # CONFIGURATION
-#   Requires ~/.config/claudetainer/ntfy.yaml with:
-#     ntfy_topic: your-topic-name
-#     ntfy_server: https://ntfy.sh (optional, defaults to public server)
+#   Requires ~/.config/claudetainer/ntfy.json with:
+#     {"ntfy_topic": "your-topic-name", "ntfy_server": "https://ntfy.sh"}
 #
 # ENVIRONMENT
 #   CLAUDE_HOOK_PAYLOAD   JSON payload from Claude Code (for notifications)
@@ -49,7 +48,7 @@ set -euo pipefail
 EVENT_TYPE="${1:-notification}"
 
 # Configuration file location
-CONFIG_FILE="${CLAUDE_HOOKS_NTFY_CONFIG:-$HOME/.config/claudetainer/ntfy.yaml}"
+CONFIG_FILE="${CLAUDE_HOOKS_NTFY_CONFIG:-$HOME/.config/claudetainer/ntfy.json}"
 
 # Validate event type
 case "$EVENT_TYPE" in
@@ -73,20 +72,19 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
     echo "Warning: Ntfy config not found at $CONFIG_FILE" >&2
     echo "Set it up with: cf config ntfy init" >&2
     echo "Or create it manually with:" >&2
-    echo "  ntfy_topic: your-topic-name" >&2
-    echo "  ntfy_server: https://ntfy.sh" >&2
+    echo '  {"ntfy_topic": "your-topic-name", "ntfy_server": "https://ntfy.sh"}' >&2
     exit 0 # Exit gracefully to not block Claude
 fi
 
-# Check if yq is available
-if ! command -v yq > /dev/null 2>&1; then
-    echo "Warning: yq not found, cannot parse ntfy config" >&2
+# Check if jq is available
+if ! command -v jq > /dev/null 2>&1; then
+    echo "Warning: jq not found, cannot parse ntfy config" >&2
     exit 0
 fi
 
 # Extract configuration with error handling
-NTFY_TOPIC=$(yq -r '.ntfy_topic // ""' "$CONFIG_FILE" 2> /dev/null || echo "")
-NTFY_SERVER=$(yq -r '.ntfy_server // "https://ntfy.sh"' "$CONFIG_FILE" 2> /dev/null || echo "https://ntfy.sh")
+NTFY_TOPIC=$(jq -r '.ntfy_topic // ""' "$CONFIG_FILE" 2> /dev/null || echo "")
+NTFY_SERVER=$(jq -r '.ntfy_server // "https://ntfy.sh"' "$CONFIG_FILE" 2> /dev/null || echo "https://ntfy.sh")
 
 # Validate required configuration
 if [[ -z "$NTFY_TOPIC" ]]; then

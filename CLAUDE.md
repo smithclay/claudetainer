@@ -200,7 +200,7 @@ ls ~/.claude/commands/
 **Dependencies:** Bash 4.0+, Node.js 16+, Claude Code 1.0+, git (for GitHub presets), Docker, DevContainer CLI
 
 **Container Dependencies:** 
-- `yq` - Required for parsing ntfy.yaml configuration in notification hooks
+- `jq` - Required for parsing ntfy.json configuration in notification hooks
 - `curl` - Required for sending notifications to ntfy service
 - `tmux` - Session management and persistence
 - Standard UNIX tools: `nc`, `lsof`, `shasum` (for port management and health checks)

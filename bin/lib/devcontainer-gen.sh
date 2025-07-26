@@ -36,6 +36,9 @@ devcontainer_generate_json() {
         claudetainer_config='"includeBase": true, "include": "'${lang}'", "multiplexer": "'${multiplexer}'"'
     fi
 
+    # Get language-specific additional features
+    local additional_features=$(config_get_language_features "$lang")
+
     cat << EOF
 {
     "name": "${name}",
@@ -45,7 +48,7 @@ devcontainer_generate_json() {
         "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
         "ghcr.io/smithclay/claudetainer/claudetainer:${feature_version}": {
             ${claudetainer_config}
-        },
+        },$(if [[ -n "$additional_features" ]]; then echo -e "\n        $additional_features,"; fi)
         "ghcr.io/devcontainers/features/sshd:1": {
             "SSHD_PORT": ${port},
             "START_SSHD": "true",

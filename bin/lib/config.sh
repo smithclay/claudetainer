@@ -62,6 +62,31 @@ config_get_language_config() {
     esac
 }
 
+# Language-specific additional features
+config_get_language_features() {
+    local lang="$1"
+    case "$lang" in
+        python)
+            echo '"ghcr.io/va-h/devcontainers-features/uv:1": {}'
+            ;;
+        node)
+            # No additional features for node yet
+            ;;
+        rust)
+            # No additional features for rust yet
+            ;;
+        go)
+            # No additional features for go yet
+            ;;
+        shell)
+            # No additional features for shell yet
+            ;;
+        base)
+            # No additional features for base
+            ;;
+    esac
+}
+
 # Load user configuration if it exists
 config_load_user_config() {
     local user_config="$HOME/.claudetainer/config"

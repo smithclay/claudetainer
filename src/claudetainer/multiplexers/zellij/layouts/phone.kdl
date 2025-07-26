@@ -22,7 +22,7 @@ layout {
         pane {
             name "usage"
             command "bash"
-            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '💰 Usage Monitor'; echo '━━━━━━━━━━━━━━━'; if command -v npx >/dev/null 2>&1; then npx ccusage; else echo '❌ ccusage not available'; echo '📊 Check: https://console.anthropic.com'; exec bash; fi"
+            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '💰 Usage Monitor'; echo '━━━━━━━━━━━━━━━'; if command -v npx >/dev/null 2>&1; then npx ccusage blocks --live; else echo '❌ ccusage not available'; echo '📊 Check: https://console.anthropic.com'; exec bash; fi"
         }
     }
     

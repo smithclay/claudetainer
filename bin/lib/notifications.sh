@@ -42,9 +42,11 @@ notifications_setup_channel() {
         ui_print_info "Setting up ntfy configuration in container..."
         docker exec "$container_name" sh -c "
             mkdir -p /home/vscode/.config/claudetainer
-            cat > /home/vscode/.config/claudetainer/ntfy.yaml << 'EOF'
-ntfy_topic: $ntfy_channel
-ntfy_server: https://ntfy.sh
+            cat > /home/vscode/.config/claudetainer/ntfy.json << 'EOF'
+{
+  \"ntfy_topic\": \"$ntfy_channel\",
+  \"ntfy_server\": \"https://ntfy.sh\"
+}
 EOF
             chown -R vscode:vscode /home/vscode/.config/claudetainer
         " 2> /dev/null && ui_print_success "Created ntfy config in container" || ui_print_warning "Could not create ntfy config in container"
@@ -79,13 +81,13 @@ notifications_check_setup() {
 
     # Check container notification config
     if [[ -n "$container_name" ]]; then
-        local container_ntfy_check=$(docker_exec_in_container "$container_name" "cat /home/vscode/.config/claudetainer/ntfy.yaml 2>/dev/null")
+        local container_ntfy_check=$(docker_exec_in_container "$container_name" "cat /home/vscode/.config/claudetainer/ntfy.json 2>/dev/null")
         if [[ -n "$container_ntfy_check" ]]; then
             ui_print_success "Notification config found in container"
 
             # Parse and validate the config
-            local container_topic=$(docker_exec_in_container "$container_name" "grep 'ntfy_topic:' /home/vscode/.config/claudetainer/ntfy.yaml 2>/dev/null | cut -d: -f2 | xargs")
-            local container_server=$(docker_exec_in_container "$container_name" "grep 'ntfy_server:' /home/vscode/.config/claudetainer/ntfy.yaml 2>/dev/null | cut -d: -f2- | xargs")
+            local container_topic=$(docker_exec_in_container "$container_name" "jq -r '.ntfy_topic // empty' /home/vscode/.config/claudetainer/ntfy.json 2>/dev/null")
+            local container_server=$(docker_exec_in_container "$container_name" "jq -r '.ntfy_server // empty' /home/vscode/.config/claudetainer/ntfy.json 2>/dev/null")
 
             if [[ -n "$container_topic" ]]; then
                 ui_print_success "Container notification topic: $container_topic"
@@ -113,13 +115,13 @@ notifications_check_setup() {
                 ((issues_found++))
             fi
 
-            # Test if yq is available in container (needed by notifier.sh)
-            local yq_check=$(docker_exec_in_container "$container_name" "command -v yq >/dev/null 2>&1 && echo 'found'")
-            if [[ "$yq_check" = "found" ]]; then
-                ui_print_success "yq is available in container (required for notifications)"
+            # Test if jq is available in container (needed by notifier.sh)
+            local jq_check=$(docker_exec_in_container "$container_name" "command -v jq >/dev/null 2>&1 && echo 'found'")
+            if [[ "$jq_check" = "found" ]]; then
+                ui_print_success "jq is available in container (required for notifications)"
             else
-                ui_print_warning "yq not found in container - notifications may not work"
-                echo "  • yq is required by notifier.sh to parse ntfy.yaml"
+                ui_print_warning "jq not found in container - notifications may not work"
+                echo "  • jq is required by notifier.sh to parse ntfy.json"
                 ((issues_found++))
             fi
 
@@ -134,7 +136,7 @@ notifications_check_setup() {
             fi
         else
             ui_print_warning "No notification config found in container"
-            echo "  • Config should be at: /home/vscode/.config/claudetainer/ntfy.yaml"
+            echo "  • Config should be at: /home/vscode/.config/claudetainer/ntfy.json"
             echo "  • Run 'claudetainer up' to recreate container with notifications"
         fi
     else
