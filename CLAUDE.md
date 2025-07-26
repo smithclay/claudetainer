@@ -85,15 +85,16 @@ chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
 
 **Generated DevContainer Features:**
 - Claude Code integration (`ghcr.io/anthropics/devcontainer-features/claude-code:1.0`)
-- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.2.6`)
+- Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.2.7`)
 - SSH daemon for remote access (`ghcr.io/devcontainers/features/sshd:1`)
 - Tmux for session management (`ghcr.io/duduribeiro/devcontainer-features/tmux:1`) - when using tmux multiplexer
 
 **Shell Multiplexer Support:**
 - **Zellij (default)**: Modern terminal workspace with intuitive UI, floating windows, WebAssembly plugins, and multiplayer collaboration
-  - **Configurable layouts**: claude-dev (enhanced), claude-compact (minimal), claudetainer (basic)
+  - **Configurable layouts**: claude-dev (enhanced with GitUI), claude-compact (minimal with GitUI)
   - **Custom layout support**: Via `zellij_layout` option with KDL format
   - **Auto-start integration**: Automatically starts with configured layout on SSH login
+  - **GitUI integration**: Visual git interface with keyboard shortcuts and fallback support
 - **tmux**: Traditional, mature multiplexer with familiar keybindings and wide compatibility
 - **none**: Simple bash environment for minimal setups or when multiplexers aren't needed
 - Automatic session management with optimized workspace configuration
@@ -298,6 +299,9 @@ claudetainer/
 - ✅ Notification channel generation and configuration system
 - ✅ Comprehensive health checking and debugging via doctor command
 - ✅ Enhanced CLI tool with robust error handling and user guidance
+- ✅ GitUI integration with automatic installation and zellij layout integration
+- ✅ EditorConfig support for consistent shell script formatting across development and CI
+- ✅ Simplified CI/CD workflows with streamlined release process and comprehensive testing
 
 **Phase 2+ Implementation Details:**
 - **Multi-preset merging**: Supports comma-separated preset lists with intelligent deduplication
@@ -369,6 +373,25 @@ claudetainer/
 ## Recent Updates (Latest Session)
 
 **Major Features Added:**
+- ✅ **GitUI Integration**: Automatic installation and visual git interface integration in zellij layouts
+  - **GitUI Installation**: Downloaded and installed to `~/bin/gitui` for all containers
+  - **Zellij Layout Updates**: Both claude-dev and claude-compact layouts now use GitUI as primary git interface
+  - **Fallback Support**: Graceful fallback to traditional git commands if GitUI unavailable
+  - **User Documentation**: Added GitUI keyboard shortcuts and usage guidance in layouts
+- ✅ **Test Suite Improvements**: Fixed failing tests and removed obsolete scenarios
+  - **Fixed test_zellij_multiplexer**: Updated to match actual tab names with emoji prefixes
+  - **Removed obsolete test**: Deleted redundant test_zellij_basic_layout scenario and test file
+  - **Enhanced test coverage**: Added gitui installation verification to main test suite
+- ✅ **CLI Regression Fix**: Resolved 'up' command prompting issue
+  - **Fixed Behavior**: 'up' command now defaults to base devcontainer when no language detected
+  - **Consistent UX**: Matches 'init' command behavior for seamless user experience
+  - **No More Prompts**: Eliminates interactive prompting in non-interactive environments
+- ✅ **Development Infrastructure**: Added EditorConfig and simplified workflows
+  - **EditorConfig Support**: Consistent shell script formatting with .editorconfig file
+  - **Simplified CI/CD**: Release workflow now depends on test workflow instead of duplicating tests
+  - **Improved Maintainability**: Reduced code duplication and streamlined automation
+
+**Previous Major Features:**
 - ✅ **External CLI Lifecycle Testing**: Comprehensive 27-test validation system
   - **Moved to test/cli/**: Relocated external CLI test from root to proper test directory structure
   - **Makefile Integration**: Added `make test-lifecycle` target and integrated into main `test` target
