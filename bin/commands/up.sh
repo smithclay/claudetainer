@@ -203,8 +203,9 @@ cmd_up() {
     ui_print_success "Container is ready!"
     ui_print_info "Next steps:"
     echo "  1. Run 'claudetainer ssh' to connect and start coding"
-    echo "  2. Use 'claudetainer list' to see running containers"
-    echo "  3. Run 'claudetainer doctor' if you encounter issues"
+    echo "  2. Run 'claudetainer mosh' for resilient mobile connections"
+    echo "  3. Use 'claudetainer list' to see running containers"
+    echo "  4. Run 'claudetainer doctor' if you encounter issues"
     echo
     local ssh_port=$(pm_get_current_project_port)
     local mosh_port=$((60000 + ssh_port))

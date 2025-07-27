@@ -65,6 +65,7 @@ COMMANDS:
                               --verbose (show detailed devcontainer CLI output)
                               --language <lang> (specify language for devcontainer creation)
     ssh              SSH into running container with configured multiplexer session
+    mosh             Connect via MOSH (mobile shell) for resilient remote sessions
     rm               Remove claudetainer containers and optionally config
                      Options: --all (remove all claudetainer containers)
                               --config (also remove .devcontainer directory)

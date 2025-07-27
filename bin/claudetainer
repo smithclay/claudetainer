@@ -75,6 +75,9 @@ load_commands_for() {
         ssh)
             load_command "ssh"
             ;;
+        mosh)
+            load_command "mosh"
+            ;;
         rm)
             load_command "rm"
             ;;
@@ -138,6 +141,9 @@ main() {
             ;;
         ssh)
             cmd_ssh
+            ;;
+        mosh)
+            cmd_mosh
             ;;
         rm)
             shift

@@ -357,7 +357,7 @@ function generateDashboardHTML(containers, hostname) {
         }
 
         function copyMoshCommand(hostname, sshPort, moshPort) {
-            const command = \`mosh --ssh="ssh -p \${sshPort}" --port=\${moshPort} vscode@\${hostname}\`;
+            const command = \`mosh -P \${sshPort} -p \${moshPort} vscode@\${hostname}\`;
             navigator.clipboard.writeText(command).then(() => {
                 alert('MOSH command copied to clipboard!');
             }).catch(() => {
