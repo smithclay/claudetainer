@@ -49,6 +49,7 @@ devcontainer_generate_json() {
         "ghcr.io/smithclay/claudetainer/claudetainer:${feature_version}": {
             ${claudetainer_config}
         },$(if [[ -n "$additional_features" ]]; then echo -e "\n        $additional_features,"; fi)
+        "ghcr.io/devcontainers-extra/features/mosh-apt-get:1": {},
         "ghcr.io/devcontainers/features/sshd:1": {
             "SSHD_PORT": ${port},
             "START_SSHD": "true",
