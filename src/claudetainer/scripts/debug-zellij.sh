@@ -135,7 +135,7 @@ main() {
     # 4. Layout Validation
     log_header "📐 Layout File Validation"
 
-    local default_layout="${ZELLIJ_LAYOUT:-tablet}"
+    local default_layout="${ZELLIJ_LAYOUT:-phone}"
     echo -e "Default layout: $default_layout"
 
     local layout_file="$HOME/.config/zellij/layouts/${default_layout}.kdl"

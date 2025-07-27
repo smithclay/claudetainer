@@ -131,8 +131,8 @@ handle_custom_layout() {
             export ZELLIJ_DEFAULT_LAYOUT="$layout_name"
         else
             log_warning "Custom layout file not found: $layout_spec"
-            log_info "Falling back to bundled layout: tablet"
-            export ZELLIJ_DEFAULT_LAYOUT="tablet"
+            log_info "Falling back to bundled layout: phone"
+            export ZELLIJ_DEFAULT_LAYOUT="phone"
         fi
     else
         # It's a bundled layout name
@@ -144,8 +144,8 @@ handle_custom_layout() {
             *)
                 log_warning "Unknown bundled layout: $layout_spec"
                 log_info "Available bundled layouts: tablet, phone"
-                log_info "Falling back to: tablet"
-                export ZELLIJ_DEFAULT_LAYOUT="tablet"
+                log_info "Falling back to: phone"
+                export ZELLIJ_DEFAULT_LAYOUT="phone"
                 ;;
         esac
     fi
@@ -160,10 +160,10 @@ setup_auto_start() {
 
     # Create the auto-start script with layout substitution
     mkdir -p "$target_home/.config/claudetainer/scripts"
-    log_info "Setting up Zellij auto-start script with layout: ${ZELLIJ_DEFAULT_LAYOUT:-tablet}"
+    log_info "Setting up Zellij auto-start script with layout: ${ZELLIJ_DEFAULT_LAYOUT:-phone}"
 
     # Substitute the layout placeholder in the template
-    sed "s/__ZELLIJ_LAYOUT__/${ZELLIJ_DEFAULT_LAYOUT:-tablet}/g" "multiplexers/zellij/bash-multiplexer.sh" > "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" || {
+    sed "s/__ZELLIJ_LAYOUT__/${ZELLIJ_DEFAULT_LAYOUT:-phone}/g" "multiplexers/zellij/bash-multiplexer.sh" > "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" || {
         log_error "Failed to create Zellij auto-start script"
         return 1
     }
@@ -184,22 +184,9 @@ setup_auto_start() {
             echo "# Claudetainer: Auto-start multiplexer session for remote connections"
             echo "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh"
             echo ""
-            echo "# Claudetainer: Layout switching aliases"
-            echo "alias ct-layout='claudetainer-layout-switch'"
-            echo "claudetainer-layout-switch() {"
-            echo "    local layout=\"\$1\""
-            echo "    if [[ \"\$layout\" != \"phone\" && \"\$layout\" != \"tablet\" ]]; then"
-            echo "        echo \"Usage: ct-layout [phone|tablet]\""
-            echo "        echo \"Current session: \${ZELLIJ_SESSION_NAME:-none}\""
-            echo "        return 1"
-            echo "    fi"
-            echo "    if [[ -n \"\$ZELLIJ\" ]]; then"
-            echo "        echo \"💡 Exit current Zellij session first (Ctrl+d or 'exit'), then run: ct-layout \$layout\""
-            echo "        return 1"
-            echo "    fi"
-            echo "    echo \"🔄 Starting new claudetainer session with \$layout layout...\""
-            echo "    zellij --layout \"\$layout\" --session claudetainer"
-            echo "}"
+            echo "# Claudetainer: Simple layout aliases"
+            echo "alias phone='zellij --new-session-with-layout phone'"
+            echo "alias tablet='zellij --new-session-with-layout tablet'"
         } >> "$bashrc"
         log_success "Added Zellij auto-start and layout switching to ~/.bashrc"
     else
@@ -213,11 +200,14 @@ install_multiplexer() {
     create_zellij_config
 
     log_success "Zellij multiplexer installation complete"
-    log_info "Session will start automatically on SSH login with layout: ${ZELLIJ_DEFAULT_LAYOUT:-tablet}"
-    log_info "Available layouts:"
+    log_info "Session will start automatically on SSH login with layout: ${ZELLIJ_DEFAULT_LAYOUT:-phone}"
+    log_info "Layout switching aliases installed:"
+    log_info "  • phone    # Switch to phone layout (compact)"
+    log_info "  • tablet   # Switch to tablet layout (enhanced)"
+    log_info "Available manual commands:"
     log_info "  • zellij --layout tablet --session claudetainer      # Enhanced 4-tab"
     log_info "  • zellij --layout phone --session claudetainer  # Compact 4-tab"
-    if [ -n "${ZELLIJ_DEFAULT_LAYOUT:-}" ] && [ "${ZELLIJ_DEFAULT_LAYOUT:-}" != "tablet" ]; then
+    if [ -n "${ZELLIJ_DEFAULT_LAYOUT:-}" ] && [ "${ZELLIJ_DEFAULT_LAYOUT:-}" != "phone" ]; then
         log_info "  • zellij --layout $ZELLIJ_DEFAULT_LAYOUT --session claudetainer  # Custom/configured layout"
     fi
 }

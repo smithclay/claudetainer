@@ -1,11 +1,14 @@
 layout {
-// Claude Code Compact Layout - Optimized for smaller screens
-// Four-tab layout with minimal UI for efficient space usage
+// Claude Code Phone Layout - Optimized for touch interfaces
+// Four-tab layout with large touch targets for mobile devices
     default_tab_template {
         pane size=1 borderless=true {
-            plugin location="zellij:compact-bar"
+            plugin location="zellij:tab-bar"
         }
         children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
     }
     
     // Tab 1: Claude Code - Simplified main workspace

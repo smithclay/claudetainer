@@ -260,9 +260,9 @@ if ! command -v gitui > /dev/null 2>&1; then
             mv "$GITUI_TMP_DIR/gitui" "$TARGET_HOME/.local/bin/"
             chmod +x "$TARGET_HOME/.local/bin/gitui"
 
-            # Fix ownership if needed
+            # Fix ownership of entire .local directory if needed
             if [ "$(whoami)" = "root" ] && [ "$TARGET_USER" != "root" ] && [ "$TARGET_USER" != "$(whoami)" ]; then
-                chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.local/bin/gitui" 2> /dev/null || true
+                chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.local" 2> /dev/null || true
             fi
 
             echo "     ✓ gitui installed to $TARGET_HOME/.local/bin/gitui"
@@ -279,7 +279,7 @@ fi
 
 # Setup multiplexer (zellij, tmux, or none)
 MULTIPLEXER="${MULTIPLEXER:-zellij}"
-ZELLIJ_LAYOUT="${ZELLIJ_LAYOUT:-tablet}"
+ZELLIJ_LAYOUT="${ZELLIJ_LAYOUT:-phone}"
 echo "🔧 Setting up $MULTIPLEXER multiplexer..."
 
 # Validate multiplexer choice
