@@ -147,13 +147,13 @@ cmd_doctor() {
     ui_print_success "Claudetainer CLI: $VERSION"
 
     # Check .devcontainer for claudetainer feature version
-    if [[ -f ".devcontainer/devcontainer.json" ]]; then
+    if [[ -f ".devcontainer/claudetainer/devcontainer.json" ]]; then
         local feature_version=""
         if ui_command_exists node; then
             # Extract claudetainer feature version from devcontainer.json
             feature_version=$(node -e "
 				try {
-					const config = JSON.parse(require('fs').readFileSync('.devcontainer/devcontainer.json', 'utf8'));
+					const config = JSON.parse(require('fs').readFileSync('.devcontainer/claudetainer/devcontainer.json', 'utf8'));
 					const features = config.features || {};
 					
 					// Check different possible paths for claudetainer feature
@@ -210,16 +210,16 @@ cmd_doctor() {
         echo "  • Looking for: package.json, requirements.txt, pyproject.toml, Cargo.toml, go.mod, *.sh files"
     fi
 
-    # Check for .devcontainer
-    if [[ -d ".devcontainer" ]]; then
-        ui_print_success ".devcontainer directory exists"
+    # Check for .devcontainer/claudetainer structure
+    if [[ -d ".devcontainer/claudetainer" ]]; then
+        ui_print_success ".devcontainer/claudetainer directory exists"
 
         # Validate devcontainer.json
-        if [[ -f ".devcontainer/devcontainer.json" ]]; then
+        if [[ -f ".devcontainer/claudetainer/devcontainer.json" ]]; then
             ui_print_success "devcontainer.json found"
 
             # Check if it's a claudetainer devcontainer
-            if grep -q "claudetainer" ".devcontainer/devcontainer.json" 2> /dev/null; then
+            if grep -q "claudetainer" ".devcontainer/claudetainer/devcontainer.json" 2> /dev/null; then
                 ui_print_success "claudetainer feature detected in devcontainer.json"
             else
                 ui_print_warning "devcontainer.json exists but doesn't use claudetainer feature"
@@ -228,7 +228,7 @@ cmd_doctor() {
 
             # Validate JSON syntax
             if ui_command_exists node; then
-                if node -e "JSON.parse(require('fs').readFileSync('.devcontainer/devcontainer.json', 'utf8'))" 2> /dev/null; then
+                if node -e "JSON.parse(require('fs').readFileSync('.devcontainer/claudetainer/devcontainer.json', 'utf8'))" 2> /dev/null; then
                     ui_print_success "devcontainer.json is valid JSON"
                 else
                     ui_print_error "devcontainer.json has invalid JSON syntax"
@@ -240,7 +240,7 @@ cmd_doctor() {
             echo "  • Run 'claudetainer init' to create one"
         fi
     else
-        ui_print_warning "No .devcontainer directory found"
+        ui_print_warning "No .devcontainer/claudetainer directory found"
         echo "  • Run 'claudetainer init' to create one"
     fi
     echo

@@ -2,7 +2,7 @@
 # Configuration Library - Default settings and configuration management
 
 # Version information
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-0.1.1}"
 
 # Default settings
 config_get_default_multiplexer() {

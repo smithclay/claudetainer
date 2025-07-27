@@ -71,8 +71,8 @@ if [[ (-n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" || -n "${VSCODE_IPC_HOOK
             if [ -f ~/.config/zellij/layouts/"$layout_to_use".kdl ]; then
                 echo "✅ Using configured layout: $layout_to_use"
             else
-                echo "⚠️  Configured layout not found, falling back to: tablet"
-                layout_to_use="tablet"
+                echo "⚠️  Configured layout not found, falling back to: phone"
+                layout_to_use="phone"
             fi
 
             # Try to start new session with error handling

@@ -299,11 +299,30 @@ function generateDashboardHTML(containers, hostname) {
             padding-top: 20px;
             border-top: 1px solid #333;
         }
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
+            .button-row {
+                flex-direction: column;
+            }
             .btn {
-                min-width: calc(50% - 6px);
+                min-width: 100%;
+                font-size: 16px;
+                padding: 14px 20px;
+                margin-bottom: 8px;
+            }
+            .container-card {
+                padding: 16px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+            .btn {
                 font-size: 14px;
-                padding: 10px 16px;
+                padding: 12px 16px;
             }
         }
     </style>
@@ -347,22 +366,80 @@ function generateDashboardHTML(containers, hostname) {
     </div>
 
     <script>
+        function copyToClipboard(text, successMessage) {
+            // Try modern clipboard API first
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showMessage(successMessage);
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            // iOS-compatible fallback: create a text area, select and copy
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showMessage('Command copied to clipboard!');
+                } else {
+                    promptForCopy(text);
+                }
+            } catch (err) {
+                promptForCopy(text);
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function promptForCopy(text) {
+            // Final fallback: show the command in a prompt
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isIOS = /iphone|ipad|ipod/.test(userAgent);
+            
+            if (isIOS) {
+                // iOS: Use a more user-friendly approach
+                alert('Tap and hold the command below to copy it:\\n\\n' + text);
+            } else {
+                prompt('Copy this command:', text);
+            }
+        }
+
+        function showMessage(message) {
+            // Create a temporary message element
+            const messageEl = document.createElement('div');
+            messageEl.textContent = message;
+            messageEl.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #007AFF; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.3);';
+            
+            document.body.appendChild(messageEl);
+            
+            setTimeout(() => {
+                if (document.body.contains(messageEl)) {
+                    document.body.removeChild(messageEl);
+                }
+            }, 2000);
+        }
+
         function copySSHCommand(hostname, port) {
             const command = \`ssh vscode@\${hostname} -p \${port}\`;
-            navigator.clipboard.writeText(command).then(() => {
-                alert('SSH command copied to clipboard!');
-            }).catch(() => {
-                prompt('Copy this SSH command:', command);
-            });
+            copyToClipboard(command, 'SSH command copied!');
         }
 
         function copyMoshCommand(hostname, sshPort, moshPort) {
             const command = \`mosh -P \${sshPort} -p \${moshPort} vscode@\${hostname}\`;
-            navigator.clipboard.writeText(command).then(() => {
-                alert('MOSH command copied to clipboard!');
-            }).catch(() => {
-                prompt('Copy this MOSH command:', command);
-            });
+            copyToClipboard(command, 'MOSH command copied!');
         }
 
         // Auto-refresh page
