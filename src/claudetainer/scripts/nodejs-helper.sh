@@ -4,7 +4,7 @@
 # Function to detect the package manager and OS type
 detect_package_manager() {
     for pm in apt-get apk dnf yum; do
-        if command -v $pm >/dev/null; then
+        if command -v $pm > /dev/null; then
             case $pm in
                 apt-get) echo "apt" ;;
                 *) echo "$pm" ;;
@@ -78,7 +78,7 @@ install_nodejs() {
     esac
 
     # Verify installation
-    if command -v node >/dev/null && command -v npm >/dev/null; then
+    if command -v node > /dev/null && command -v npm > /dev/null; then
         echo "Successfully installed Node.js and npm"
         return 0
     else

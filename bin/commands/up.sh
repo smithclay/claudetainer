@@ -52,8 +52,8 @@ cmd_up() {
                     read -p "Create devcontainer for $detected_lang? [Y/n]: " -n 1 -r
                     echo
                     if [[ $REPLY =~ ^[Nn]$ ]]; then
-                        ui_print_info "Aborted"
-                        return 1
+                        ui_print_info "Aborted by user"
+                        return 130 # Exit code 130 for user cancellation (Ctrl+C equivalent)
                     fi
                 fi
 
@@ -69,8 +69,9 @@ cmd_up() {
         if cmd_init "$lang_to_use"; then
             ui_print_success "Created devcontainer, now starting..."
         else
-            ui_print_error "Failed to create devcontainer"
-            return 1
+            local init_exit_code=$?
+            ui_print_error "Failed to create devcontainer (exit code: $init_exit_code)"
+            return $init_exit_code
         fi
     fi
 
@@ -79,7 +80,7 @@ cmd_up() {
         ui_print_error "Node.js not found"
         echo "Node.js is required to run devcontainer CLI via npx"
         echo "Install with: brew install node  # or visit https://nodejs.org"
-        return 1
+        return 127 # Exit code 127 for "command not found"
     fi
 
     # Check if npm is available (needed for npx)
@@ -87,7 +88,7 @@ cmd_up() {
         ui_print_error "npm not found"
         echo "npm is required to run devcontainer CLI via npx"
         echo "npm usually comes with Node.js installation"
-        return 1
+        return 127 # Exit code 127 for "command not found"
     fi
 
     # Check if container already exists for this directory
@@ -113,7 +114,7 @@ cmd_up() {
             echo "  • Remove: claudetainer rm"
             echo "  • Status: claudetainer list"
             echo "  • Clean rebuild: claudetainer up --clean"
-            return 1
+            return 2 # Exit code 2 for "already exists" condition
         fi
     fi
 
@@ -133,24 +134,30 @@ cmd_up() {
         fi
         exit_code=$?
     else
-        # Suppress output by default, but show errors
+        # Non-verbose mode: suppress stdout only, preserve stderr
         if [[ "$clean_build" == "true" ]]; then
-            npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container > /dev/null 2>&1
+            npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container > /dev/null
         else
-            npx @devcontainers/cli up --workspace-folder . > /dev/null 2>&1
+            npx @devcontainers/cli up --workspace-folder . > /dev/null
         fi
         exit_code=$?
 
-        # If there was an error, run again to show the error output
+        # If there was an error, immediately re-run with full output for diagnostics
         if [[ $exit_code -ne 0 ]]; then
             echo ""
-            ui_print_error "❌ DevContainer failed. Running again to show error details..."
+            ui_print_error "❌ DevContainer failed (exit code: $exit_code)"
             echo ""
+            ui_print_info "Re-running with full output to show error details:"
+            echo ""
+
             if [[ "$clean_build" == "true" ]]; then
                 npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container
             else
                 npx @devcontainers/cli up --workspace-folder .
             fi
+
+            echo ""
+            ui_print_info "Diagnostic run completed. Original exit code: $exit_code"
         fi
     fi
 
@@ -165,7 +172,9 @@ cmd_up() {
         echo "  • Try a clean rebuild: claudetainer up --clean"
         echo "  • Run with verbose output: claudetainer up --verbose"
         echo ""
-        return 1
+
+        # Return the actual exit code from the devcontainer CLI
+        return $exit_code
     fi
 
     # After container is up, set up notifications and credentials

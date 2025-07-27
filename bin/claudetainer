@@ -9,23 +9,23 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Read version from devcontainer-feature.json
-if [[ -f "$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json" ]] && command -v node >/dev/null 2>&1; then
-	VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json', 'utf8')).version)" 2>/dev/null || echo "unknown")
+if [[ -f "$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json" ]] && command -v node > /dev/null 2>&1; then
+    VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json', 'utf8')).version)" 2> /dev/null || echo "unknown")
 else
-	VERSION="unknown" # fallback version
+    VERSION="unknown" # fallback version
 fi
 
 # Load libraries in dependency order
 load_library() {
-	local lib="$1"
-	local lib_path="$SCRIPT_DIR/lib/$lib.sh"
-	if [[ -f "$lib_path" ]]; then
-		# shellcheck disable=SC1090  # Dynamic sourcing is intentional
-		source "$lib_path"
-	else
-		echo "Error: Could not load library: $lib" >&2
-		exit 1
-	fi
+    local lib="$1"
+    local lib_path="$SCRIPT_DIR/lib/$lib.sh"
+    if [[ -f "$lib_path" ]]; then
+        # shellcheck disable=SC1090  # Dynamic sourcing is intentional
+        source "$lib_path"
+    else
+        echo "Error: Could not load library: $lib" >&2
+        exit 1
+    fi
 }
 
 # Load all libraries
@@ -42,113 +42,120 @@ config_init
 
 # Load command modules
 load_command() {
-	local cmd="$1"
-	local cmd_path="$SCRIPT_DIR/commands/$cmd.sh"
-	if [[ -f "$cmd_path" ]]; then
-		# shellcheck disable=SC1090  # Dynamic sourcing is intentional
-		source "$cmd_path"
-	else
-		echo "Error: Could not load command: $cmd" >&2
-		exit 1
-	fi
+    local cmd="$1"
+    local cmd_path="$SCRIPT_DIR/commands/$cmd.sh"
+    if [[ -f "$cmd_path" ]]; then
+        # shellcheck disable=SC1090  # Dynamic sourcing is intentional
+        source "$cmd_path"
+    else
+        echo "Error: Could not load command: $cmd" >&2
+        exit 1
+    fi
 }
 
 # Load commands based on what's needed
 load_commands_for() {
-	local command="$1"
-	case "$command" in
-	prereqs)
-		load_command "prereqs"
-		load_command "doctor" # prereqs uses cmd_check_prerequisites from doctor
-		;;
-	doctor)
-		load_command "doctor"
-		;;
-	init)
-		load_command "init"
-		load_command "doctor" # init calls cmd_check_prerequisites from doctor
-		;;
-	run | up | start)
-		load_command "up"
-		load_command "init" # up might call cmd_init
-		;;
-	ssh)
-		load_command "ssh"
-		;;
-	rm)
-		load_command "rm"
-		;;
-	list | ps | ls)
-		load_command "list"
-		;;
-	*)
-		# Load nothing for help/version
-		;;
-	esac
+    local command="$1"
+    case "$command" in
+        prereqs)
+            load_command "prereqs"
+            load_command "doctor" # prereqs uses cmd_check_prerequisites from doctor
+            ;;
+        doctor)
+            load_command "doctor"
+            ;;
+        init)
+            load_command "init"
+            load_command "doctor" # init calls cmd_check_prerequisites from doctor
+            ;;
+        run | up | start)
+            load_command "up"
+            load_command "init" # up might call cmd_init
+            ;;
+        ssh)
+            load_command "ssh"
+            ;;
+        rm)
+            load_command "rm"
+            ;;
+        list | ps | ls)
+            load_command "list"
+            ;;
+        dashboard)
+            load_command "dashboard"
+            ;;
+        *)
+            # Load nothing for help/version
+            ;;
+    esac
 }
 
 # Main command dispatcher
 main() {
-	local command="${1:-}"
+    local command="${1:-}"
 
-	# Handle special cases first
-	case "$command" in
-	"")
-		ui_print_error "No command specified"
-		echo "Run 'claudetainer --help' for usage information"
-		return 1
-		;;
-	--help | -h | help)
-		ui_show_help
-		return 0
-		;;
-	--version | -v | version)
-		ui_show_version
-		return 0
-		;;
-	esac
+    # Handle special cases first
+    case "$command" in
+        "")
+            ui_print_error "No command specified"
+            echo "Run 'claudetainer --help' for usage information"
+            return 1
+            ;;
+        --help | -h | help)
+            ui_show_help
+            return 0
+            ;;
+        --version | -v | version)
+            ui_show_version
+            return 0
+            ;;
+    esac
 
-	# Load commands for the specific command
-	load_commands_for "$command"
+    # Load commands for the specific command
+    load_commands_for "$command"
 
-	# Dispatch to command
-	case "$command" in
-	prereqs)
-		cmd_prereqs
-		;;
-	doctor)
-		cmd_doctor
-		;;
-	init)
-		# Check prerequisites before initializing
-		if ! cmd_check_prerequisites; then
-			echo
-			ui_print_error "Prerequisites not met. Install missing dependencies first."
-			return 1
-		fi
-		shift
-		cmd_init "$@"
-		;;
-	run | up | start)
-		shift
-		cmd_up "$@"
-		;;
-	ssh)
-		cmd_ssh
-		;;
-	rm)
-		shift
-		cmd_rm "$@"
-		;;
-	list | ps | ls)
-		cmd_list
-		;;
-	*)
-		ui_print_error "Unknown command: $command"
-		echo "Run 'claudetainer --help' for usage information"
-		return 1
-		;;
-	esac
+    # Dispatch to command
+    case "$command" in
+        prereqs)
+            cmd_prereqs
+            ;;
+        doctor)
+            cmd_doctor
+            ;;
+        init)
+            # Check prerequisites before initializing
+            if ! cmd_check_prerequisites; then
+                echo
+                ui_print_error "Prerequisites not met. Install missing dependencies first."
+                return 1
+            fi
+            shift
+            cmd_init "$@"
+            ;;
+        run | up | start)
+            shift
+            cmd_up "$@"
+            ;;
+        ssh)
+            cmd_ssh
+            ;;
+        rm)
+            shift
+            cmd_rm "$@"
+            ;;
+        list | ps | ls)
+            cmd_list
+            ;;
+        dashboard)
+            shift
+            cmd_dashboard "$@"
+            ;;
+        *)
+            ui_print_error "Unknown command: $command"
+            echo "Run 'claudetainer --help' for usage information"
+            return 1
+            ;;
+    esac
 }
 
 # Run main function with all arguments

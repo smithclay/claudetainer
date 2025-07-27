@@ -37,7 +37,7 @@ log() {
 }
 
 check_tool() {
-    command -v "$1" &>/dev/null
+    command -v "$1" &> /dev/null
 }
 
 find_source_files() {
@@ -50,7 +50,7 @@ find_source_files() {
         -not -path "./.pytest_cache/*" \
         -not -path "./.ruff_cache/*" \
         -not -path "./.mypy_cache/*" \
-        2>/dev/null || true
+        2> /dev/null || true
 }
 
 detect_project_type() {
@@ -64,13 +64,13 @@ detect_project_type() {
             use_uv=true
         elif [[ -f "pyproject.toml" ]]; then
             # Check for uv-specific sections in pyproject.toml
-            if grep -q -E "(tool\.uv|dependency-groups)" pyproject.toml 2>/dev/null; then
+            if grep -q -E "(tool\.uv|dependency-groups)" pyproject.toml 2> /dev/null; then
                 use_uv=true
             fi
         fi
 
         # Check for ruff configuration files
-        if [[ -f "ruff.toml" ]] || [[ -f ".ruff.toml" ]] || grep -q "tool.ruff" pyproject.toml 2>/dev/null; then
+        if [[ -f "ruff.toml" ]] || [[ -f ".ruff.toml" ]] || grep -q "tool.ruff" pyproject.toml 2> /dev/null; then
             has_ruff_config=true
         fi
 
@@ -90,22 +90,22 @@ detect_ruff_command() {
 
     if [[ "${use_uv}" == "true" ]]; then
         # Try different execution strategies for ruff
-        if uv run --no-project ruff --version 2>/dev/null; then
+        if uv run --no-project ruff --version 2> /dev/null; then
             ruff_cmd="uv run --no-project ruff"
-        elif uv run ruff --version 2>/dev/null; then
+        elif uv run ruff --version 2> /dev/null; then
             ruff_cmd="uv run ruff"
-        elif check_tool uvx && uvx ruff --version 2>/dev/null; then
+        elif check_tool uvx && uvx ruff --version 2> /dev/null; then
             ruff_cmd="uvx ruff"
         elif check_tool ruff; then
             ruff_cmd="ruff"
         fi
 
         # Try different execution strategies for mypy
-        if uv run --no-project mypy --version 2>/dev/null; then
+        if uv run --no-project mypy --version 2> /dev/null; then
             mypy_cmd="uv run --no-project mypy"
-        elif uv run mypy --version 2>/dev/null; then
+        elif uv run mypy --version 2> /dev/null; then
             mypy_cmd="uv run mypy"
-        elif check_tool uvx && uvx mypy --version 2>/dev/null; then
+        elif check_tool uvx && uvx mypy --version 2> /dev/null; then
             mypy_cmd="uvx mypy"
         elif check_tool mypy; then
             mypy_cmd="mypy"
@@ -136,14 +136,14 @@ format_code() {
         fi
 
         # Check if formatting needed
-        if ${ruff_cmd} format --check . 2>/dev/null; then
+        if ${ruff_cmd} format --check . 2> /dev/null; then
             log "✓ Code already formatted"
             return 0
         fi
 
         # Apply formatting
         log "Applying ruff formatting..."
-        if ${ruff_cmd} format . 2>/dev/null; then
+        if ${ruff_cmd} format . 2> /dev/null; then
             format_applied=true
             log "✓ Code formatted with ruff"
         else
@@ -167,14 +167,14 @@ format_code_legacy() {
     files=$(find_source_files)
 
     # Check if formatting needed
-    if echo "${files}" | xargs black --check --diff &>/dev/null; then
+    if echo "${files}" | xargs black --check --diff &> /dev/null; then
         log "✓ Code already formatted"
         return 0
     fi
 
     # Apply formatting
     log "Applying black formatting..."
-    echo "${files}" | xargs black &>/dev/null
+    echo "${files}" | xargs black &> /dev/null
     format_applied=true
     log "✓ Code formatted with black"
     return 0
@@ -195,7 +195,7 @@ lint_code() {
             return 1
         fi
 
-        if ${ruff_cmd} check . 2>/dev/null; then
+        if ${ruff_cmd} check . 2> /dev/null; then
             log "✓ No linting issues found"
             return 0
         else
@@ -229,7 +229,7 @@ lint_code_legacy() {
         fi
     done
 
-    if echo "${files}" | xargs flake8 "${flake8_config}" &>/dev/null; then
+    if echo "${files}" | xargs flake8 "${flake8_config}" &> /dev/null; then
         log "✓ No linting issues found"
         return 0
     else
@@ -258,7 +258,7 @@ fix_issues() {
 
         # Apply fixes
         log "Running ruff auto-fixes..."
-        if ${ruff_cmd} check --fix . 2>/dev/null; then
+        if ${ruff_cmd} check --fix . 2> /dev/null; then
             issues_fixed=true
             log "✓ Auto-fixes applied with ruff"
         else
@@ -282,7 +282,7 @@ fix_issues_legacy() {
 
     # Apply fixes
     log "Running autopep8 auto-fixes..."
-    echo "${files}" | xargs autopep8 --in-place --aggressive &>/dev/null
+    echo "${files}" | xargs autopep8 --in-place --aggressive &> /dev/null
     issues_fixed=true
     log "✓ Auto-fixes applied with autopep8"
     return 0
@@ -307,7 +307,7 @@ verify_final() {
         local ruff_ok=true
         local mypy_ok=true
 
-        if ! ${ruff_cmd} check . 2>/dev/null; then
+        if ! ${ruff_cmd} check . 2> /dev/null; then
             log "✗ Ruff issues remain"
             ${ruff_cmd} check . || true
             ruff_ok=false
@@ -315,7 +315,7 @@ verify_final() {
 
         # Optional type checking with mypy
         if [[ -n "${mypy_cmd}" ]]; then
-            if ! ${mypy_cmd} . --ignore-missing-imports 2>/dev/null; then
+            if ! ${mypy_cmd} . --ignore-missing-imports 2> /dev/null; then
                 log "⚠ Type checking issues found"
                 ${mypy_cmd} . --ignore-missing-imports || true
                 mypy_ok=false
@@ -359,7 +359,7 @@ verify_final_legacy() {
         fi
     done
 
-    if echo "${files}" | xargs flake8 "${flake8_config}" &>/dev/null; then
+    if echo "${files}" | xargs flake8 "${flake8_config}" &> /dev/null; then
         log "✓ All issues resolved"
         issues_remaining=false
         return 0
@@ -397,22 +397,22 @@ main() {
         fi
 
         # Check if ruff is available and install if needed
-        if ! uv run --no-project ruff --version 2>/dev/null && ! uv run ruff --version 2>/dev/null; then
+        if ! uv run --no-project ruff --version 2> /dev/null && ! uv run ruff --version 2> /dev/null; then
             log "Ruff not found - attempting installation..."
 
             # Try different installation strategies
             local install_success=false
 
             # Strategy 1: Add as dev dependency if pyproject.toml exists
-            if [[ -f "pyproject.toml" ]] && uv add --dev ruff mypy 2>/dev/null; then
+            if [[ -f "pyproject.toml" ]] && uv add --dev ruff mypy 2> /dev/null; then
                 log "✓ Installed ruff and mypy as dev dependencies"
                 install_success=true
             # Strategy 2: Initialize project and add dependencies
-            elif [[ ! -f "pyproject.toml" ]] && uv init --no-readme . 2>/dev/null && uv add --dev ruff mypy 2>/dev/null; then
+            elif [[ ! -f "pyproject.toml" ]] && uv init --no-readme . 2> /dev/null && uv add --dev ruff mypy 2> /dev/null; then
                 log "✓ Initialized uv project and installed ruff and mypy"
                 install_success=true
             # Strategy 3: Use uv tool for global installation
-            elif uv tool install ruff 2>/dev/null && uv tool install mypy 2>/dev/null; then
+            elif uv tool install ruff 2> /dev/null && uv tool install mypy 2> /dev/null; then
                 log "✓ Installed ruff and mypy as global tools"
                 install_success=true
             fi

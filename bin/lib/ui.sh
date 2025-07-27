@@ -70,6 +70,9 @@ COMMANDS:
                               --config (also remove .devcontainer directory)
                               -f, --force (skip confirmation prompts)
     list, ps, ls     List running containers with names, ports, and status
+    dashboard        Manage web dashboard for mobile SSH access
+                     Commands: start, stop, status, logs, url
+                     The dashboard provides Blink Shell deep links
 
     --help, -h       Show this help message
     --version, -v    Show version information
@@ -93,6 +96,8 @@ EXAMPLES:
     claudetainer list            # List running containers
     claudetainer ps              # Same as list
     claudetainer ls              # Same as list
+    claudetainer dashboard start # Start web dashboard for mobile access
+    claudetainer dashboard status # Show dashboard URL and status
 
 For more information, visit: https://github.com/smithclay/claudetainer
 EOF

@@ -63,6 +63,35 @@ cmd_check_prerequisites() {
         missing_deps+=("git")
     fi
 
+    # Check Tailscale CLI (optional but recommended for dashboard)
+    local tailscale_cmd=""
+    if ui_command_exists tailscale; then
+        tailscale_cmd="tailscale"
+    elif [[ -x "/Applications/Tailscale.app/Contents/MacOS/Tailscale" ]]; then
+        tailscale_cmd="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+    fi
+
+    if [[ -n "$tailscale_cmd" ]]; then
+        if $tailscale_cmd status > /dev/null 2>&1; then
+            if [[ "$verbose" == "true" ]]; then
+                local tailscale_version=$($tailscale_cmd version | head -1 | cut -d' ' -f1)
+                local install_method=""
+                if [[ "$tailscale_cmd" == *"Applications"* ]]; then
+                    install_method=" (Mac App Store)"
+                fi
+                ui_print_success "Tailscale is installed and connected ($tailscale_version$install_method)"
+            fi
+        else
+            ui_print_warning "Tailscale is installed but not connected"
+            echo "  → Run: $tailscale_cmd up"
+        fi
+    else
+        ui_print_warning "Tailscale CLI not installed (optional, improves dashboard experience)"
+        echo "  → Dashboard will use localhost instead of MagicDNS hostname"
+        echo "  → Install via Homebrew, direct download, or Mac App Store"
+        missing_deps+=("tailscale")
+    fi
+
     # Show installation guidance if needed
     if [[ ${#missing_deps[@]} -gt 0 ]]; then
         echo
@@ -87,6 +116,13 @@ cmd_check_prerequisites() {
                     echo "    • Download from https://git-scm.com"
                     echo "    • With Homebrew: brew install git"
                     echo "    • With package manager: sudo apt install git"
+                    ;;
+                tailscale)
+                    echo "  ${WRENCH} Tailscale (optional):"
+                    echo "    • Download from https://tailscale.com/download"
+                    echo "    • With Homebrew: brew install tailscale"
+                    echo "    • After install: sudo tailscale up"
+                    echo "    • Improves dashboard with MagicDNS hostnames"
                     ;;
             esac
             echo

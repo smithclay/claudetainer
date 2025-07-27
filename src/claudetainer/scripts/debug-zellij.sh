@@ -42,7 +42,7 @@ check_with_details() {
     local failure_msg="$4"
 
     echo -n "Checking $description... "
-    if eval "$command" >/dev/null 2>&1; then
+    if eval "$command" > /dev/null 2>&1; then
         log_success "$success_msg"
         return 0
     else
@@ -84,7 +84,7 @@ main() {
 
     # 2. Zellij Installation Check
     log_header "🔧 Zellij Installation"
-    if command -v zellij >/dev/null 2>&1; then
+    if command -v zellij > /dev/null 2>&1; then
         log_success "Zellij binary found at: $(which zellij)"
         echo -e "Version: $(zellij --version)"
 
@@ -145,7 +145,7 @@ main() {
 
         # Validate layout syntax
         echo -n "Validating layout syntax... "
-        if zellij --layout "$layout_file" setup --check >/dev/null 2>&1; then
+        if zellij --layout "$layout_file" setup --check > /dev/null 2>&1; then
             log_success "Layout syntax is valid"
         else
             log_error "Layout syntax validation failed"
@@ -248,7 +248,7 @@ main() {
 
     echo
     echo "Current shell process tree:"
-    pstree -p $$ 2>/dev/null || ps -ef | grep -E "($$|bash|zellij)" || true
+    pstree -p $$ 2> /dev/null || ps -ef | grep -E "($$|bash|zellij)" || true
 
     # 9. Manual Zellij Test
     log_header "🧪 Manual Zellij Test"
@@ -257,7 +257,7 @@ main() {
 
     # Test zellij help
     echo -n "Testing 'zellij --help'... "
-    if zellij --help >/dev/null 2>&1; then
+    if zellij --help > /dev/null 2>&1; then
         log_success "Help command works"
     else
         log_error "Help command failed"
@@ -265,7 +265,7 @@ main() {
 
     # Test zellij setup
     echo -n "Testing 'zellij setup --check'... "
-    if zellij setup --check >/dev/null 2>&1; then
+    if zellij setup --check > /dev/null 2>&1; then
         log_success "Setup check passed"
     else
         log_error "Setup check failed"
@@ -304,15 +304,15 @@ main() {
     log_header "📊 System Resources"
 
     echo "Available memory:"
-    free -h 2>/dev/null || echo "free command not available"
+    free -h 2> /dev/null || echo "free command not available"
 
     echo
     echo "Disk space in home directory:"
-    du -sh "$HOME" 2>/dev/null || echo "du command failed"
+    du -sh "$HOME" 2> /dev/null || echo "du command failed"
 
     echo
     echo "Load average:"
-    uptime 2>/dev/null || echo "uptime command not available"
+    uptime 2> /dev/null || echo "uptime command not available"
 
     # Final summary
     log_header "📝 Summary"

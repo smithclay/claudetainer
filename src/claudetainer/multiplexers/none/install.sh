@@ -22,7 +22,7 @@ setup_simple_environment() {
 
     # Create a simple welcome script
     mkdir -p "$target_home/.config/claudetainer/scripts"
-    cat >"$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" <<'EOF'
+    cat > "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" << 'EOF'
 #!/usr/bin/env bash
 
 # bashrc-multiplexer.sh - Simple environment setup (no multiplexer)
@@ -46,18 +46,18 @@ EOF
 
     # Set proper ownership and permissions
     local target_user="${TARGET_USER:-$(whoami)}"
-    if [ "$target_user" != "$(whoami)" ] && command -v chown >/dev/null 2>&1; then
-        chown "$target_user:$target_user" "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" 2>/dev/null || {
+    if [ "$target_user" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
+        chown "$target_user:$target_user" "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" 2> /dev/null || {
             log_warning "Could not set ownership for bashrc-multiplexer.sh"
         }
     fi
     chmod +x "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
     # Append to bashrc if not already present
-    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2>/dev/null; then
-        echo "" >>"$bashrc"
-        echo "# Claudetainer: Simple environment setup (no multiplexer)" >>"$bashrc"
-        echo "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh" >>"$bashrc"
+    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2> /dev/null; then
+        echo "" >> "$bashrc"
+        echo "# Claudetainer: Simple environment setup (no multiplexer)" >> "$bashrc"
+        echo "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh" >> "$bashrc"
         log_success "Added simple environment setup to ~/.bashrc"
     else
         log_info "Simple environment already configured in ~/.bashrc"

@@ -133,6 +133,7 @@ smoke-test:
 lint:
 	@echo -e "$(BLUE)🔍 Running linting checks...$(RESET)"
 	@$(MAKE) lint-shellcheck
+	@$(MAKE) lint-shfmt
 	@$(MAKE) lint-scripts
 	@$(MAKE) lint-json
 	@echo -e "$(GREEN)✅ All linting checks passed$(RESET)"
@@ -145,6 +146,19 @@ lint-shellcheck:
 		echo -e "$(GREEN)✅ shellcheck passed$(RESET)"; \
 	else \
 		echo -e "$(YELLOW)⚠️  shellcheck not available, skipping$(RESET)"; \
+	fi
+
+lint-shfmt:
+	@if command -v shfmt >/dev/null 2>&1; then \
+		echo -e "$(YELLOW)Checking shell script formatting...$(RESET)"; \
+		if ! find . -name "*.sh" -not -path "./dist/*" -not -path "./node_modules/*" | xargs shfmt -d >/dev/null 2>&1; then \
+			echo -e "$(RED)❌ Shell scripts need formatting$(RESET)"; \
+			echo -e "$(BLUE)ℹ️  Run 'make fmt' to fix formatting$(RESET)"; \
+			exit 1; \
+		fi; \
+		echo -e "$(GREEN)✅ Shell script formatting is correct$(RESET)"; \
+	else \
+		echo -e "$(YELLOW)⚠️  shfmt not available, skipping format check$(RESET)"; \
 	fi
 
 lint-scripts:
@@ -164,11 +178,11 @@ lint-json:
 	done
 	@echo -e "$(GREEN)✅ JSON validation passed$(RESET)"
 
-## fmt: Format shell scripts
+## fmt: Format shell scripts using EditorConfig
 fmt:
 	@if command -v shfmt >/dev/null 2>&1; then \
-		echo -e "$(BLUE)🎨 Formatting shell scripts...$(RESET)"; \
-		find . -name "*.sh" -not -path "./dist/*" -not -path "./node_modules/*" | xargs shfmt -w -i 4 -ci; \
+		echo -e "$(BLUE)🎨 Formatting shell scripts with EditorConfig...$(RESET)"; \
+		find . -name "*.sh" -not -path "./dist/*" -not -path "./node_modules/*" | xargs shfmt -w; \
 		echo -e "$(GREEN)✅ Formatting complete$(RESET)"; \
 	else \
 		echo -e "$(YELLOW)⚠️  shfmt not available$(RESET)"; \

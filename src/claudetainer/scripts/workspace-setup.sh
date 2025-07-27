@@ -14,11 +14,11 @@ claudetainer_workspace_nav() {
             if [[ $workspace_count -eq 1 ]]; then
                 # Single workspace directory - navigate to it
                 local workspace_dir="${workspace_dirs[0]}"
-                cd "$workspace_dir" 2>/dev/null
+                cd "$workspace_dir" 2> /dev/null
                 echo "📁 Navigated to workspace: $(basename "$workspace_dir")"
             elif [[ $workspace_count -gt 1 ]]; then
                 # Multiple directories - navigate to /workspaces and list options
-                cd /workspaces 2>/dev/null
+                cd /workspaces 2> /dev/null
                 echo "📁 Multiple workspaces found:"
                 ls -la /workspaces/
                 echo "💡 Use 'cd <workspace-name>' to enter your project"
@@ -53,11 +53,11 @@ claudetainer_load_aliases() {
         local alias_file="$HOME/.config/claudetainer/presets/$preset_name/aliases.sh"
         if [[ -f "$alias_file" ]]; then
             # Source the alias file safely
-            if source "$alias_file" 2>/dev/null; then
+            if source "$alias_file" 2> /dev/null; then
                 ((alias_count++))
             fi
         fi
-    done <"$preset_file"
+    done < "$preset_file"
 
     # Show summary if aliases were loaded
     if [[ $alias_count -gt 0 ]]; then
