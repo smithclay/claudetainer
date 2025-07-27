@@ -89,7 +89,6 @@ cmd_check_prerequisites() {
         ui_print_warning "Tailscale CLI not installed (optional, improves dashboard experience)"
         echo "  → Dashboard will use localhost instead of MagicDNS hostname"
         echo "  → Install via Homebrew, direct download, or Mac App Store"
-        missing_deps+=("tailscale")
     fi
 
     # Show installation guidance if needed
