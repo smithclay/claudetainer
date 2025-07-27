@@ -18,8 +18,14 @@ Claudetainer is a devcontainer feature that adds language-specific support to Cl
 
 **Data Flow:**
 ```
-devcontainer.json → install.sh → presets → ~/.claude/settings.json and ~/.claude/hooks
+docker-compose.yml + devcontainer.json → install.sh → presets → ~/.claude/settings.json and ~/.claude/hooks
 ```
+
+**Container Architecture:**
+- **Docker Compose**: Provides flexible container orchestration with service definitions
+- **DevContainer JSON**: Defines development environment configuration and features
+- **Non-conflicting structure**: Files generated in `.devcontainer/claudetainer/` subdirectory
+- **Port management**: Dynamic SSH and UDP port allocation with collision detection
 
 ## Claudetainer CLI Tool
 
@@ -51,7 +57,7 @@ chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
   - Auto-detects language from project files if not specified
   - Supported languages: `python`, `node`, `rust`, `go`, `shell`
   - Options: `--multiplexer zellij|tmux|none` (default: zellij)
-  - Generates optimized devcontainer.json with claudetainer feature
+  - Generates docker-compose.yml and devcontainer.json in `.devcontainer/claudetainer/`
   - Creates `~/.claudetainer-credentials.json` if missing (ensures container mount point exists)
 
 - `claudetainer up` - Start the devcontainer (wraps `devcontainer up`)
@@ -87,6 +93,7 @@ chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
 - Claude Code integration (`ghcr.io/anthropics/devcontainer-features/claude-code:1.0`)
 - Claudetainer presets (`ghcr.io/smithclay/claudetainer/claudetainer:0.2.7`)
 - SSH daemon for remote access (`ghcr.io/devcontainers/features/sshd:1`)
+- MOSH for resilient mobile connections (`ghcr.io/devcontainers-extra/features/mosh-apt-get:1`)
 - Tmux for session management (`ghcr.io/duduribeiro/devcontainer-features/tmux:1`) - when using tmux multiplexer
 
 **Shell Multiplexer Support:**
@@ -99,6 +106,17 @@ chmod +x claudetainer && sudo mv claudetainer /usr/local/bin/
 - **none**: Simple bash environment for minimal setups or when multiplexers aren't needed
 - Automatic session management with optimized workspace configuration
 - Consistent interface across all multiplexer options
+
+**MOSH Support:**
+- **Mobile Shell (mosh)**: Provides resilient remote terminal sessions with instant feedback
+  - **UDP port allocation**: Dynamic port range 60000 + SSH_PORT to 60000 + SSH_PORT + 10 
+  - **NAT-friendly**: Direct port mapping ensures compatibility with Docker networking
+  - **Auto-configuration**: Mosh feature automatically installed via `ghcr.io/devcontainers-extra/features/mosh-apt-get:1`
+  - **Connection examples**:
+    - `mosh --ssh="ssh -p 2222" --port=62222 vscode@hostname`
+    - `mosh --ssh="ssh -p 2226" --port=62226 vscode@localhost`
+  - **Dashboard integration**: Mobile-friendly web interface provides one-click mosh commands
+  - **Benefits**: Survives network disconnections, instant character echo, works over cellular
 
 **Notification System:**
 - Automatic ntfy notification channel generation (claude-projectname-hash format)

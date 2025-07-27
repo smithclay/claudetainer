@@ -8,17 +8,17 @@ claudetainer_workspace_nav() {
     if [[ $- == *i* ]] && [[ $(pwd) != /workspaces* ]]; then
         if [[ -d /workspaces ]]; then
             # Count directories in /workspaces
-            local workspace_dirs=($(find /workspaces -maxdepth 1 -type d ! -path /workspaces))
-            local workspace_count=${#workspace_dirs[@]}
+            mapfile -t workspace_dirs < <(find /workspaces -maxdepth 1 -type d ! -path /workspaces)
+            workspace_count=${#workspace_dirs[@]}
 
             if [[ $workspace_count -eq 1 ]]; then
                 # Single workspace directory - navigate to it
-                local workspace_dir="${workspace_dirs[0]}"
-                cd "$workspace_dir" 2> /dev/null
+                workspace_dir="${workspace_dirs[0]}"
+                cd "$workspace_dir" 2> /dev/null || return
                 echo "📁 Navigated to workspace: $(basename "$workspace_dir")"
             elif [[ $workspace_count -gt 1 ]]; then
                 # Multiple directories - navigate to /workspaces and list options
-                cd /workspaces 2> /dev/null
+                cd /workspaces 2> /dev/null || return
                 echo "📁 Multiple workspaces found:"
                 ls -la /workspaces/
                 echo "💡 Use 'cd <workspace-name>' to enter your project"
@@ -32,8 +32,8 @@ claudetainer_workspace_nav() {
 
 # Function to load preset aliases
 claudetainer_load_aliases() {
-    local preset_file="$HOME/.config/claudetainer/installed-presets.txt"
-    local alias_count=0
+    preset_file="$HOME/.config/claudetainer/installed-presets.txt"
+    alias_count=0
 
     # Only load for interactive shells
     if [[ $- != *i* ]]; then
@@ -50,9 +50,10 @@ claudetainer_load_aliases() {
         # Skip empty lines
         [[ -z "$preset_name" ]] && continue
 
-        local alias_file="$HOME/.config/claudetainer/presets/$preset_name/aliases.sh"
+        alias_file="$HOME/.config/claudetainer/presets/$preset_name/aliases.sh"
         if [[ -f "$alias_file" ]]; then
             # Source the alias file safely
+            # shellcheck disable=SC1090
             if source "$alias_file" 2> /dev/null; then
                 ((alias_count++))
             fi
@@ -70,11 +71,7 @@ claudetainer_welcome() {
     # Only show welcome for SSH connections and login shells
     if [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]] && [[ $- == *i* ]]; then
         echo
-        echo "📋 Container Info:"
-        echo "  • Working Directory: $(pwd)"
-        echo "  • Container ID: $(hostname)"
-        echo "  • Available Memory: $(free -h | awk '/^Mem:/ {print $7}') free"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Welcome to your claudetainer environment 📦 🤖"
         echo
     fi
 }

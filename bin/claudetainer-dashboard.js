@@ -164,10 +164,14 @@ function getClaudetainerContainers() {
         
         const projectName = path.basename(localFolder);
         
+        // Calculate mosh UDP port range: 60000 + sshPort to 60000 + sshPort + 10
+        const moshPortStart = 60000 + sshPort;
+        
         return {
           name,
           projectName,
           sshPort,
+          moshPortStart,
           status,
           localFolder,
           lastSeen: new Date().toISOString()
@@ -307,7 +311,7 @@ function generateDashboardHTML(containers, hostname) {
 <body>
     <div class="header">
         <h1>📱 Claudetainer Dashboard</h1>
-        <div class="subtitle">SSH into your development containers</div>
+        <div class="subtitle">SSH and Mosh into your development containers</div>
     </div>
 
     ${containers.length === 0 ? `
@@ -322,13 +326,13 @@ function generateDashboardHTML(containers, hostname) {
                 <div class="container-name">${container.projectName}</div>
             </div>
             <div class="container-info">
-                Port ${container.sshPort} • Running • ${container.localFolder}
+                SSH ${container.sshPort} • Mosh ${container.moshPortStart}-${container.moshPortStart + 10} • Running • ${container.localFolder}
             </div>
             <div class="button-row">
                 <a href="ssh://vscode@${hostname}:${container.sshPort}" class="btn btn-primary">
                     🔗 Connect via Blink
                 </a>
-                <button class="btn btn-secondary" onclick="copyMoshCommand('${hostname}', ${container.sshPort})">
+                <button class="btn btn-secondary" onclick="copyMoshCommand('${hostname}', ${container.sshPort}, ${container.moshPortStart})">
                     📋 Copy MOSH Command
                 </button>
                 <button class="btn btn-secondary" onclick="copySSHCommand('${hostname}', ${container.sshPort})">
@@ -349,6 +353,15 @@ function generateDashboardHTML(containers, hostname) {
                 alert('SSH command copied to clipboard!');
             }).catch(() => {
                 prompt('Copy this SSH command:', command);
+            });
+        }
+
+        function copyMoshCommand(hostname, sshPort, moshPort) {
+            const command = \`mosh --ssh="ssh -p \${sshPort}" --port=\${moshPort} vscode@\${hostname}\`;
+            navigator.clipboard.writeText(command).then(() => {
+                alert('MOSH command copied to clipboard!');
+            }).catch(() => {
+                prompt('Copy this MOSH command:', command);
             });
         }
 
@@ -455,7 +468,7 @@ Options:
   --help, -h       Show this help message
 
 This server provides a mobile-friendly web interface for connecting to
-claudetainer containers via SSH, with deep links for Blink Shell.
+claudetainer containers via SSH and Mosh, with deep links for Blink Shell.
 `);
     process.exit(0);
   }

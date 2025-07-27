@@ -1,7 +1,7 @@
 {
   "name": "claudetainer",
   "id": "claudetainer",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "description": "Opinionated Claude Code workflows via preconfigured hooks and commands",
   "options": {
     "include": {
@@ -29,7 +29,7 @@
     },
     "zellij_layout": {
       "type": "string",
-      "default": "tablet",
+      "default": "phone",
       "description": "Zellij layout to use: bundled layouts (tablet, phone) or custom path (/path/to/layout.kdl)"
     }
   }

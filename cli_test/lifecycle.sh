@@ -164,9 +164,9 @@ EOF
 log_info "Created test Node.js project in $NODE_TEST_DIR"
 
 run_test "CLI init with auto-detection" "printf 'y\\n' | $CLI_BINARY init"
-run_test "devcontainer.json was created" "test -f .devcontainer/devcontainer.json"
-run_test "devcontainer.json is valid JSON" "node -e \"JSON.parse(require('fs').readFileSync('.devcontainer/devcontainer.json', 'utf8'))\""
-run_test "devcontainer.json contains claudetainer feature" "grep -q 'claudetainer' .devcontainer/devcontainer.json"
+run_test "devcontainer.json was created" "test -f .devcontainer/claudetainer/devcontainer.json"
+run_test "devcontainer.json is valid JSON" "node -e \"JSON.parse(require('fs').readFileSync('.devcontainer/claudetainer/devcontainer.json', 'utf8'))\""
+run_test "devcontainer.json contains claudetainer feature" "grep -q 'claudetainer' .devcontainer/claudetainer/devcontainer.json"
 
 # Test 3: Python project with specific options (if Python is available)
 if command -v python3 > /dev/null 2>&1; then
@@ -186,8 +186,9 @@ print("Hello from Python claudetainer test!")
 EOF
 
     run_test "CLI init with Python preset" "printf 'y\\n' | $CLI_BINARY init python >/dev/null 2>&1"
-    run_test "Python devcontainer.json created" "test -f .devcontainer/devcontainer.json"
-    run_test "Python preset included in config" "grep -q 'python' .devcontainer/devcontainer.json"
+    run_test "Python devcontainer.json created" "test -f .devcontainer/claudetainer/devcontainer.json"
+    run_test "Python docker-compose.yml created" "test -f .devcontainer/claudetainer/docker-compose.yml"
+    run_test "Python preset included in config" "grep -q 'python' .devcontainer/claudetainer/devcontainer.json"
 else
     log_warning "Skipping Python project tests - python3 not available"
 fi
@@ -202,7 +203,7 @@ echo "#!/bin/bash" > script.sh
 echo "echo 'Shell script test'" >> script.sh
 
 run_test "CLI init with tmux multiplexer" "printf 'y\\n' | $CLI_BINARY init shell --multiplexer tmux >/dev/null 2>&1"
-run_test "tmux multiplexer configured" "grep -q 'tmux' .devcontainer/devcontainer.json"
+run_test "tmux multiplexer configured" "grep -q 'tmux' .devcontainer/claudetainer/devcontainer.json"
 
 # Test 5: CLI management commands (from Node.js test directory)
 if [[ -d "$NODE_TEST_DIR" ]]; then
@@ -246,7 +247,7 @@ run_test "CLI rm works even without containers" "$CLI_BINARY rm -f"
 if [[ -d "$NODE_TEST_DIR" ]]; then
     cd "$NODE_TEST_DIR"
     run_test "devcontainer.json has proper structure" "node -e \"
-const config = JSON.parse(require('fs').readFileSync('.devcontainer/devcontainer.json', 'utf8'));
+const config = JSON.parse(require('fs').readFileSync('.devcontainer/claudetainer/devcontainer.json', 'utf8'));
 if (!config.features) throw new Error('Missing features');
 const hasClaudetainer = Object.keys(config.features).some(key => key.includes('claudetainer'));
 if (!hasClaudetainer) throw new Error('Missing claudetainer feature');

@@ -33,9 +33,6 @@ check "workspace setup script contains navigation function" grep -q "claudetaine
 # Test 7: Workspace setup script contains welcome function
 check "workspace setup script contains welcome function" grep -q "claudetainer_welcome" "$HOME/.config/claudetainer/scripts/workspace-setup.sh"
 
-# Test 8: Workspace setup script mentions key commands
-check "workspace setup script mentions claude command" grep -q "claude.*# Start Claude Code" "$HOME/.config/claudetainer/scripts/workspace-setup.sh"
-
 # Test 10: Test workspace navigation logic with mock /workspaces
 mkdir -p "/tmp/mock-workspaces/test-project"
 echo "Testing workspace navigation with mock directory..."

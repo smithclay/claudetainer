@@ -13,7 +13,39 @@ devcontainer_get_feature_version() {
     fi
 }
 
-# Generate devcontainer.json content for a language
+# Generate docker-compose.yml content for a language
+devcontainer_generate_compose() {
+    local lang="$1"
+    local port="$2"
+    local multiplexer="${3:-zellij}"
+
+    # Get language-specific configuration
+    local lang_config=$(config_get_language_config "$lang")
+    local image=$(echo "$lang_config" | grep "^image:" | cut -d: -f2-)
+
+    cat << EOF
+services:
+  devcontainer:
+    image: ${image}
+    command: sleep infinity
+    ports:
+      - "${port}:${port}"                 # SSH
+      - "$((60000 + port))-$((60000 + port + 10)):$((60000 + port))-$((60000 + port + 10))/udp"     # Mosh UDP range (direct mapping)
+    volumes:
+      - ../..:/workspaces:cached
+      - ~/.claudetainer-credentials.json:/home/vscode/.claude/.credentials.json:cached
+    labels:
+      - "devcontainer.local_folder=${PWD}"
+      - "devcontainer.language=${lang}"
+      - "devcontainer.type=claudetainer"
+      - "devcontainer.ssh_port=${port}"
+    environment:
+      - CLAUDETAINER=true
+      - NODE_OPTIONS=--max-old-space-size=4096
+EOF
+}
+
+# Generate devcontainer.json content for a language (compose-based)
 devcontainer_generate_json() {
     local lang="$1"
     local port="$2"
@@ -25,7 +57,6 @@ devcontainer_generate_json() {
     # Get language-specific configuration
     local lang_config=$(config_get_language_config "$lang")
     local name=$(echo "$lang_config" | grep "^name:" | cut -d: -f2-)
-    local image=$(echo "$lang_config" | grep "^image:" | cut -d: -f2-)
     local post_create_command=$(echo "$lang_config" | grep "^post_create:" | cut -d: -f2-)
 
     # Determine claudetainer feature configuration
@@ -42,7 +73,9 @@ devcontainer_generate_json() {
     cat << EOF
 {
     "name": "${name}",
-    "image": "${image}",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "devcontainer",
+    "workspaceFolder": "/workspaces",
     "features": {
         "ghcr.io/devcontainers/features/node:1": {},
         "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
@@ -57,23 +90,9 @@ devcontainer_generate_json() {
         }
     },
     "postCreateCommand": "${post_create_command}",
-    "mounts": [
-        "source=\${localEnv:HOME}\${localEnv:USERPROFILE}/.claudetainer-credentials.json,target=/home/vscode/.claude/.credentials.json,type=bind,consistency=cached"
-    ],
-    "runArgs": [
-        "-p", "${port}:${port}", 
-        "--label", "devcontainer.local_folder=${PWD}",
-        "--label", "devcontainer.language=${lang}",
-        "--label", "devcontainer.type=claudetainer",
-        "--label", "devcontainer.ssh_port=${port}"
-    ],
     "forwardPorts": [
         ${port}
     ],
-    "remoteEnv": {
-        "CLAUDETAINER": "true",
-        "NODE_OPTIONS": "--max-old-space-size=4096"
-    },
     "customizations": {
         "vscode": {
             "extensions": []
@@ -110,10 +129,12 @@ devcontainer_create_config() {
         return 1
     fi
 
-    # Generate devcontainer.json with allocated port and multiplexer
+    # Generate docker-compose.yml and devcontainer.json with allocated port and multiplexer
+    devcontainer_generate_compose "$language" "$port" "$multiplexer" > .devcontainer/claudetainer/docker-compose.yml
     devcontainer_generate_json "$language" "$port" "$multiplexer" > .devcontainer/claudetainer/devcontainer.json
 
-    ui_print_success "Created .devcontainer/claudetainer/devcontainer.json for $language"
+    ui_print_success "Created .devcontainer/claudetainer/ config files for $language"
+    ui_print_info "Generated: docker-compose.yml + devcontainer.json"
     ui_print_info "Allocated SSH port: $port"
     ui_print_info "Multiplexer: $multiplexer"
 

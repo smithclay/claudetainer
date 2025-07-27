@@ -128,17 +128,17 @@ cmd_up() {
     if [[ "$verbose" == "true" ]]; then
         # Show all output when verbose
         if [[ "$clean_build" == "true" ]]; then
-            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer --build-no-cache --remove-existing-container
+            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json --config .devcontainer/claudetainer/devcontainer.json --build-no-cache --remove-existing-container
         else
-            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer
+            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json
         fi
         exit_code=$?
     else
         # Non-verbose mode: suppress stdout only, preserve stderr
         if [[ "$clean_build" == "true" ]]; then
-            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer --build-no-cache --remove-existing-container > /dev/null
+            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json --config .devcontainer/claudetainer/devcontainer.json --build-no-cache --remove-existing-container > /dev/null
         else
-            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer > /dev/null
+            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json > /dev/null
         fi
         exit_code=$?
 
@@ -151,9 +151,9 @@ cmd_up() {
             echo ""
 
             if [[ "$clean_build" == "true" ]]; then
-                npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer --build-no-cache --remove-existing-container
+                npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json --config .devcontainer/claudetainer/devcontainer.json --build-no-cache --remove-existing-container
             else
-                npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer
+                npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json
             fi
 
             echo ""
@@ -207,8 +207,11 @@ cmd_up() {
     echo "  3. Run 'claudetainer doctor' if you encounter issues"
     echo
     local ssh_port=$(pm_get_current_project_port)
+    local mosh_port=$((60000 + ssh_port))
     ui_print_info "Container details:"
     echo "  • SSH port: $ssh_port"
     echo "  • Direct SSH: ssh -p $ssh_port vscode@localhost (password: vscode)"
+    echo "  • Mosh port range: $mosh_port-$((mosh_port + 10))"
+    echo "  • Direct Mosh: mosh --ssh=\"ssh -p $ssh_port\" --port=$mosh_port vscode@localhost"
     echo "  • Workspace: /workspaces (mounted from current directory)"
 }
