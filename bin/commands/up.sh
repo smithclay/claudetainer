@@ -32,8 +32,8 @@ cmd_up() {
                 ;;
         esac
     done
-    if [[ ! -f ".devcontainer/devcontainer.json" ]]; then
-        ui_print_warning "No .devcontainer/devcontainer.json found"
+    if [[ ! -f ".devcontainer/claudetainer/devcontainer.json" ]]; then
+        ui_print_warning "No .devcontainer/claudetainer/devcontainer.json found"
 
         local lang_to_use=""
 
@@ -128,17 +128,17 @@ cmd_up() {
     if [[ "$verbose" == "true" ]]; then
         # Show all output when verbose
         if [[ "$clean_build" == "true" ]]; then
-            npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container
+            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer --build-no-cache --remove-existing-container
         else
-            npx @devcontainers/cli up --workspace-folder .
+            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer
         fi
         exit_code=$?
     else
         # Non-verbose mode: suppress stdout only, preserve stderr
         if [[ "$clean_build" == "true" ]]; then
-            npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container > /dev/null
+            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer --build-no-cache --remove-existing-container > /dev/null
         else
-            npx @devcontainers/cli up --workspace-folder . > /dev/null
+            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer > /dev/null
         fi
         exit_code=$?
 
@@ -151,9 +151,9 @@ cmd_up() {
             echo ""
 
             if [[ "$clean_build" == "true" ]]; then
-                npx @devcontainers/cli up --workspace-folder . --build-no-cache --remove-existing-container
+                npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer --build-no-cache --remove-existing-container
             else
-                npx @devcontainers/cli up --workspace-folder .
+                npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer
             fi
 
             echo ""

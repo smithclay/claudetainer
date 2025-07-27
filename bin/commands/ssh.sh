@@ -4,7 +4,7 @@
 # SSH into running container
 cmd_ssh() {
     # Get the project's SSH port
-    local port_file=".devcontainer/.claudetainer-port"
+    local port_file=".devcontainer/claudetainer/.claudetainer-port"
     local port=2223 # fallback port
 
     if [[ -f "$port_file" ]]; then

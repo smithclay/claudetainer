@@ -69,7 +69,7 @@ pm_find_available_port() {
 
 # Get the current project's port (read-only, doesn't allocate)
 pm_get_current_project_port() {
-    local port_file=".devcontainer/.claudetainer-port"
+    local port_file=".devcontainer/claudetainer/.claudetainer-port"
 
     # First try: read from port file
     if [[ -f "$port_file" ]]; then
@@ -117,12 +117,12 @@ pm_get_current_project_port() {
 
 # Get or allocate port for current project
 pm_get_project_port() {
-    local port_file=".devcontainer/.claudetainer-port"
-    local lock_file=".devcontainer/.claudetainer-port.lock"
+    local port_file=".devcontainer/claudetainer/.claudetainer-port"
+    local lock_file=".devcontainer/claudetainer/.claudetainer-port.lock"
 
-    # Create .devcontainer directory if it doesn't exist
-    if ! mkdir -p .devcontainer 2> /dev/null; then
-        ui_print_error "Cannot create .devcontainer directory"
+    # Create .devcontainer/claudetainer directory if it doesn't exist
+    if ! mkdir -p .devcontainer/claudetainer 2> /dev/null; then
+        ui_print_error "Cannot create .devcontainer/claudetainer directory"
         return 1
     fi
 
@@ -180,7 +180,7 @@ pm_get_project_port() {
 
 # Diagnostic function to show port allocation status
 pm_show_port_status() {
-    local port_file=".devcontainer/.claudetainer-port"
+    local port_file=".devcontainer/claudetainer/.claudetainer-port"
     local current_port=$(pm_get_current_project_port)
     local base_port=$(pm_calculate_project_base_port)
 

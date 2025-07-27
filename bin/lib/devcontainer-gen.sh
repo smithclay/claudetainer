@@ -88,20 +88,20 @@ devcontainer_create_config() {
     local language="$1"
     local multiplexer="$2"
 
-    # Check if .devcontainer already exists
-    if [[ -d ".devcontainer" ]]; then
-        ui_print_warning ".devcontainer directory already exists"
-        read -p "Overwrite existing .devcontainer? [y/N]: " -n 1 -r
+    # Check if claudetainer config already exists
+    if [[ -f ".devcontainer/claudetainer/devcontainer.json" ]]; then
+        ui_print_warning "Claudetainer devcontainer config already exists"
+        read -p "Overwrite existing claudetainer config? [y/N]: " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             ui_print_info "Aborted"
             return 1
         fi
-        rm -rf .devcontainer
+        rm -rf .devcontainer/claudetainer
     fi
 
-    # Create .devcontainer directory
-    mkdir -p .devcontainer
+    # Create .devcontainer/claudetainer directory
+    mkdir -p .devcontainer/claudetainer
 
     # Get or allocate port for this project
     local port
@@ -111,9 +111,9 @@ devcontainer_create_config() {
     fi
 
     # Generate devcontainer.json with allocated port and multiplexer
-    devcontainer_generate_json "$language" "$port" "$multiplexer" > .devcontainer/devcontainer.json
+    devcontainer_generate_json "$language" "$port" "$multiplexer" > .devcontainer/claudetainer/devcontainer.json
 
-    ui_print_success "Created .devcontainer/devcontainer.json for $language"
+    ui_print_success "Created .devcontainer/claudetainer/devcontainer.json for $language"
     ui_print_info "Allocated SSH port: $port"
     ui_print_info "Multiplexer: $multiplexer"
 

@@ -70,21 +70,10 @@ claudetainer_welcome() {
     # Only show welcome for SSH connections and login shells
     if [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]] && [[ $- == *i* ]]; then
         echo
-        echo "🤖 Welcome to Claudetainer Development Environment"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo
-        echo "🚀 Quick Start:"
-        echo "  • claude                 # Start Claude Code interactive session"
-        echo "  • claude --help          # View Claude Code help and options"
-        echo
         echo "📋 Container Info:"
         echo "  • Working Directory: $(pwd)"
         echo "  • Container ID: $(hostname)"
         echo "  • Available Memory: $(free -h | awk '/^Mem:/ {print $7}') free"
-        echo
-        echo "🆘 Help & Debug:"
-        echo "  • claudetainer doctor                # Host-side health check"
-        echo
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo
     fi

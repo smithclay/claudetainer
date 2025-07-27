@@ -109,8 +109,8 @@ docker_remove_project_containers() {
     ui_print_success "Removed containers"
 
     # Clean up port file when containers are removed
-    if [[ -f ".devcontainer/.claudetainer-port" ]]; then
-        rm -f ".devcontainer/.claudetainer-port"
+    if [[ -f ".devcontainer/claudetainer/.claudetainer-port" ]]; then
+        rm -f ".devcontainer/claudetainer/.claudetainer-port"
         ui_print_success "Cleaned up port allocation file"
     fi
 }
