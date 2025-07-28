@@ -13,7 +13,7 @@ const PID_FILE = path.join(CONFIG_DIR, 'dashboard.pid');
 const LOG_FILE = path.join(CONFIG_DIR, 'dashboard.log');
 
 const DEFAULT_CONFIG = {
-  port: 8080,
+  port: 8888,
   host: '0.0.0.0',
   auto_refresh_interval: 30
 };
@@ -100,6 +100,58 @@ function getTailscaleHostname() {
     
   } catch (e) {
     log(`Warning: Could not detect Tailscale hostname: ${e.message}`);
+    return 'localhost';
+  }
+}
+
+function getTailscaleIP() {
+  // Determine which Tailscale command to use
+  let tailscaleCmd = 'tailscale';
+  
+  try {
+    // First try the system PATH version
+    execSync('which tailscale', { encoding: 'utf8', timeout: 2000 });
+  } catch (e) {
+    // Try Mac App Store version
+    try {
+      const appStorePath = '/Applications/Tailscale.app/Contents/MacOS/Tailscale';
+      if (fs.existsSync(appStorePath)) {
+        tailscaleCmd = appStorePath;
+        log('Using Tailscale from Mac App Store installation');
+      } else {
+        log('Tailscale CLI not found in PATH or Mac App Store location');
+        return 'localhost';
+      }
+    } catch (fsError) {
+      log('Tailscale CLI not available, using localhost');
+      return 'localhost';
+    }
+  }
+
+  try {
+    // Prioritize Tailscale IP address
+    const ip = execSync(`"${tailscaleCmd}" ip --4`, { encoding: 'utf8', timeout: 5000 }).trim();
+    if (ip && ip !== '') {
+      log(`Found Tailscale IP: ${ip}`);
+      return ip;
+    }
+    
+    // Fallback: try to get MagicDNS hostname
+    const statusOutput = execSync(`"${tailscaleCmd}" status --json`, { encoding: 'utf8', timeout: 5000 });
+    const status = JSON.parse(statusOutput);
+    
+    if (status.Self && status.Self.DNSName) {
+      const magicDNSName = status.Self.DNSName.replace(/\.$/, ''); // Remove trailing dot
+      log(`Found Tailscale MagicDNS hostname: ${magicDNSName}, but using as fallback`);
+      return magicDNSName;
+    }
+    
+    // Final fallback
+    log('Tailscale available but no IP/hostname found, using localhost');
+    return 'localhost';
+    
+  } catch (e) {
+    log(`Warning: Could not detect Tailscale IP: ${e.message}`);
     return 'localhost';
   }
 }
@@ -192,13 +244,14 @@ function getClaudetainerContainers() {
 
 function generateDashboardHTML(containers, hostname) {
   const refreshInterval = loadConfig().auto_refresh_interval;
+  const tailscaleIP = getTailscaleIP();
   
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📱 Claudetainer Dashboard</title>
+    <title>📱 claudetainer dashboard</title>
     <style>
         * { 
             margin: 0; 
@@ -286,6 +339,17 @@ function generateDashboardHTML(containers, hostname) {
         .btn-secondary:hover {
             background: #444;
         }
+        .btn-tertiary {
+            background: #222;
+            color: #888;
+            font-size: 14px;
+            padding: 10px 16px;
+            min-width: 120px;
+        }
+        .btn-tertiary:hover {
+            background: #2a2a2a;
+            color: #aaa;
+        }
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -338,7 +402,13 @@ function generateDashboardHTML(containers, hostname) {
             <h3>No running containers found</h3>
             <p>Start a claudetainer container to see it here</p>
         </div>
-    ` : containers.map(container => `
+    ` : containers.map(container => {
+        const encodedKey = encodeURIComponent(container.projectName);
+        const moshCommand = `mosh -P ${container.sshPort} -p ${container.moshPortStart} vscode@${tailscaleIP}`;
+        // Use proper URL encoding for Blink Shell
+        const encodedCommand = encodeURIComponent(moshCommand);
+        
+        return `
         <div class="container-card">
             <div class="container-header">
                 <div class="status-dot"></div>
@@ -348,18 +418,19 @@ function generateDashboardHTML(containers, hostname) {
                 SSH ${container.sshPort} • Mosh ${container.moshPortStart}-${container.moshPortStart + 10} • Running • ${container.localFolder}
             </div>
             <div class="button-row">
-                <a href="ssh://vscode@${hostname}:${container.sshPort}" class="btn btn-primary">
-                    🔗 Connect via Blink
+                <a href="blinkshell://run?cmd=${encodedCommand}" class="btn btn-primary">
+                    🔗 Open in Blink Shell
                 </a>
-                <button class="btn btn-secondary" onclick="copyMoshCommand('${hostname}', ${container.sshPort}, ${container.moshPortStart})">
+                <button class="btn btn-secondary" onclick="copyMoshCommand('${tailscaleIP}', ${container.sshPort}, ${container.moshPortStart})">
                     📋 Copy MOSH Command
                 </button>
-                <button class="btn btn-secondary" onclick="copySSHCommand('${hostname}', ${container.sshPort})">
+                <button class="btn btn-tertiary" onclick="copySSHCommand('${tailscaleIP}', ${container.sshPort})">
                     📋 Copy SSH Command
                 </button>
             </div>
         </div>
-    `).join('')}
+        `;
+    }).join('')}
 
     <div class="refresh-info">
         Auto-refreshes every ${refreshInterval} seconds • ${new Date().toLocaleTimeString()}
@@ -540,7 +611,7 @@ Claudetainer Dashboard Server
 Usage: claudetainer-dashboard.js [options]
 
 Options:
-  --port <port>    Server port (default: 8080)
+  --port <port>    Server port (default: 8888)
   --host <host>    Bind host (default: 0.0.0.0)
   --help, -h       Show this help message
 

@@ -24,8 +24,8 @@ cmd_mosh() {
     ui_print_info "Connecting to container via MOSH on port $mosh_port..."
     ui_print_info "SSH connection will use port $ssh_port"
     ui_print_info "The container will automatically start a multiplexer session with claude and usage windows"
-    
+
     mosh --ssh="ssh -p $ssh_port -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR" \
-         --port="$mosh_port" \
-         vscode@localhost
+        --port="$mosh_port" \
+        vscode@localhost
 }

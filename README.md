@@ -6,7 +6,11 @@
 [![DevContainer Feature](https://img.shields.io/badge/devcontainer-feature-blue?logo=visualstudiocode)](https://containers.dev/features)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Production-ish Claude Code workflows, packaged in a friendly [dev container](https://containers.dev/).
+> Claude Code workflows that work well on mobile devices, packaged in a [dev container](https://containers.dev/).
+
+<p align="center">
+  <img src="./assets/claudetainer-demo.gif" width="250px" alt="claudetainer-demo">
+</p>
 
 Opinionated [Claude Code](https://www.anthropic.com/claude-code) workflows: built-in instructions, slash commands, and hooks for common programming languages with built-in remote session and Zellij multiplexer support. Created for using Claude Code from anywhere (even your phone).
 
