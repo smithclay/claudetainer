@@ -6,17 +6,13 @@
 [![DevContainer Feature](https://img.shields.io/badge/devcontainer-feature-blue?logo=visualstudiocode)](https://containers.dev/features)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Claude Code workflows that work well on mobile devices, packaged in a [dev container](https://containers.dev/).
+> Auto-configured Claude Code with mobile-friendly shell - code from anywhere.
 
 <p align="center">
   <img src="./assets/claudetainer-demo.gif" width="250px" alt="claudetainer-demo">
 </p>
 
-Opinionated [Claude Code](https://www.anthropic.com/claude-code) workflows: built-in instructions, slash commands, and hooks for common programming languages with built-in remote session and Zellij multiplexer support. Created for using Claude Code from anywhere (even your phone).
-
-claudetainer **doesn't change your system or existing Claude Code configuration**: everything runs inside of an isolated Docker container using Anthrophic's [Claude Code dev container feature](https://github.com/anthropics/devcontainer-features). 
-
-Don't like the slash commands? Need support for Erlang? Hate the mobile layouts? Just override with your own configuration or use claudecontainer as a feature in your own custom .devcontainer. All built-in opinionated workflows ("presets") are optional. 
+Skip the setup pain. [Claude Code](https://www.anthropic.com/claude-code) automatically configured for your language with a persistent shell session designed for mobile coding. Everything runs in an isolated Docker container. 
 
 ## Quick Start (Recommended)
 
@@ -44,316 +40,83 @@ claude
 
 That's it! You now have a fully configured Claude Code development environment with automated linting, slash commands, and team workflows.
 
-## What You Get
+## Why Claudetainer?
 
-### **Zero-Config Setup**
-- **Automatic language detection** - Python, Node.js, Go, Rust, Shell scripts (PRs welcome for additional languages)
-- **Pre-configured linting** - black, flake8, eslint, gofmt, shellcheck 
-- **Smart formatting** - Fixes code style issues automatically
-- **SSH + Zellij** - Remote development with persistent sessions and configurable layouts:
-  - **tablet** layout (default): 4-tab enhanced workflow with GitUI integration
-  - **phone** layout: Minimal 4-tab layout optimized for smaller screens
-  - Custom layout support via `zellij_layout` option
-
-### **Claude Code Slash Commands**
-- **`/commit`** - Conventional commits with emoji and consistency
-- **`/check`** - Project health and linting (useful after big changes)
-- **`/next`** - Tell Claude it's time to collaborate with you on something new
-- **Auto-linting** - Every file edit by Claude Code triggers code quality checks
-
-### **Push Notifications**
-- **📱 Mobile & browser notifications** - Get instant updates when Claude finishes responding, encounters errors, or needs your input
-- **Zero setup required** - Automatic notification channel generation with easy-to-type URLs (claude-projectname-abc123)
-- **Works everywhere** - Subscribe via https://ntfy.sh/your-channel or the [ntfy mobile app](https://ntfy.sh/) 
-- **Perfect for remote coding** - Know exactly when Claude needs your attention, even when working from your phone
-
-### **Best Practices and Extensibility**
-- **Shared standards** - Load or override default configurations from remote GitHub repos
-- **Enforced quality** - Blocks Calude from proceeding with unfixable issues  
-- **Best practices** - Language-specific guidance built-in
-
-## Language Support
-
-Claudetainer automatically detects your project type and configures the right tools:
-
-| Language | Detection Files | Tools Included | Key Features |
-|----------|----------------|----------------|--------------|
-| **Python** | `requirements.txt`, `pyproject.toml`, `setup.py` | black, flake8, autopep8 | Smart-lint pipeline, FastAPI patterns |
-| **Node.js** | `package.json` | eslint, prettier | TypeScript support, npm/yarn detection |
-| **Go** | `go.mod` | gofmt, golangci-lint | Module-aware linting |
-| **Rust** | `Cargo.toml` | rustfmt, clippy | Cargo integration |
-| **Shell** | `*.sh`, `install.sh`, `setup.sh`, `build.sh` | shellcheck, shfmt | POSIX/bash dialect detection, security linting |
-
-Don't see your language? Don't like the prompts? Claudetainer is [extensible](#extending-claudetainer) - create custom presets or request new ones.
-
-## Installation Options
-
-### Option 1: Homebrew Package Manager
-
-**macOS & Linux**
-
-```bash
-# Add the tap (one-time setup)
-brew tap smithclay/tap
-
-# Install claudetainer
-brew install claudetainer
-
-# Updates are easy
-brew upgrade claudetainer
-```
-
-### Option 2: Direct Download
-
-**Any Unix system** - Fallback installation method:
-
-```bash
-# Download the latest release
-curl -L https://github.com/smithclay/claudetainer/releases/latest/download/claudetainer -o claudetainer
-
-# Make executable and install
-chmod +x claudetainer
-sudo mv claudetainer /usr/local/bin/
-```
-
-### Option 3: Direct Dev Container Feature
-
-Add to your existing `.devcontainer/devcontainer.json`:
-
-```json
-{
-  "features": {
-    "ghcr.io/smithclay/claudetainer/claudetainer:latest": {
-      "include": "python",
-      "includeBase": true,
-      "multiplexer": "zellij",
-      "zellij_layout": "tablet"
-    }
-  }
-}
-```
-
-## Example Workflows
-
-### Python app development example
-
-Coming soon.
-
-## Advanced Features
-
-### GitHub Presets - use your own standards
-
-Don't like the defaults or want to override them?
-
-Just reference a remote repository under `include` in `.devcontainer/.devcontainer.json` after running `claudetainer init`:
-
-```json
-{
-  "features": {
-    "claudetainer": {
-      "include": [
-        "python",
-        "github:acme-corp/claude-standards/python",
-        "github:acme-corp/claude-standards/security"
-      ]
-    }
-  }
-}
-```
-
-Now everyone on your team gets the same linting rules, commands, and best practices automatically. 
-
-More details are in `DEVELOPMENT.md`.
-
-### Multiplexer and Layout Configuration
-
-Claudetainer supports multiple terminal multiplexers with configurable layouts:
-
-#### Multiplexer Options
-
-```json
-{
-  "features": {
-    "claudetainer": {
-      "multiplexer": "zellij"  // zellij (default), tmux, or none
-    }
-  }
-}
-```
-
-- **`zellij`** (default): Modern terminal workspace with intuitive UI and WebAssembly plugins
-- **`tmux`**: Traditional, mature multiplexer with familiar keybindings  
-- **`none`**: Simple bash environment without multiplexer
-
-#### Zellij Layout Options
-
-When using `multiplexer: "zellij"`, customize the layout:
-
-```json
-{
-  "features": {
-    "claudetainer": {
-      "multiplexer": "zellij",
-      "zellij_layout": "tablet"  // Layout to use
-    }
-  }
-}
-```
-
-**Bundled Layouts:**
-- **`tablet`** (default): Enhanced 4-tab workflow with GitUI integration
-  - 🤖 **claude**: Main development workspace (70% + 30% split for commands)
-  - 💰 **cost**: Usage monitoring + system resources  
-  - 🌲 **git**: GitUI visual interface with fallback to traditional git commands
-  - 🐚 **shell**: Development tasks + file explorer
-- **`phone`**: Minimal 4-tab layout optimized for smaller screens
-  - Single panes per tab with GitUI integration and essential functionality
-
-**Custom Layouts:**
-```json
-{
-  "features": {
-    "claudetainer": {
-      "multiplexer": "zellij", 
-      "zellij_layout": "/path/to/custom-layout.kdl"
-    }
-  }
-}
-```
-
-See the [Zellij layouts documentation](src/claudetainer/multiplexers/zellij/README.md) for creating custom layouts.
-
-### CLI Commands
-
-Claudetainer provides a complete set of commands for container lifecycle management:
-
-```bash
-# Project setup
-claudetainer init [language]    # Create devcontainer (auto-detects language)
-claudetainer up                 # Start container (creates if missing)
-claudetainer start              # Same as up
-
-# Container management  
-claudetainer ssh                # Connect with Zellij session
-claudetainer list               # List running containers (aliases: ps, ls)
-claudetainer rm                 # Remove containers for this project
-claudetainer rm --config        # Also remove .devcontainer directory
-claudetainer rm -f              # Force removal without confirmation
-
-# Debugging and health
-claudetainer doctor             # Comprehensive health check
-
-# Manual SSH access
-ssh -p 2223 vscode@localhost    # Password: vscode
-```
-
-### SSH/MOSH Development
-
-Connect to your container from any terminal:
-
-```bash
-# mosh is recommended for mobile
-claudetainer mosh 
-
-# or, if preferred
-claudetainer ssh
-```
-
-Includes Zellij (or tmux) terminal multiplexer for persistent sessions that survive disconnections, with configurable layouts optimized for different screen sizes: perfect for talking to Claude Code from your iPhone or desktop.
+- **🚀 Instant Setup** - Auto-detects your language (Python, Node.js, Go, Rust, Shell) and configures everything
+- **📱 Code Anywhere** - SSH + terminal multiplexer designed for mobile coding (yes, even from your iPhone)
+- **🔧 Smart Tooling** - Claude Code + automatic linting/formatting that actually works together
+- **📬 Stay Connected** - Push notifications so you know when Claude needs attention
+- **🏗️ Team Ready** - Share configurations via GitHub repos for consistent team workflows
 
 ## Requirements
 
-- **Docker** - For dev container support
+- **Docker** - For container isolation
 - **DevContainer CLI** - `npm install -g @devcontainers/cli`
-- **git** - For GitHub preset support
-- Claude Code and dev tools are installed automatically via dev container images and features.
+- **git** - For GitHub preset support (optional)
 
-### Installing Dependencies
+## Installation
 
-**With Homebrew:**
+**macOS & Linux (Recommended):**
 ```bash
-# Install Node.js and DevContainer CLI
+# Add the tap (one-time setup)
+brew tap smithclay/tap
+brew install claudetainer
+
+# Install dependencies
 brew install node
 npm install -g @devcontainers/cli
-
-# Docker Desktop (macOS/Windows)
-brew install --cask docker
-
-# Git (usually pre-installed)
-brew install git
 ```
 
-**Manual Installation:**
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [Node.js](https://nodejs.org/) (for DevContainer CLI)
-- [Claude Code](https://claude.ai/code)
+**Other systems:** [Direct download](https://github.com/smithclay/claudetainer/releases/latest/download/claudetainer) or [dev container feature](docs/INSTALLATION.md#dev-container-feature)
 
-## Troubleshooting
+## Language Support
 
-### Quick Diagnostics
+Auto-detects and configures for:
+- **Python** (`requirements.txt`, `pyproject.toml`) → black, flake8, autopep8
+- **Node.js** (`package.json`) → eslint, prettier, TypeScript support  
+- **Go** (`go.mod`) → gofmt, golangci-lint
+- **Rust** (`Cargo.toml`) → rustfmt, clippy
+- **Shell** (`*.sh` files) → shellcheck, shfmt
+
+Don't see your language? Create custom presets or [request new ones](https://github.com/smithclay/claudetainer/issues).
+
+## Essential Commands
+
 ```bash
-# Run comprehensive health check
-claudetainer doctor
+# Project setup
+claudetainer init [language]    # Auto-detects language if not specified
+claudetainer up                 # Start container
 
-# Check prerequisites
-claudetainer prereqs
+# Connect and use
+claudetainer ssh                # Connect with terminal multiplexer
+claude                          # Start Claude Code (inside container)
 
-# List running containers
-claudetainer list
+# Management
+claudetainer list               # List running containers  
+claudetainer doctor             # Health check and troubleshooting
+claudetainer rm -f              # Clean removal
 ```
 
-### Container Won't Start
+## Remote Development
+
+Connect from anywhere with persistent sessions:
 ```bash
-# Check if devcontainer CLI is installed
-devcontainer --version
-
-# Ensure Docker is running
-docker ps
-
-# Force clean start
-claudetainer rm -f && claudetainer up
+claudetainer ssh                # SSH + Zellij/tmux multiplexer
+# Password: vscode (change via container config)
 ```
 
-### SSH Connection Failed
-```bash
-# Check if container is running
-claudetainer up
+Includes mobile-optimized layouts and push notifications so you can code from your phone effectively.
 
-# Verify port forwarding
-nc -z localhost 2223
+## Advanced Configuration
 
-# Check container status
-claudetainer list
-```
-
-### Linting Issues
-```bash
-# Check what tools are available
-which black flake8 autopep8
-
-# Manual lint check
-~/.claude/hooks/smart-lint.sh /path/to/file.py
-```
-
-### Clean Reset
-```bash
-# Remove everything and start fresh
-claudetainer rm -f --config
-claudetainer init
-claudetainer up
-```
-
-## CLI Architecture
-
-claudetainer features a **modular architecture** designed for maintainability and easy distribution.
-
-```sh
-  claudetainer --help
-```
+- **[GitHub Presets](docs/CONFIGURATION.md#github-presets)** - Share team configurations  
+- **[Custom Layouts](docs/CONFIGURATION.md#layouts)** - Terminal multiplexer customization
+- **[CLI Reference](docs/CLI-REFERENCE.md)** - Complete command documentation
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Detailed problem solving
 
 ## Contributing
 
-Want to improve claudetainer? Check out our [development guide](DEVELOPMENT.md) for:
+Want to improve claudetainer? Check out our [development guide](docs/DEVELOPMENT.md) for:
 
 - Architecture deep-dive
 - Creating new presets
