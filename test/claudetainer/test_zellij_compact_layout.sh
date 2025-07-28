@@ -31,7 +31,7 @@ check "zellij auto-start script exists" test -f "$HOME/.config/claudetainer/scri
 check "auto-start script references phone layout" grep -q "phone" "$HOME/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
 # Test 8: Phone layout contains expected structure
-check "phone layout contains main tab" grep -q 'tab name="🤖"' "$HOME/.config/zellij/layouts/phone.kdl"
+check "phone layout contains main tab" grep -q 'tab name="  🤖  "' "$HOME/.config/zellij/layouts/phone.kdl"
 
 # Test 9: Phone layout uses tab-bar plugin (touch-friendly)
 check "phone layout uses tab-bar" grep -q "tab-bar" "$HOME/.config/zellij/layouts/phone.kdl"

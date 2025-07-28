@@ -27,7 +27,7 @@ Get up and running in under 2 minutes on Linux, macOS or WSL:
 brew tap smithclay/tap
 brew install claudetainer
 
-cd ~/your-project # node, python, go, rust, shell (PRs welcome for others)
+cd ~/your-project
 
 # 2. Initialize your project with a language preset (go, node, python, rust)
 claudetainer init python
@@ -83,7 +83,6 @@ Claudetainer automatically detects your project type and configures the right to
 | **Go** | `go.mod` | gofmt, golangci-lint | Module-aware linting |
 | **Rust** | `Cargo.toml` | rustfmt, clippy | Cargo integration |
 | **Shell** | `*.sh`, `install.sh`, `setup.sh`, `build.sh` | shellcheck, shfmt | POSIX/bash dialect detection, security linting |
-
 
 Don't see your language? Don't like the prompts? Claudetainer is [extensible](#extending-claudetainer) - create custom presets or request new ones.
 
@@ -243,21 +242,24 @@ claudetainer rm -f              # Force removal without confirmation
 
 # Debugging and health
 claudetainer doctor             # Comprehensive health check
-claudetainer prereqs            # Check prerequisites
 
 # Manual SSH access
 ssh -p 2223 vscode@localhost    # Password: vscode
 ```
 
-### SSH Development
+### SSH/MOSH Development
 
 Connect to your container from any terminal:
 
 ```bash
+# mosh is recommended for mobile
+claudetainer mosh 
+
+# or, if preferred
 claudetainer ssh
 ```
 
-Includes Zellij terminal multiplexer for persistent sessions that survive disconnections, with configurable layouts optimized for different screen sizes: perfect for talking to Claude Code from your iPhone or desktop.
+Includes Zellij (or tmux) terminal multiplexer for persistent sessions that survive disconnections, with configurable layouts optimized for different screen sizes: perfect for talking to Claude Code from your iPhone or desktop.
 
 ## Requirements
 
@@ -343,42 +345,11 @@ claudetainer up
 
 ## CLI Architecture
 
-claudetainer features a **modular architecture** designed for maintainability and easy distribution:
+claudetainer features a **modular architecture** designed for maintainability and easy distribution.
 
-### Development Structure
+```sh
+  claudetainer --help
 ```
-bin/
-├── claudetainer              # Main CLI (143 lines - 89% smaller!)
-├── lib/                     # Core libraries (8 modules)
-│   ├── ui.sh               # Color output and user interaction
-│   ├── config.sh           # Configuration and defaults
-│   ├── validation.sh       # Language/multiplexer validation
-│   ├── port-manager.sh     # Port allocation and management
-│   ├── docker-ops.sh       # Docker container operations
-│   ├── notifications.sh    # Notification channel management
-│   └── devcontainer-gen.sh # DevContainer JSON generation
-├── commands/               # Command implementations (7 modules)
-│   ├── doctor.sh          # Health check and diagnostics
-│   ├── init.sh            # Project initialization
-│   ├── up.sh              # Container startup
-│   ├── ssh.sh             # SSH connection management
-│   ├── rm.sh              # Container removal
-│   ├── list.sh            # Container listing
-│   └── prereqs.sh         # Prerequisites checking
-└── dist/                   # Build output (gitignored)
-    └── claudetainer        # Single-file distribution (1,435 lines)
-```
-
-### Build System
-- **Development**: Use modular `./bin/claudetainer` for development
-- **Distribution**: Run `./build.sh` to create `dist/claudetainer` (single file)
-- **CI/CD**: Both versions tested automatically in GitHub Actions
-- **Size**: Reduced main script from 1,277 to 143 lines (89% reduction!)
-
-### Installation Methods
-1. **Download Binary** (recommended): Single file from GitHub releases
-2. **Homebrew**: Via `smithclay/tap` (when available)  
-3. **Development**: Clone repo and use `./bin/claudetainer` directly
 
 ## Contributing
 
@@ -393,13 +364,11 @@ Want to improve claudetainer? Check out our [development guide](DEVELOPMENT.md) 
 
 MIT License - see [LICENSE](LICENSE) for details.
 
-## Links
+## Acknowledgements
 
-- **Documentation**: [DEVELOPMENT.md](DEVELOPMENT.md)
-- **GitHub**: https://github.com/smithclay/claudetainer
-- **Issues**: https://github.com/smithclay/claudetainer/issues
-- **Claude Code**: https://claude.ai/code
+Many of the original hooks and commands came from sources elsewhere in the Claude Code community, specificaly:
 
----
+- https://github.com/Veraticus/nix-config/tree/main/home-manager/claude-code
+- https://github.com/AizenvoltPrime/claude-setup
 
-Built with 🤖 for the Claude Code community
+Huge thanks to both of those people.

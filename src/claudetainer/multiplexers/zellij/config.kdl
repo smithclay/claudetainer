@@ -21,6 +21,9 @@ keybinds {
         bind "Alt -" { Resize "Decrease"; }
         bind "Alt [" { PreviousSwapLayout; }
         bind "Alt ]" { NextSwapLayout; }
+        
+        // iOS-friendly Shift+Tab for reverse tab completion
+        bind "Ctrl Shift j" { WriteChars "\u{1b}[Z"; }
     }
     
     locked {

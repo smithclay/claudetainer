@@ -1,12 +1,6 @@
 // Claude Code Development Layout - Enhanced Workflow
 // Four-tab layout optimized for Claude Code development with latest Zellij features
 layout {
-    keybinds {
-        normal {
-            // iOS-friendly Shift+Tab for reverse tab completion
-            bind "Alt j" { WriteChars "\u{1b}[Z"; }  // Send Shift+Tab sequence
-        }
-    }
     default_tab_template {
         pane size=1 borderless=true {
             plugin location="zellij:tab-bar"
