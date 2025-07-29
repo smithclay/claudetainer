@@ -12,7 +12,7 @@
   <img src="./assets/claudetainer-demo.gif" width="250px" alt="claudetainer-demo">
 </p>
 
-Skip the setup pain. [Claude Code](https://www.anthropic.com/claude-code) automatically configured for your language with a persistent shell session designed for mobile coding. Everything runs in an isolated Docker container. 
+[Claude Code](https://www.anthropic.com/claude-code) automatically configured with a persistent shell session, hooks, commands, and sub-agents designed for coding without a keyboard. Everything runs in an isolated Docker container. 
 
 ## Quick Start (Recommended)
 
@@ -34,19 +34,19 @@ claudetainer up
 # 4. Connect to the container full tooling and terminal multiplexer (default password is: vscode)
 claudetainer ssh
 
-# 5. Start Claude Code: all hooks and slash commands automatically load
+# 5. (Inside the ssh session) Start Claude Code: all hooks and slash commands automatically load in a nice zellij UI.
 claude
 ```
 
-That's it! You now have a fully configured Claude Code development environment with automated linting, slash commands, and team workflows.
+You now have a fully configured Claude Code development environment with automated linting, slash commands, and team workflows.
 
 ## Why Claudetainer?
 
 - **🚀 Instant Setup** - Auto-detects your language (Python, Node.js, Go, Rust, Shell) and configures everything
 - **📱 Code Anywhere** - SSH + terminal multiplexer designed for mobile coding (yes, even from your iPhone)
-- **🔧 Smart Tooling** - Claude Code + automatic linting/formatting that actually works together
+- **🔧 Smart Tooling** - Claude Code, automatic linting/formatting, and useful tools like ccusage and gitui
 - **📬 Stay Connected** - Push notifications so you know when Claude needs attention
-- **🏗️ Team Ready** - Share configurations via GitHub repos for consistent team workflows
+- **🏗️ Team Ready** - Share configurations via GitHub repos
 
 ## Requirements
 
