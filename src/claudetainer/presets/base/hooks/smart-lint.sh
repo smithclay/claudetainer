@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# smart-lint.sh - Lints and formats code across multiple languages
+# smart-lint.sh - Hook that delegates to code quality sub-agent
 
 set -euo pipefail
 
-echo "Smart lint check skipped, no specific language linter configured."
+echo "🤖 It's time to check code quality using a sub-agent! Use the code-quality-agent to ensure production-ready code with zero tolerance for issues."
 
 return 2
