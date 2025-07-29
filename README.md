@@ -101,7 +101,7 @@ claudetainer rm -f              # Clean removal
 
 Connect from anywhere with persistent sessions:
 ```bash
-claudetainer ssh                # SSH + Zellij/tmux multiplexer
+claudetainer mosh                # MOSH + Zellij/tmux multiplexer (better for mobile)
 # Password: vscode (change via container config)
 ```
 
