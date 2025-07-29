@@ -1,7 +1,7 @@
 
 # claudetainer (claudetainer)
 
-Opinionated Claude Code workflows via preconfigured hooks and commands
+Opinionated Claude Code workflows via specialized sub-agents, hooks and commands
 
 ## Example Usage
 
