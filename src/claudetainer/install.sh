@@ -10,6 +10,7 @@ TARGET_USER="${_REMOTE_USER:-$(whoami)}"
 # Create Claude directories
 mkdir -p "$TARGET_HOME/.claude/commands"
 mkdir -p "$TARGET_HOME/.claude/hooks"
+mkdir -p "$TARGET_HOME/.claude/agents"
 
 # Create claudetainer config directories for aliases and preset tracking
 mkdir -p "$TARGET_HOME/.config/claudetainer/presets"
@@ -143,7 +144,7 @@ for preset in "${PRESET_LIST[@]}"; do
 
     echo "   ✓ Applying $preset_name preset"
 
-    # Copy commands and hooks (last preset wins for conflicts)
+    # Copy commands, hooks, and agents (last preset wins for conflicts)
     if [ -d "$preset_dir/commands" ]; then
         echo "     📁 Installing commands from $preset_name"
         cp -r "$preset_dir/commands/"* "$TARGET_HOME/.claude/commands/"
@@ -151,6 +152,10 @@ for preset in "${PRESET_LIST[@]}"; do
     if [ -d "$preset_dir/hooks" ]; then
         echo "     🪝 Installing hooks from $preset_name"
         cp -r "$preset_dir/hooks/"* "$TARGET_HOME/.claude/hooks/"
+    fi
+    if [ -d "$preset_dir/agents" ]; then
+        echo "     🤖 Installing agents from $preset_name"
+        cp -r "$preset_dir/agents/"* "$TARGET_HOME/.claude/agents/"
     fi
 
     # Copy aliases if they exist

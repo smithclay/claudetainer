@@ -27,5 +27,46 @@
         ]
       }
     ]
+  },
+  "subagent_delegation": {
+    "patterns": [
+      {
+        "keywords": ["format", "formatting", "style", "prettier", "black", "gofmt", "shfmt"],
+        "agent": "code-formatter",
+        "description": "Delegate code formatting and style consistency tasks"
+      },
+      {
+        "keywords": ["lint", "linting", "eslint", "pylint", "shellcheck", "clippy", "golangci-lint"],
+        "agent": "code-linter", 
+        "description": "Delegate code linting and style violation fixing tasks"
+      },
+      {
+        "keywords": ["test", "testing", "jest", "pytest", "coverage", "benchmark"],
+        "agent": "test-runner",
+        "description": "Delegate test execution and validation tasks"
+      },
+      {
+        "keywords": ["quality", "check", "fix", "error", "warning", "build", "validate"],
+        "agent": "code-quality-agent",
+        "description": "Delegate comprehensive quality orchestration (coordinates formatter, linter, test-runner)"
+      },
+      {
+        "keywords": ["commit", "git", "changelog", "version", "conventional"],
+        "agent": "commit-specialist", 
+        "description": "Delegate commit creation and git workflow tasks"
+      },
+      {
+        "keywords": ["architecture", "design", "pattern", "approach", "strategy", "mentor", "guidance"],
+        "agent": "development-mentor",
+        "description": "Delegate architectural decisions and development guidance"
+      },
+      {
+        "keywords": ["implement", "feature", "build", "create", "develop", "orchestrate"],
+        "agent": "project-orchestrator",
+        "description": "Delegate implementation and project coordination tasks"
+      }
+    ],
+    "auto_delegate": true,
+    "threshold": 0.7
   }
 }
