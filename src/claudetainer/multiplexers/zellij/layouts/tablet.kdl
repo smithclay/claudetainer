@@ -18,7 +18,7 @@ layout {
             pane size="70%" {
                 name "claude-main"
                 command "bash"
-                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 Claude Code Development Environment'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo '💡 Tips:'; echo '  • Use claude for interactive coding'; echo '  • Alt+h/l to switch tabs quickly'; echo '  • Ctrl+p for pane management'; echo '  • Ctrl+t for tab management'; echo ''; echo '📁 Working in:' $(pwd); echo '🚀 Ready for development - the first time the editor starts it may take a few seconds to initialize!'; echo ''; exec bash"
+                args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 claudetainer'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo '💡 Tips:'; echo '  • Use claude for interactive coding'; echo '  • Alt+h/l to switch tabs quickly'; echo '  • Ctrl+p for pane management'; echo '  • Ctrl+t for tab management'; echo ''; echo '📁 Working in:' $(pwd); echo '🚀 Ready for development - the first time the editor starts it may take a few seconds to initialize!'; echo ''; exec bash"
             }
             
             // Claudetainer hooks and notifications info

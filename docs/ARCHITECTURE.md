@@ -57,12 +57,14 @@ docker-compose.yml + devcontainer.json → install.sh → presets → ~/.claude/
 **Structure:**
 - `metadata.json` - Preset metadata and dependencies
 - `settings.json` - Claude Code hooks configuration  
-- `commands/` - Slash commands (*.md files)
+- `commands/` - Slash commands (*.md files) that delegate to sub-agents
+- `agents/` - Specialized sub-agents for quality control and workflows
 - `CLAUDE.md` - Instructions for Claude
 
 **Merge Strategy:**
 - Hooks are additive (all presets' hooks run)
 - Commands override (last preset wins for same name)
+- Agents are additive (all presets' agents available)
 - Settings deep merge
 - CLAUDE.md sections concatenate
 

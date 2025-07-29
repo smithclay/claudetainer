@@ -16,7 +16,7 @@ layout {
         pane {
             name "claude"
             command "bash"
-            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 Claude Code (Compact Mode)'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo '💡 Alt+h/l: Switch tabs | Ctrl+p: Panes'; echo '📁 $(pwd)'; echo; exec bash"
+            args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 claudetainer (Compact Mode)'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo '💡 Alt+h/l: Switch tabs | Ctrl+p: Panes'; echo '📁 $(pwd)'; echo; exec bash"
         }
     }
     

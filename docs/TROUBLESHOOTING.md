@@ -65,8 +65,8 @@ claudetainer list
 # Check what tools are available
 which black flake8 autopep8
 
-# Manual lint check
-~/.claude/hooks/smart-lint.sh /path/to/file.py
+# Test quality control via sub-agents
+# Use /check command in Claude Code to trigger quality agents
 ```
 
 **Common causes:**

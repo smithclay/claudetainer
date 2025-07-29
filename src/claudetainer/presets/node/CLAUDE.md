@@ -1,38 +1,22 @@
-# Node.js Best Practices
+# Node.js Development Standards
 
-# Overview
+## Language-Specific Commands
+```bash
+npm test           # Run single tests during development
+npm run test:watch # Continuous testing 
+npm run lint       # ESLint validation
+npm run format     # Prettier formatting
+npm run typecheck  # TypeScript validation
+```
 
-You are an expert in Node.js development. You are also an expert with common libraries and frameworks used in the industry. You are thoughtful, give nuanced answers, and are brilliant at reasoning. You carefully provide accurate, factual, thoughtful answers, and are a genius at reasoning.
+## Code Style Preferences
+- **Modules**: Use ES modules (`import/export`)
+- **Naming**: camelCase for variables/functions, PascalCase for classes, kebab-case for files
+- **Constants**: UPPERCASE for environment variables
+- **Documentation**: JSDoc with TypeDoc compatible tags for all public APIs
 
-- Follow the user's requirements carefully & to the letter.
-- First think step-by-step - describe your plan for what to build in pseudocode, written out in great detail.
-
-## Coding Standards
-
-### Naming Conventions
-
-- Classes: PascalCase
-- Variables, functions, methods: camelCase
-- Files, directories: kebab-case
-- Constants, env variables: UPPERCASE
-
-## Code Review Checklist
-
-- Ensure proper typing
-- Check for code duplication
-- Verify error handling
-- Confirm test coverage
-- Review naming conventions
-- Assess overall code structure and readability
-
-## Documentation
-
-- When writing documentation, README's, technical writing, technical documentation, JSDocs or comments, always follow Google's Technical Writing Style Guide.
-- Define terminology when needed
-- Use the active voice
-- Use the present tense
-- Write in a clear and concise manner
-- Present information in a logical order
-- Use lists and tables when appropriate
-- When writing JSDocs, only use TypeDoc compatible tags.
-- Always write JSDocs for all code: classes, functions, methods, fields, types, interfaces.
+## Node.js Workflow Notes
+- Prefer `npm ci` for consistent installs in containers
+- Use TypeScript for better development experience
+- Run single tests frequently, full suite before commits
+- Always handle async errors with proper try/catch or .catch()

@@ -45,11 +45,14 @@ preset-name/
 ├── metadata.json       # Preset metadata and dependencies
 ├── settings.json       # Claude Code hooks and permissions
 ├── CLAUDE.md           # Preset-specifc instructions for Claude, layered on top of the "base" preset.
-├── commands/           # Slash commands (*.md files)
+├── commands/           # Slash commands (*.md files) that delegate to agents
 │   ├── hello.md
 │   └── custom-command.md
-└── hooks/              # Executable scripts
-    ├── smart-lint.sh
+├── agents/             # Specialized sub-agents
+│   ├── code-quality-agent.md
+│   ├── commit-specialist.md
+│   └── custom-agent.md
+└── hooks/              # Executable scripts (for system integration)
     └── custom-hook.sh
 ```
 
@@ -60,18 +63,20 @@ preset-name/
 | `metadata.json` | Preset info, dependencies | Not merged |
 | `settings.json` | Claude Code configuration | Intelligent deep merge |
 | `CLAUDE.md` | Preset-specific Development guidance | Concatenate all presets |
-| `commands/*.md` | Slash commands | Last preset wins |
-| `hooks/*` | Executable scripts | Last preset wins |
+| `commands/*.md` | Slash commands that delegate to agents | Last preset wins |
+| `agents/*.md` | Specialized sub-agents | All available (additive) |
+| `hooks/*` | Executable scripts (system integration) | Last preset wins |
 
 ### Built-in Presets
 
 #### Base Preset
-**Purpose**: Universal commands and foundational workflows
+**Purpose**: Universal commands, specialized sub-agents, and foundational workflows
 
-- **Commands**: `/commit`, `/check`, `/next`, `/hello`
-- **Hooks**: Basic hello and notification hooks
+- **Commands**: `/commit`, `/check`, `/next`, `/hello` (delegate to sub-agents)
+- **Agents**: Complete quality control and workflow automation suite
+- **Hooks**: Basic hello and notification hooks (system integration)
 - **Permissions**: Core bash commands (`cat`, `ls`, `echo`, `mkdir`)
-- **Best practices**: Research → Plan → Implement workflow
+- **Best practices**: Research → Plan → Implement workflow with sub-agent coordination
 
 #### Language Presets
 Each language preset extends base functionality:
@@ -81,59 +86,55 @@ Each language preset extends base functionality:
 - **Go**: gofmt/golangci-lint, module-aware tooling
 - **Rust**: rustfmt/clippy integration, Cargo workflows
 
-## Smart Lint System
+## Sub-Agent System
 
-The core  of claudetainer is the smart-lint hook system that enforces code quality automatically.
+The core of claudetainer is the specialized sub-agent system that provides intelligent quality control and workflow automation.
 
-### Smart Lint Pipeline Architecture
+### Sub-Agent Architecture
 
 ```
-File Edit → Hook Trigger → FORMAT → LINT → FIX → VERIFY → Report Results
+Slash Command → Agent Delegation → Specialized Sub-Agents → Quality Pipeline → Report Results
 ```
 
-### Python Implementation
+### Quality Control Agents
 
-The most sophisticated implementation (`presets/python/hooks/smart-lint.sh`):
+The base preset includes specialized sub-agents for different aspects of code quality:
+
+**Core Quality Agents:**
+- **`code-quality-agent`**: Orchestrator that coordinates the entire quality pipeline
+- **`code-formatter`**: Specialized formatting across all languages (black, prettier, gofmt, etc.)
+- **`code-linter`**: Comprehensive linting and style checking (eslint, pylint, clippy, etc.)
+- **`test-runner`**: Test execution and validation specialist
+
+**Workflow Agents:**
+- **`commit-specialist`**: Professional Git commit creation with conventional commit format
+- **`project-orchestrator`**: Production-quality implementation with strict standards
+- **`development-mentor`**: Guides through research → plan → code → commit workflow
+
+### Agent Coordination
+
+Sub-agents work together through delegation patterns:
 
 ```bash
-# 1. FORMAT - Apply consistent code style
-black --quiet "$file" 2>/dev/null || true
-
-# 2. LINT - Check for style violations  
-flake8 "$file" --count --select=E9,F63,F7,F82 --show-source --statistics 2>/dev/null
-
-# 3. FIX - Auto-fix simple issues
-autopep8 --in-place "$file" 2>/dev/null || true
-
-# 4. VERIFY - Final check
-flake8 "$file" --count --statistics 2>/dev/null
+# /check command delegates to code-quality-agent
+# code-quality-agent coordinates: formatter → linter → test-runner
+# Each specialist reports success/failure with zero tolerance
 ```
-
-### Exit Codes
-
-The hook system uses standardized exit codes:
-
-- **0**: All clean, no issues found
-- **1**: Issues were found and fixed automatically  
-- **2**: Unfixable issues remain (blocks Claude Code operations)
 
 ### Integration Points
 
-Smart-lint integrates with Claude Code through these hooks:
+Sub-agents integrate with Claude Code through:
 
-```json
-{
-  "hooks": [
-    {
-      "type": "PostToolUse",
-      "matcher": "Write|Edit|MultiEdit",
-      "command": ["~/.claude/hooks/smart-lint.sh", "$FILE_PATH"]
-    }
-  ]
-}
-```
+**Slash Commands:**
+- `/check` → `code-quality-agent` (comprehensive quality pipeline)
+- `/commit` → `commit-specialist` (professional commit creation)
+- `/next` → `development-mentor` + `project-orchestrator` (guided implementation)
 
-**Note**: Recent versions have migrated some scripts to `~/.config/claudetainer/scripts/` for better XDG compliance, while maintaining Claude Code hooks in the standard `~/.claude/` directory.
+**Quality Standards:**
+- Zero tolerance for linting violations, formatting issues, or test failures
+- Each sub-agent must report complete success before proceeding
+- Adaptive coordination handles inter-phase dependencies
+- Project-specific tool detection based on configuration
 
 ## JSON Merge Logic
 
@@ -416,7 +417,7 @@ Features are published to `ghcr.io/smithclay/claudetainer` using the DevContaine
 
 1. **Create preset directory**:
    ```bash
-   mkdir -p my-preset/{commands,hooks}
+   mkdir -p my-preset/{commands,agents,hooks}
    ```
 
 2. **Define metadata** (`metadata.json`):
@@ -575,8 +576,8 @@ git ls-remote https://github.com/owner/repo.git
 # Check executable permissions
 ls -la ~/.claude/hooks/
 
-# Test hook manually
-~/.claude/hooks/smart-lint.sh /path/to/test/file
+# Test quality control via sub-agents
+# Use /check command in Claude Code to trigger quality agents
 
 # Check dependencies
 which black flake8 autopep8

@@ -11,13 +11,14 @@ These are not suggestions. Fix ALL issues before continuing.
 
 ## CRITICAL WORKFLOW - ALWAYS FOLLOW THIS
 
-### Research → Plan → Implement
-**NEVER JUMP STRAIGHT TO CODING!** Always follow this sequence:
-1. **Research**: Explore the codebase, understand existing patterns
+### Explore → Plan → Code → Commit
+**NEVER JUMP STRAIGHT TO CODING!** Always follow this structured sequence:
+1. **Explore**: Research the codebase, understand existing patterns and dependencies
 2. **Plan**: Create a detailed implementation plan and verify it with me  
-3. **Implement**: Execute the plan with validation checkpoints
+3. **Code**: Implement with validation checkpoints and iterative improvement
+4. **Commit**: Validate, test, and commit changes with proper documentation
 
-When asked to implement any feature, you'll first say: "Let me research the codebase and create a plan before implementing."
+When asked to implement any feature, you'll first say: "Let me explore the codebase and create a plan before implementing."
 
 For complex architectural decisions or challenging problems, use **"ultrathink"** to engage maximum reasoning capacity. Say: "Let me ultrathink about this architecture before proposing a solution."
 
@@ -65,12 +66,19 @@ Your code must be 100% clean. No exceptions.
 - Use the todo list to track both the fix and your original task
 
 
-## Working Memory Management
+## Context & Memory Management
 
 ### When context gets long
-- Re-read this CLAUDE.md file
-- Use TodoWrite tool to track tasks
+- Use `/clear` to reset and maintain focused context  
+- Re-read this CLAUDE.md file periodically (every 30+ minutes)
+- Use TodoWrite tool to track tasks and maintain continuity
 - Document current state before major changes
+- Use the `#` key to quickly update documentation
+
+### Visual Development
+- Request screenshots when working on UI/UX features
+- Use visual targets to guide implementation
+- Iterate through multiple versions with user feedback
 
 ## Implementation Standards
 
@@ -82,20 +90,22 @@ Your code must be 100% clean. No exceptions.
 - ✓ Documentation comments on all public interfaces
 
 ### Testing Strategy
-- Complex business logic → Write tests first
-- Simple CRUD → Write tests after
-- Hot paths → Add benchmarks
+- Use Test-Driven Development (TDD) for complex business logic
+- Simple features → Write tests after implementation
+- Hot paths → Add benchmarks for performance validation
 - Skip tests for entry points and simple CLI parsing
+- Run single tests during development, full suite before commit
 
 ## Problem-Solving Together
 
 When you're stuck or confused:
 1. **Stop** - Don't spiral into complex solutions
-2. **Delegate** - Consider spawning agents for parallel investigation
-3. **Ultrathink** - For complex problems, say "I need to ultrathink through this challenge" to engage deeper reasoning
-4. **Step back** - Re-read the requirements
+2. **Delegate** - Spawn agents for parallel investigation and verification
+3. **Think Mode** - Use "ultrathink" for complex architectural challenges
+4. **Step back** - Re-read requirements and existing patterns
 5. **Simplify** - The simple solution is usually correct
 6. **Ask** - "I see two approaches: [A] vs [B]. Which do you prefer?"
+7. **Iterate** - Improve through multiple versions rather than perfect first attempts
 
 My insights on better approaches are valued - please ask for them!
 
@@ -122,10 +132,30 @@ My insights on better approaches are valued - please ask for them!
 "The current approach works, but I notice [observation].
 Would you like me to [specific improvement]?"
 
+## Development Environment & Tools
+
+### Git Workflow
+- Use feature branches - no backwards compatibility needed
+- Consider git worktrees for parallel task management  
+- Follow consistent branch naming conventions
+- Plan merge strategies early in complex features
+
+### Tool Integration
+- Use MCP (Model Context Protocol) servers when available
+- Install GitHub CLI (`gh`) for enhanced repository interactions
+- Configure tool permissions carefully for security
+- Leverage headless mode for automation workflows
+
+### Custom Commands
+- Create slash commands for repeated workflows
+- Document common bash commands and shortcuts
+- Establish code style preferences (modules, imports, etc.)
+- Note environment setup requirements
+
 ## Working Together
 
-- This is always a feature branch - no backwards compatibility needed
 - When in doubt, we choose clarity over cleverness
 - **REMINDER**: If this file hasn't been referenced in 30+ minutes, RE-READ IT!
+- Periodically refine these instructions for better adherence
 
 Avoid complex abstractions. Keep it simple.
