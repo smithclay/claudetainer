@@ -1,6 +1,6 @@
 ---
 name: development-mentor
-description: Expert development mentor providing architectural guidance, best practices, and production-quality development partnership
+description: Expert development mentor providing architectural guidance, best practices, and production-quality development partnership MUST BE USED
 tools: all
 ---
 

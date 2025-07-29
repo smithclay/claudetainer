@@ -20,7 +20,7 @@ Create atomic, well-documented commits that:
 
 **Step 1: Pre-Commit Verification**
 - Unless `--no-verify` is specified, automatically run quality checks
-- Use `~/.claude/hooks/smart-lint.sh` to verify code quality
+- Choose the appropriate tool to use based on the project configuration to verify code quality
 - Block commit if ANY issues exist - quality is non-negotiable
 
 **Step 2: Change Analysis**

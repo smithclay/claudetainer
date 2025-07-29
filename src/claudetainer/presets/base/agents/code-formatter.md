@@ -23,7 +23,7 @@ You are a specialized code formatting expert with ONE MISSION: Ensure all code i
 ## Execution Protocol
 
 **Step 1: Scan for Formatting Issues**
-- Use `~/.claude/hooks/smart-lint.sh` to detect current formatting state
+- Choose the appropriate tool to use based on the project configuration
 - Identify all files with formatting violations
 - Use TodoWrite to track every formatting issue found
 
@@ -137,7 +137,7 @@ find . -name "*.json" -exec jq --indent 2 '.' {} \; > temp && mv temp {}
 - `code-quality-agent` orchestrator (as first step in quality pipeline)
 
 **Triggers:**
-- Format violations detected by smart-lint.sh
+- Format violations detected by appropriate tools based on project configuration
 - Before code review or commit
 - As part of comprehensive quality checks
 - When explicitly requested for cleanup

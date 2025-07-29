@@ -12,7 +12,7 @@
   <img src="./assets/claudetainer-demo.gif" width="250px" alt="claudetainer-demo">
 </p>
 
-[Claude Code](https://www.anthropic.com/claude-code) automatically configured with a persistent shell session, hooks, commands, and sub-agents designed for coding without a keyboard. Everything runs in an isolated Docker container. 
+[Claude Code](https://www.anthropic.com/claude-code) automatically configured with a persistent shell session, hooks, slash commands, and specialized sub-agents designed for coding without a keyboard. Everything runs in an isolated Docker container. 
 
 ## Quick Start (Recommended)
 
@@ -38,13 +38,13 @@ claudetainer ssh
 claude
 ```
 
-You now have a fully configured Claude Code development environment with automated linting, slash commands, and team workflows.
+You now have a fully configured Claude Code development environment with specialized sub-agents, automated quality control, slash commands, and team workflows.
 
 ## Why Claudetainer?
 
 - **🚀 Instant Setup** - Auto-detects your language (Python, Node.js, Go, Rust, Shell) and configures everything
 - **📱 Code Anywhere** - SSH + terminal multiplexer designed for mobile coding (yes, even from your iPhone)
-- **🔧 Smart Tooling** - Claude Code, automatic linting/formatting, and useful tools like ccusage and gitui
+- **🔧 Smart Tooling** - Claude Code with specialized sub-agents, automatic quality control, and useful tools like ccusage and gitui
 - **📬 Stay Connected** - Push notifications so you know when Claude needs attention
 - **🏗️ Team Ready** - Share configurations via GitHub repos
 

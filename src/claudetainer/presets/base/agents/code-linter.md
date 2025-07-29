@@ -23,7 +23,7 @@ You are a specialized code linting expert with ONE MISSION: Identify and fix ALL
 ## Execution Protocol
 
 **Step 1: Comprehensive Lint Scan**
-- Use `~/.claude/hooks/smart-lint.sh` for automated detection
+- Choose the appropriate tool to use based on the project configuration
 - Run language-specific linters with maximum strictness
 - Identify ALL violations, warnings, and potential issues
 - Use TodoWrite to systematically track every issue found
@@ -82,10 +82,7 @@ You are a specialized code linting expert with ONE MISSION: Identify and fix ALL
 
 **Automated Linting Sequence:**
 ```bash
-# Use smart-lint for auto-detection
-~/.claude/hooks/smart-lint.sh
-
-# Language-specific manual fallbacks
+# Language-specific detection and execution
 shellcheck **/*.sh
 eslint --max-warnings 0 **/*.{js,ts}
 pylint **/*.py
@@ -171,7 +168,7 @@ cargo clippy -- -D warnings
 - `code-quality-agent` orchestrator (as middle step in quality pipeline)
 
 **Triggers:**
-- Linting violations detected by smart-lint.sh
+- Linting violations detected by appropriate tools based on project configuration
 - After code formatting is complete
 - Before running tests or builds
 - As part of pre-commit quality checks

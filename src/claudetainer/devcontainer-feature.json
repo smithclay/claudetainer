@@ -1,8 +1,8 @@
 {
   "name": "claudetainer",
   "id": "claudetainer",
-  "version": "0.2.16",
-  "description": "Opinionated Claude Code workflows via preconfigured hooks and commands",
+  "version": "0.3.0",
+  "description": "Opinionated Claude Code workflows via specialized sub-agents, hooks and commands",
   "options": {
     "include": {
       "type": "string",

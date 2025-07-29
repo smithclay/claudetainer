@@ -4,7 +4,7 @@ This file provides focused development guidance for Claude Code when working wit
 
 # Claudetainer Development
 
-Claudetainer is a devcontainer feature that adds language-specific support to Claude Code through automated hooks, commands, and presets.
+Claudetainer is a devcontainer feature that adds language-specific support to Claude Code through automated hooks, commands, sub-agents, and presets.
 
 > **See `docs/` for complete architecture, installation, and usage documentation**
 
@@ -46,7 +46,7 @@ make build                      # Build single-file distribution
 **Important Directories:**
 - `bin/lib/` - CLI library modules (8 core functions)
 - `bin/commands/` - CLI command implementations 
-- `src/claudetainer/presets/` - Language-specific configurations
+- `src/claudetainer/presets/` - Language-specific configurations with sub-agents
 - `src/claudetainer/multiplexers/` - Terminal multiplexer support
 - `test/claudetainer/` - DevContainer feature tests
 - `docs/` - Complete documentation
@@ -67,6 +67,7 @@ make build                      # Build single-file distribution
 
 **Architecture Principles:**
 - Modular development, single-file distribution
+- Sub-agent based quality control and command delegation
 - Bash + Node.js utilities for JSON manipulation
 - Support for external GitHub presets
 - Error handling with meaningful messages

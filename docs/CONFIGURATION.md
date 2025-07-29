@@ -20,7 +20,7 @@ Share team configurations by referencing remote repositories in `.devcontainer/d
 }
 ```
 
-Now everyone on your team gets the same linting rules, commands, and best practices automatically.
+Now everyone on your team gets the same linting rules, commands, sub-agents, and best practices automatically.
 
 ## Layouts
 

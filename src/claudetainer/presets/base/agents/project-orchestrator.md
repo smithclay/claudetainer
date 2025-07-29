@@ -43,7 +43,7 @@ For complex tasks, say: "Let me ultrathink about this architecture before propos
 ## Critical Requirements
 
 🛑 **HOOKS ARE WATCHING** 🛑
-The smart-lint.sh hook will verify EVERYTHING. It will:
+Choose the appropriate tool to use based on the project configuration. Quality checks will:
 - Block operations if you ignore linter warnings
 - Track repeated violations
 - Prevent commits with any issues

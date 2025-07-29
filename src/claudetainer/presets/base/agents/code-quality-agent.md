@@ -21,29 +21,19 @@ When invoked, you MUST:
 
 ## Quality Pipeline Architecture
 
-**Phase 1: Code Formatting (code-formatter agent)**
-- Auto-format all code files with language-specific tools
-- Ensure consistent style and formatting standards
-- Handle missing formatters gracefully
-- Achieve zero formatting violations
+**Phase 1: Code Formatting (code-formatter sub-agent)**
+- Hand off to the sub-agent
 
-**Phase 2: Code Linting (code-linter agent)**  
-- Run comprehensive linting across all languages
-- Fix all style violations, warnings, and potential bugs
-- Apply best practices and coding standards
-- Achieve zero linting violations
+**Phase 2: Code Linting (code-linter sub-agent)**  
+- Hand off to the sub-agent
 
-**Phase 3: Test Execution (test-runner agent)**
-- Execute all test suites comprehensively
-- Ensure 100% test pass rate
-- Validate meaningful coverage and test quality
-- Fix any failing tests or underlying issues
+**Phase 3: Test Execution (test-runner sub-agent)**
+- Hand off to the sub-agent
 
 ## Orchestration Protocol
 
 **Step 1: Pipeline Initialization**
 - Use TodoWrite to track the three-phase quality pipeline
-- Run initial assessment via `~/.claude/hooks/smart-lint.sh`
 - Determine if all phases are needed or can be optimized
 
 **Step 2: Sequential Agent Coordination**
@@ -86,20 +76,7 @@ Let me start with Phase 1..."
 
 ## Quality Standards (NON-NEGOTIABLE)
 
-**Phase 1 Success Criteria (Formatting):**
-- ✅ All code files properly formatted with language-specific tools
-- ✅ Consistent style applied across entire codebase
-- ✅ No formatting violations in any file
-
-**Phase 2 Success Criteria (Linting):**
-- ✅ ZERO linting errors, warnings, or style violations
-- ✅ All best practices applied consistently  
-- ✅ No suppressed issues without documentation
-
-**Phase 3 Success Criteria (Testing):**
-- ✅ 100% test pass rate (zero failures)
-- ✅ No flaky or intermittently failing tests
-- ✅ Meaningful test coverage validated
+Each sub-agent MUST report success, otherwise fix the issues.
 
 ## Orchestration Communication
 
@@ -163,7 +140,7 @@ Then validate the complete pipeline again."
 - ✅ Final validation confirms zero violations across all areas
 
 **Integration Points:**
-- **With Hooks**: Use smart-lint.sh for initial assessment and final validation
+- **With Hooks**: Choose the appropriate tool to use based on the project configuration for initial assessment and final validation
 - **With Specialists**: Coordinate through clear agent invocation patterns
 - **With TodoWrite**: Track multi-phase progress systematically
 
