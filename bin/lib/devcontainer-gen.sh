@@ -23,9 +23,13 @@ devcontainer_generate_compose() {
     local lang_config=$(config_get_language_config "$lang")
     local image=$(echo "$lang_config" | grep "^image:" | cut -d: -f2-)
 
+    # Generate unique service name based on project path and port to avoid conflicts
+    local project_hash=$(echo "$PWD" | shasum | head -c8)
+    local service_name="devcontainer-${project_hash}-${port}"
+
     cat << EOF
 services:
-  devcontainer:
+  ${service_name}:
     image: ${image}
     command: sleep infinity
     ports:
@@ -59,6 +63,10 @@ devcontainer_generate_json() {
     local name=$(echo "$lang_config" | grep "^name:" | cut -d: -f2-)
     local post_create_command=$(echo "$lang_config" | grep "^post_create:" | cut -d: -f2-)
 
+    # Generate unique service name based on project path and port to avoid conflicts
+    local project_hash=$(echo "$PWD" | shasum | head -c8)
+    local service_name="devcontainer-${project_hash}-${port}"
+
     # Determine claudetainer feature configuration
     local claudetainer_config
     if [[ "$lang" == "base" ]]; then
@@ -74,7 +82,7 @@ devcontainer_generate_json() {
 {
     "name": "${name}",
     "dockerComposeFile": "docker-compose.yml",
-    "service": "devcontainer",
+    "service": "${service_name}",
     "workspaceFolder": "/workspaces",
     "features": {
         "ghcr.io/devcontainers/features/node:1": {},

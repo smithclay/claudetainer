@@ -3,17 +3,5 @@
     "allow": ["Bash(shellcheck:*)", "Bash(shfmt:*)", "Bash(bash:*)", "Bash(sh:*)"],
     "deny": []
   },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/smart-lint.sh"
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": {}
 }
