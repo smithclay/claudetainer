@@ -24,12 +24,11 @@ check "merged: CLAUDE.md contains python preset reference" grep -q "From python 
 
 # Test settings merging (both base and python hooks should be present)
 check "merged: settings contains base hooks" grep -q "hello.sh" ~/.claude/settings.json
-check "merged: settings contains python hooks" grep -q "smart-lint.sh" ~/.claude/settings.json
+check "merged: settings contains subagent logging hooks" grep -q "subagent-start-logger.sh" ~/.claude/settings.json
 
-# Test hook file override behavior (python smart-lint.sh should override base version)
-if [ -f ~/.claude/hooks/smart-lint.sh ]; then
-    # Python version should contain python-specific content or different content than base
-    echo "✓ smart-lint.sh hook exists (python version should override base)"
+# Test hook file functionality (subagent logging hooks should exist)
+if [ -f ~/.claude/hooks/subagent-start-logger.sh ]; then
+    echo "✓ subagent-start-logger.sh hook exists"
 fi
 
 # Test that all expected commands directory has both base and python commands

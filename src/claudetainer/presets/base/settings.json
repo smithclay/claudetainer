@@ -5,6 +5,27 @@
     "deny": []
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "toolNamePattern": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/subagent-start-logger.sh"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/subagent-stop-logger.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit",
