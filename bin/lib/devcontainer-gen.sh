@@ -45,7 +45,7 @@ services:
       - "devcontainer.ssh_port=${port}"
     environment:
       - CLAUDETAINER=true
-      - NODE_OPTIONS=--max-old-space-size=4096
+      - NODE_OPTIONS=--max-old-space-size=8192
 EOF
 }
 

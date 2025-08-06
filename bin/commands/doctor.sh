@@ -251,6 +251,15 @@ cmd_doctor() {
         if docker info > /dev/null 2>&1; then
             ui_print_success "Docker is running"
 
+            # Check Docker memory allocation for sub-agent workloads (skip in CI)
+            if [[ -z "${CI:-}" && -z "${GITHUB_ACTIONS:-}" && -z "${GITLAB_CI:-}" && -z "${JENKINS_URL:-}" && -z "${BUILDKITE:-}" && -z "${CIRCLECI:-}" && -z "${TRAVIS:-}" ]]; then
+                if ! check_docker_memory_allocation "no-prompt"; then
+                    ((issues_found++))
+                fi
+            else
+                ui_print_info "Skipping Docker memory check in CI environment"
+            fi
+
             # Check for existing containers
             local containers=$(docker_find_project_containers)
             if [[ -n "$containers" ]]; then
