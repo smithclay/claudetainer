@@ -3,7 +3,7 @@
 # Subagent Log Viewer
 # View and analyze structured JSON logs from sub-agent delegation hooks
 
-LOG_FILE=~/.claude/logs/subagent.jsonl
+LOG_FILE=~/.config/claudetainer/logs/subagent.jsonl
 USAGE="Usage: $0 [tail|stats|search <pattern>|session <session_id>]"
 
 # Check if log file exists
@@ -22,7 +22,8 @@ pretty_print_entry() {
             Message: \(.message)
             Task ID: \(.attributes.task_id // "N/A")  
             Session: \(.attributes.session_id // "N/A")
-            Status: \(.attributes.status // .attributes.delegation_type // "N/A")"
+            Status: \(.attributes.status // .attributes.delegation_type // "N/A")
+            Memory: \(.attributes.memory_usage_mb // "N/A")MB"
         '
     else
         echo "$entry"
@@ -48,6 +49,10 @@ case "${1:-tail}" in
             echo "Delegations Started: $(grep -c 'subagent_delegation_start' "$LOG_FILE")"
             echo "Delegations Completed: $(grep -c 'subagent_delegation_complete' "$LOG_FILE")"
             echo "Success Rate: $(cat "$LOG_FILE" | jq -r 'select(.attributes.status == "SUCCESS")' | wc -l)/$(grep -c 'subagent_delegation_complete' "$LOG_FILE")"
+            echo ""
+            echo "Memory Usage Statistics:"
+            echo "Average Memory: $(cat "$LOG_FILE" | jq -r 'select(.attributes.memory_usage_mb != null) | .attributes.memory_usage_mb' | awk '{sum+=$1; count++} END {if(count>0) printf "%.0f", sum/count; else print "N/A"}')MB"
+            echo "Peak Memory: $(cat "$LOG_FILE" | jq -r 'select(.attributes.memory_usage_mb != null) | .attributes.memory_usage_mb' | sort -n | tail -1)MB"
             echo ""
             echo "Recent Sessions:"
             cat "$LOG_FILE" | jq -r '.attributes.session_id' | tail -5 | sort -u
