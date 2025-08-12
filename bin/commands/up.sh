@@ -183,6 +183,10 @@ cmd_up() {
         # Wait a moment for container to be fully ready
         sleep 5
 
+        # Get the language from container labels to determine the user
+        local lang=$(docker inspect "$container_name" --format '{{ index .Config.Labels "devcontainer.language" }}' 2>/dev/null)
+        local container_user=$(config_get_container_user "$lang")
+
         # Set up notification channel and config
         notifications_setup_channel "$container_name"
 
@@ -192,7 +196,7 @@ cmd_up() {
             local file_content=$(cat "$credentials_file" 2> /dev/null)
             if [[ "$file_content" != "{}" ]] && [[ -n "$file_content" ]] && [[ "$file_content" != "" ]]; then
                 ui_print_info "Setting Claude Code onboarding complete flag in container..."
-                docker_exec_in_container "$container_name" "echo '{\"hasCompletedOnboarding\": true}' > /home/vscode/.claude.json" || ui_print_warning "Could not set onboarding flag in container"
+                docker_exec_in_container "$container_name" "echo '{\"hasCompletedOnboarding\": true}' > /home/$container_user/.claude.json" || ui_print_warning "Could not set onboarding flag in container"
             fi
         fi
     else
@@ -209,10 +213,18 @@ cmd_up() {
     echo
     local ssh_port=$(pm_get_current_project_port)
     local mosh_port=$((60000 + ssh_port))
+    
+    # Get the container user for SSH display (reuse from above if available)
+    if [[ -z "$container_user" ]]; then
+        local container_name=$(docker_get_project_container_name)
+        local lang=$(docker inspect "$container_name" --format '{{ index .Config.Labels "devcontainer.language" }}' 2>/dev/null)
+        local container_user=$(config_get_container_user "$lang")
+    fi
+    
     ui_print_info "Container details:"
     echo "  • SSH port: $ssh_port"
-    echo "  • Direct SSH: ssh -p $ssh_port vscode@localhost (password: vscode)"
+    echo "  • Direct SSH: ssh -p $ssh_port $container_user@localhost (password: vscode)"
     echo "  • Mosh port range: $mosh_port-$((mosh_port + 10))"
-    echo "  • Direct Mosh: mosh --ssh=\"ssh -p $ssh_port\" --port=$mosh_port vscode@localhost"
+    echo "  • Direct Mosh: mosh --ssh=\"ssh -p $ssh_port\" --port=$mosh_port $container_user@localhost"
     echo "  • Workspace: /workspaces (mounted from current directory)"
 }
