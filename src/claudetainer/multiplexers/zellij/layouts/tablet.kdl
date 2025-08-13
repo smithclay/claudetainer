@@ -15,14 +15,14 @@ layout {
     tab name="🤖 claude" focus=true {
         pane split_direction="vertical" {
             // Main Claude Code terminal
-            pane size="70%" {
+            pane size="70%" borderless=true {
                 name "claude-main"
                 command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 claudetainer'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo '💡 Tips:'; echo '  • Use claude for interactive coding'; echo '  • Alt+h/l to switch tabs quickly'; echo '  • Ctrl+p for pane management'; echo '  • Ctrl+t for tab management'; echo ''; echo '📁 Working in:' $(pwd); echo '🚀 Ready for development - the first time the editor starts it may take a few seconds to initialize!'; echo ''; exec bash"
             }
             
             // Claudetainer hooks and notifications info
-            pane size="30%" {
+            pane size="30%" borderless=true {
                 name "claudetainer-info"
                 command "bash" 
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ Claudetainer Hooks'; echo '━━━━━━━━━━━━━━━━━━━'; echo 'Slash Commands:'; echo '  • /commit         # Conventional commits'; echo '  • /check          # Project health check'; echo '  • /next           # Start new collaboration'; echo ''; echo '📱 Push Notifications:'; echo '  • Auto-generated channel'; echo '  • Subscribe: ntfy.sh/claude-project-xyz'; echo '  • Mobile app: ntfy.sh'; echo ''; echo '🔧 Features:'; echo '  • Auto-linting on file edits'; echo '  • Quality gates (blocks bad code)'; echo '  • Language-specific best practices'; echo ''; exec bash"
@@ -34,14 +34,14 @@ layout {
     tab name="💰 cost" {
         pane split_direction="horizontal" {
             // Claude Code usage monitoring
-            pane size="60%" {
+            pane size="60%" borderless=true {
                 name "claude-usage"
                 command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '💰 Claude Code Usage Monitor'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo 'Starting ccusage for real-time usage tracking...'; echo ''; echo '💡 This shows:'; echo '  • Token usage per request'; echo '  • Cost estimates'; echo '  • Request patterns'; echo '  • Daily/weekly totals'; echo ''; echo 'Loading...'; sleep 2; if command -v npx >/dev/null 2>&1; then npx ccusage blocks --live; else echo '❌ ccusage not available. Install with: npm install -g ccusage'; echo '📊 Alternative: Check Claude usage at https://console.anthropic.com'; exec bash; fi"
             }
             
             // System resources
-            pane size="40%" {
+            pane size="40%" borderless=true {
                 name "system-resources"
                 command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🖥️  System Resources'; echo '━━━━━━━━━━━━━━━━━━━━'; echo 'Starting htop for system monitoring...'; echo ''; echo '💡 htop Controls:'; echo '  • q or F10    # Quit htop'; echo '  • h or F1     # Help'; echo '  • t           # Tree view'; echo '  • M           # Sort by memory'; echo '  • P           # Sort by CPU'; echo ''; echo 'Loading htop...'; sleep 2; if command -v htop >/dev/null 2>&1; then htop; else echo '❌ htop not available. Installing...'; if command -v apt-get >/dev/null 2>&1; then sudo apt-get update && sudo apt-get install -y htop && htop; elif command -v apk >/dev/null 2>&1; then sudo apk add htop && htop; else echo '❌ Cannot install htop. Falling back to top...'; top; fi; fi; exec bash"
@@ -53,7 +53,7 @@ layout {
     tab name="🌲 git" {
         pane split_direction="vertical" {
             // GitUI main interface
-            pane size="100%" {
+            pane size="100%" borderless=true {
                 name "gitui-main"
                 command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🌲 Git Interface'; echo '━━━━━━━━━━━━━━━━━━'; if command -v gitui >/dev/null 2>&1; then echo 'Starting GitUI...'; echo 'Press q to quit GitUI and return to shell'; sleep 1; gitui; else echo '⚠️  GitUI not available - using standard git'; echo; git_loop() { while true; do clear; echo '🌲 Git Status & Log - $(date +\"%H:%M:%S\")'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo; echo '📊 Current Status:'; git status --short 2>/dev/null || echo 'Not a git repository'; echo; echo '📝 Recent Commits (last 8):'; git log --oneline --graph -8 2>/dev/null || echo 'No commits yet'; echo; echo '🌿 Current Branch:'; git branch --show-current 2>/dev/null || echo 'No branch'; echo; echo '🔄 Auto-refresh every 10s | Press Ctrl+C for interactive shell'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; sleep 10; done; }; git_loop; fi; exec bash"
@@ -65,14 +65,14 @@ layout {
     tab name="🐚 shell" {
         pane split_direction="horizontal" {
             // Main shell for general tasks
-            pane size="70%" {
+            pane size="70%" borderless=true {
                 name "main-shell"
                 command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🐚 Development Shell'; echo '━━━━━━━━━━━━━━━━━━━━'; echo 'General purpose shell for development tasks'; echo ''; echo '📁 Current directory:' $(pwd); echo ''; echo '🛠️  Common Development Commands:'; echo '  • ls -la              # List files'; echo '  • find . -name \"*.py\" # Find files'; echo '  • rg \"pattern\"        # Search in files'; echo '  • tree                # Show directory tree'; echo '  • which <command>     # Find command location'; echo ''; echo '📦 Package Management:'; echo '  • npm install         # Node.js packages'; echo '  • pip install         # Python packages'; echo '  • cargo build         # Rust packages'; echo '  • go mod tidy         # Go modules'; echo ''; echo '🔧 Build & Test:'; echo '  • make               # Run Makefile'; echo '  • ./build.sh         # Run build script'; echo '  • npm test           # Run tests'; echo ''; echo 'Ready for commands!'; exec bash"
             }
             
             // File explorer and monitoring
-            pane size="30%" {
+            pane size="30%" borderless=true {
                 name "file-explorer"
                 command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '📁 File Explorer'; echo '━━━━━━━━━━━━━━━'; file_watch() { while true; do clear; echo '📁 File Explorer - $(date +\"%H:%M:%S\")'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo; echo '📂 Current: $(pwd)'; echo; echo '📋 Directory Contents:'; ls -la 2>/dev/null | head -20; echo; if [ $(ls -la 2>/dev/null | wc -l) -gt 20 ]; then echo '... (showing first 20 items)'; echo; fi; echo '🔍 Quick Navigation:'; echo '  • cd <dir>    # Change directory'; echo '  • ls -la      # List all files'; echo '  • tree        # Show tree view'; echo '  • pwd         # Current path'; echo; echo '🔄 Auto-refresh every 15s | Ctrl+C to interact'; sleep 15; done; }; file_watch"
