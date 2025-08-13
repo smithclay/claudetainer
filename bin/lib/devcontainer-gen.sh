@@ -3,13 +3,27 @@
 
 # Function to get current feature version from devcontainer-feature.json
 devcontainer_get_feature_version() {
+    # If VERSION is already set (from built distribution), use it
+    if [[ -n "${VERSION:-}" ]]; then
+        echo "$VERSION"
+        return
+    fi
+    
+    # Otherwise try to read from devcontainer-feature.json (development mode)
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local feature_json="$script_dir/../../src/claudetainer/devcontainer-feature.json"
 
     if [[ -f "$feature_json" ]]; then
-        node -e "console.log(JSON.parse(require('fs').readFileSync('$feature_json', 'utf8')).version)" 2> /dev/null || echo "unknown"
+        local version=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$feature_json', 'utf8')).version)" 2> /dev/null)
+        if [[ -z "$version" ]]; then
+            ui_error "Failed to parse version from $feature_json"
+            return 1
+        fi
+        echo "$version"
     else
-        echo "unknown" # fallback version
+        ui_error "Cannot determine claudetainer version - devcontainer-feature.json not found"
+        ui_error "This usually means claudetainer was not installed correctly"
+        return 1
     fi
 }
 
@@ -55,7 +69,7 @@ devcontainer_generate_json() {
     local port="$2"
     local multiplexer="${3:-zellij}"
 
-    # Get current feature version
+    # Get current feature version for display, but we'll use local feature
     local feature_version=$(devcontainer_get_feature_version)
 
     # Get language-specific configuration
@@ -87,7 +101,7 @@ devcontainer_generate_json() {
     "features": {
         "ghcr.io/devcontainers/features/node:1": {},
         "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
-        "ghcr.io/smithclay/claudetainer/claudetainer:${feature_version}": {
+        "../claudetainer": {
             ${claudetainer_config}
         },$(if [[ -n "$additional_features" ]]; then echo -e "\n        $additional_features,"; fi)
         "ghcr.io/devcontainers-extra/features/mosh-apt-get:1": {},
@@ -129,6 +143,16 @@ devcontainer_create_config() {
 
     # Create .devcontainer/claudetainer directory
     mkdir -p .devcontainer/claudetainer
+
+    # Copy claudetainer feature locally (instead of using unpublished ghcr.io reference)
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local feature_src="$script_dir/../../src/claudetainer"
+    if [[ -d "$feature_src" ]]; then
+        cp -r "$feature_src" .devcontainer/
+        ui_print_info "Copied claudetainer feature locally for devcontainer use"
+    else
+        ui_print_warning "Could not find claudetainer feature source, devcontainer will use remote reference"
+    fi
 
     # Get or allocate port for this project
     local port

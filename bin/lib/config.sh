@@ -62,6 +62,19 @@ config_get_language_config() {
     esac
 }
 
+# Get the default user for a language's devcontainer
+config_get_container_user() {
+    local lang="$1"
+    case "$lang" in
+        node)
+            echo "node"
+            ;;
+        python|rust|go|shell|base|*)
+            echo "vscode"
+            ;;
+    esac
+}
+
 # Language-specific additional features
 config_get_language_features() {
     local lang="$1"

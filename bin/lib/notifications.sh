@@ -40,15 +40,20 @@ notifications_setup_channel() {
     # Create ntfy config inside the container
     if [[ -n "$container_name" ]]; then
         ui_print_info "Setting up ntfy configuration in container..."
+        
+        # Get the language from container labels to determine the user
+        local lang=$(docker inspect "$container_name" --format '{{ index .Config.Labels "devcontainer.language" }}' 2>/dev/null)
+        local container_user=$(config_get_container_user "$lang")
+        
         docker exec "$container_name" sh -c "
-            mkdir -p /home/vscode/.config/claudetainer
-            cat > /home/vscode/.config/claudetainer/ntfy.json << 'EOF'
+            mkdir -p /home/$container_user/.config/claudetainer
+            cat > /home/$container_user/.config/claudetainer/ntfy.json << 'EOF'
 {
   \"ntfy_topic\": \"$ntfy_channel\",
   \"ntfy_server\": \"https://ntfy.sh\"
 }
 EOF
-            chown -R vscode:vscode /home/vscode/.config/claudetainer
+            chown -R $container_user:$container_user /home/$container_user/.config/claudetainer
         " 2> /dev/null && ui_print_success "Created ntfy config in container" || ui_print_warning "Could not create ntfy config in container"
 
         ui_print_info "Notification setup complete!"
@@ -81,13 +86,17 @@ notifications_check_setup() {
 
     # Check container notification config
     if [[ -n "$container_name" ]]; then
-        local container_ntfy_check=$(docker_exec_in_container "$container_name" "cat /home/vscode/.config/claudetainer/ntfy.json 2>/dev/null")
+        # Get the language from container labels to determine the user
+        local lang=$(docker inspect "$container_name" --format '{{ index .Config.Labels "devcontainer.language" }}' 2>/dev/null)
+        local container_user=$(config_get_container_user "$lang")
+        
+        local container_ntfy_check=$(docker_exec_in_container "$container_name" "cat /home/$container_user/.config/claudetainer/ntfy.json 2>/dev/null")
         if [[ -n "$container_ntfy_check" ]]; then
             ui_print_success "Notification config found in container"
 
             # Parse and validate the config
-            local container_topic=$(docker_exec_in_container "$container_name" "jq -r '.ntfy_topic // empty' /home/vscode/.config/claudetainer/ntfy.json 2>/dev/null")
-            local container_server=$(docker_exec_in_container "$container_name" "jq -r '.ntfy_server // empty' /home/vscode/.config/claudetainer/ntfy.json 2>/dev/null")
+            local container_topic=$(docker_exec_in_container "$container_name" "jq -r '.ntfy_topic // empty' /home/$container_user/.config/claudetainer/ntfy.json 2>/dev/null")
+            local container_server=$(docker_exec_in_container "$container_name" "jq -r '.ntfy_server // empty' /home/$container_user/.config/claudetainer/ntfy.json 2>/dev/null")
 
             if [[ -n "$container_topic" ]]; then
                 ui_print_success "Container notification topic: $container_topic"
