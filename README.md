@@ -6,13 +6,13 @@
 [![DevContainer Feature](https://img.shields.io/badge/devcontainer-feature-blue?logo=visualstudiocode)](https://containers.dev/features)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Auto-configured Claude Code with mobile-friendly shell - code from anywhere.
+> Auto-configured Claude Code with mobile-friendly shell: code from anywhere.
 
 <p align="center">
   <img src="./assets/claudetainer-demo.gif" width="250px" alt="claudetainer-demo">
 </p>
 
-[Claude Code](https://www.anthropic.com/claude-code) automatically configured with a persistent shell session, hooks, slash commands, and specialized sub-agents designed for coding without a keyboard. Everything runs in an isolated Docker container. 
+[Claude Code](https://www.anthropic.com/claude-code) automatically configured with a persistent shell session, hooks, slash commands, utilities, and specialized sub-agents designed for coding without a keyboard. Everything runs in an isolated Docker container using Anthropic's official devcontainer.
 
 ## Quick Start (Recommended)
 
@@ -69,22 +69,11 @@ npm install -g @devcontainers/cli
 
 **Other systems:** [Direct download](https://github.com/smithclay/claudetainer/releases/latest/download/claudetainer) or [dev container feature](docs/INSTALLATION.md#dev-container-feature)
 
-## Language Support
-
-Auto-detects and configures for:
-- **Python** (`requirements.txt`, `pyproject.toml`) → black, flake8, autopep8
-- **Node.js** (`package.json`) → eslint, prettier, TypeScript support  
-- **Go** (`go.mod`) → gofmt, golangci-lint
-- **Rust** (`Cargo.toml`) → rustfmt, clippy
-- **Shell** (`*.sh` files) → shellcheck, shfmt
-
-Don't see your language? Create custom presets or [request new ones](https://github.com/smithclay/claudetainer/issues).
-
 ## Essential Commands
 
 ```bash
 # Project setup
-claudetainer init [language]    # Auto-detects language if not specified
+claudetainer init [language]    # Create a new devcontainer for your project
 claudetainer up                 # Start container
 
 # Connect and use
