@@ -272,13 +272,17 @@ cmd_doctor() {
             docker_version=$(docker --version | cut -d' ' -f3 | sed 's/,//')
             ui_print_success "Docker is running ($docker_version)"
 
-            # Check Docker memory allocation for sub-agent workloads (skip in CI)
-            if [[ -z ${CI:-} && -z ${GITHUB_ACTIONS:-} && -z ${GITLAB_CI:-} && -z ${JENKINS_URL:-} && -z ${BUILDKITE:-} && -z ${CIRCLECI:-} && -z ${TRAVIS:-} ]]; then
-                if ! check_docker_memory_allocation "no-prompt"; then
-                    ((issues_found++))
-                fi
+            # Display Docker memory allocation information (non-blocking)
+            # Get Docker memory info for display
+            local docker_memory_bytes
+            docker_memory_bytes=$(docker info --format '{{.MemTotal}}' 2>/dev/null || echo "0")
+            if [[ $docker_memory_bytes == "0" ]]; then
+                ui_print_info "Docker memory allocation: Unlimited (system memory available)"
             else
-                ui_print_info "Skipping Docker memory check in CI environment"
+                local docker_memory_gb
+                docker_memory_gb=$((docker_memory_bytes / 1024 / 1024 / 1024))
+                ui_print_info "Docker memory allocation: ${docker_memory_gb}GB"
+                echo "  • Recommended for sub-agents: 12GB+ (Node.js heap: 8GB)"
             fi
 
             # Check for existing containers
@@ -445,24 +449,36 @@ cmd_doctor() {
         echo "  • Will be created automatically on next 'claudetainer init'"
     fi
 
-    # Check for port conflicts
-    local port_check
-    port_check=$(lsof -i :"$ssh_port" 2>/dev/null | wc -l)
-    if [[ $port_check -gt 0 ]]; then
-        ui_print_success "Port $ssh_port is in use (likely by claudetainer)"
+    # Display port status information (non-blocking)
+    if ui_command_exists gtimeout; then
+        local port_check
+        port_check=$(gtimeout 2s lsof -i :"$ssh_port" 2>/dev/null | wc -l 2>/dev/null | tr -d ' ' || echo "0")
+        if [[ $port_check -gt 0 ]]; then
+            ui_print_info "Port $ssh_port is in use (likely by claudetainer)"
+        else
+            ui_print_info "Port $ssh_port is available"
+        fi
+    elif ui_command_exists timeout; then
+        local port_check
+        port_check=$(timeout 2s lsof -i :"$ssh_port" 2>/dev/null | wc -l 2>/dev/null | tr -d ' ' || echo "0")
+        if [[ $port_check -gt 0 ]]; then
+            ui_print_info "Port $ssh_port is in use (likely by claudetainer)"
+        else
+            ui_print_info "Port $ssh_port is available"
+        fi
     else
-        ui_print_info "Port $ssh_port is available"
+        # Skip lsof check if no timeout command available to avoid hanging
+        ui_print_info "Port $ssh_port status: (lsof check skipped - no timeout available)"
     fi
 
-    # Check disk space
+    # Display disk space information (non-blocking)
     local disk_usage
     disk_usage=$(df . | tail -1 | awk '{print $5}' | sed 's/%//')
     if [[ $disk_usage -lt 90 ]]; then
-        ui_print_success "Sufficient disk space available (${disk_usage}% used)"
+        ui_print_info "Disk space: ${disk_usage}% used"
     else
-        ui_print_warning "Disk space is low (${disk_usage}% used)"
+        ui_print_info "Disk space: ${disk_usage}% used"
         echo "  • Consider running: docker system prune -a"
-        ((issues_found++))
     fi
     echo
 
