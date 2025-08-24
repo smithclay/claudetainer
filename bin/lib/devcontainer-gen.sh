@@ -109,7 +109,7 @@ devcontainer_generate_json() {
             "NEW_PASSWORD": "vscode"
         }
     },
-    "postCreateCommand": "${post_create_command}",
+    "postCreateCommand": "${post_create_command} && /workspaces/.devcontainer/claudetainer/postinstall.sh",
     "forwardPorts": [
         ${port}
     ],
@@ -119,6 +119,86 @@ devcontainer_generate_json() {
         }
     }
 }
+EOF
+}
+
+# Generate postinstall.sh script content
+devcontainer_generate_postinstall() {
+    cat <<'EOF'
+#!/bin/bash
+# PostInstall Script for Claudetainer DevContainers
+# This script runs after devcontainer creation to setup Claude Code environment
+
+set -euo pipefail
+
+# Print Claude Code version
+print_claude_version() {
+    echo "=== Claude Code Environment Setup ==="
+    if command -v claude >/dev/null 2>&1; then
+        echo "Claude Code version: $(claude --version 2>/dev/null || echo 'unknown')"
+    else
+        echo "Claude Code: not found in PATH"
+    fi
+    echo
+}
+
+# Create user setup (placeholder)
+setup_user() {
+    echo "=== User Setup ==="
+    local username="${1:-vscode}"
+    echo "Setting up user: $username"
+
+    # TODO: Add user-specific setup here
+    # - Configure shell preferences
+    # - Setup dotfiles
+    # - Configure Claude Code settings
+
+    echo "User setup completed for: $username"
+    echo
+}
+
+# Generate SSH certificates (placeholder)
+setup_ssh_certs() {
+    echo "=== SSH Certificate Setup ==="
+    local username="${1:-vscode}"
+    local ssh_dir="/home/$username/.ssh"
+
+    echo "Setting up SSH for user: $username"
+
+    # Ensure SSH directory exists
+    if [[ ! -d "$ssh_dir" ]]; then
+        mkdir -p "$ssh_dir"
+        chmod 700 "$ssh_dir"
+        chown "$username:$username" "$ssh_dir" 2>/dev/null || true
+    fi
+
+    # TODO: Add SSH certificate generation here
+    # - Generate host keys if needed
+    # - Setup authorized_keys
+    # - Configure SSH client settings
+
+    echo "SSH certificate setup completed"
+    echo
+}
+
+# Main postinstall function
+main() {
+    local username="${1:-vscode}"
+
+    echo "Starting Claudetainer post-installation setup..."
+    echo "Target user: $username"
+    echo
+
+    print_claude_version
+    #setup_user "$username"
+    #setup_ssh_certs "$username"
+
+    echo "=== Claudetainer Setup Complete ==="
+    echo "Environment is ready for Claude Code development"
+}
+
+# Run main function with provided username or default to 'vscode'
+main "$@"
 EOF
 }
 
@@ -149,12 +229,14 @@ devcontainer_create_config() {
         return 1
     fi
 
-    # Generate docker-compose.yml and devcontainer.json with allocated port and multiplexer
+    # Generate docker-compose.yml, devcontainer.json, and postinstall.sh with allocated port and multiplexer
     devcontainer_generate_compose "$language" "$port" "$multiplexer" >.devcontainer/claudetainer/docker-compose.yml
     devcontainer_generate_json "$language" "$port" "$multiplexer" >.devcontainer/claudetainer/devcontainer.json
+    devcontainer_generate_postinstall >.devcontainer/claudetainer/postinstall.sh
+    chmod +x .devcontainer/claudetainer/postinstall.sh
 
     ui_print_success "Created .devcontainer/claudetainer/ config files for $language"
-    ui_print_info "Generated: docker-compose.yml + devcontainer.json"
+    ui_print_info "Generated: docker-compose.yml + devcontainer.json + postinstall.sh"
     ui_print_info "Allocated SSH port: $port"
     ui_print_info "Multiplexer: $multiplexer"
 

@@ -202,7 +202,7 @@ done
 } >"$TARGET_HOME/.claude/CLAUDE.md"
 
 # Merge settings.json files
-settings_files=""
+settings_files=()
 IFS=',' read -ra PRESET_LIST <<<"$PRESETS"
 for preset in "${PRESET_LIST[@]}"; do
     preset=$(echo "$preset" | xargs)
@@ -213,17 +213,17 @@ for preset in "${PRESET_LIST[@]}"; do
         if [ -z "$preset_name" ] || [ "$preset_name" = "github-" ]; then
             preset_name="github-$(echo "${preset#github:}" | tr '/' '-')"
         fi
-        settings_file="presets/$preset_name/settings.json"
+        settings_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/presets/$preset_name/settings.json"
     else
-        settings_file="presets/$preset/settings.json"
+        settings_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/presets/$preset/settings.json"
     fi
 
-    [ -f "$settings_file" ] && settings_files="$settings_files $settings_file"
+    [ -f "$settings_file" ] && settings_files+=("$settings_file")
 done
 
-if [ -n "$settings_files" ]; then
+if [ ${#settings_files[@]} -gt 0 ]; then
     echo "🔧 Merging settings..."
-    node "lib/merge-json.js" "$settings_files" "$TARGET_HOME/.claude/settings.json"
+    node "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/merge-json.js" "${settings_files[@]}" "$TARGET_HOME/.claude/settings.json"
 fi
 
 # Fix ownership if running as root and target user is different

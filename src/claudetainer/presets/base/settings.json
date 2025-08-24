@@ -1,5 +1,5 @@
 {
-  "model": "sonnet",
+  "model": "opusplan",
   "permissions": {
     "allow": ["Bash(cat:*)", "Bash(ls:*)", "Bash(echo:*)", "Bash(mkdir:*)"],
     "deny": []

@@ -50,9 +50,8 @@ You now have a fully configured Claude Code development environment with special
 
 ## Requirements
 
-- **Docker** - For container isolation
+- **Docker** - On macOS, using [Docker Desktop](https://www.docker.com/products/docker-desktop/) is recommended
 - **DevContainer CLI** - `npm install -g @devcontainers/cli`
-- **git** - For GitHub preset support (optional)
 
 ## Installation
 
