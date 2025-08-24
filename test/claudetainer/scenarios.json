@@ -1,13 +1,13 @@
 {
   "test_base_only": {
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm", 
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
     "user": "node",
     "features": {
       "claudetainer": {}
     }
   },
   "test_base_with_python": {
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
     "user": "node",
     "features": {
       "claudetainer": {
@@ -16,7 +16,7 @@
     }
   },
   "test_tmux_multiplexer": {
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
     "user": "node",
     "features": {
       "claudetainer": {
@@ -25,7 +25,7 @@
     }
   },
   "test_zellij_multiplexer": {
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
     "user": "node",
     "features": {
       "claudetainer": {
@@ -34,7 +34,7 @@
     }
   },
   "test_none_multiplexer": {
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
     "user": "node",
     "features": {
       "claudetainer": {
@@ -43,7 +43,7 @@
     }
   },
   "test_zellij_compact_layout": {
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
     "user": "node",
     "features": {
       "claudetainer": {
@@ -53,7 +53,7 @@
     }
   },
   "test_workspace_navigation": {
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
     "user": "node",
     "features": {
       "claudetainer": {

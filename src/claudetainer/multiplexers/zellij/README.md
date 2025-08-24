@@ -34,7 +34,7 @@ Or provide a custom layout file path:
 - **🤖 claude** (Tab 1) - Main development workspace
   - Primary Claude Code terminal (70% width)
   - Quick commands reference (30% width)
-- **💰 cost** (Tab 2) - Usage and resource monitoring  
+- **💰 cost** (Tab 2) - Usage and resource monitoring
   - Real-time Claude Code usage via ccusage (60% height)
   - System resources monitor (40% height)
 - **🌲 git** (Tab 3) - Interactive git operations
@@ -88,7 +88,7 @@ ssh into container  # Automatically uses tablet layout
 
 # Manual start with specific layout
 zellij --layout tablet --session claudetainer      # Enhanced 4-tab
-zellij --layout phone --session claudetainer  # Compact 4-tab  
+zellij --layout phone --session claudetainer  # Compact 4-tab
 ```
 
 ### Switching Layouts
@@ -121,7 +121,7 @@ layout {
             plugin location="zellij:status-bar"
         }
     }
-    
+
     tab name="main" focus=true {
         pane {
             command "bash"
@@ -163,7 +163,7 @@ Edit the `.kdl` files in `~/.config/zellij/layouts/` after installation:
 # Edit enhanced layout
 nano ~/.config/zellij/layouts/tablet.kdl
 
-# Edit compact layout  
+# Edit compact layout
 nano ~/.config/zellij/layouts/phone.kdl
 ```
 

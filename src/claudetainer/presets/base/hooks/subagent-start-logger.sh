@@ -12,13 +12,13 @@ mkdir -p ~/.config/claudetainer/logs
 
 # Get memory usage for monitoring
 MEMORY_USAGE_MB=""
-if command -v node > /dev/null 2>&1; then
+if command -v node >/dev/null 2>&1; then
     # Get Node.js memory usage if available
-    MEMORY_USAGE_MB=$(node -e "const used = process.memoryUsage(); console.log(Math.round(used.heapUsed / 1024 / 1024))" 2> /dev/null || echo "0")
+    MEMORY_USAGE_MB=$(node -e "const used = process.memoryUsage(); console.log(Math.round(used.heapUsed / 1024 / 1024))" 2>/dev/null || echo "0")
 fi
 
 # Extract relevant data using jq (gracefully handle if jq not available)
-if command -v jq > /dev/null 2>&1; then
+if command -v jq >/dev/null 2>&1; then
     SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // "unknown"')
     TOOL_NAME=$(echo "$HOOK_INPUT" | jq -r '.tool_name // "unknown"')
     TOOL_INPUT=$(echo "$HOOK_INPUT" | jq -r '.tool_input // {}')
@@ -40,7 +40,7 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
 TASK_ID="task-$(date +%s)-$$"
 
 # Create structured JSON log entry (single line for JSONL format)
-if command -v jq > /dev/null 2>&1; then
+if command -v jq >/dev/null 2>&1; then
     LOG_ENTRY=$(jq -c -n --arg timestamp "$TIMESTAMP" \
         --arg level "INFO" \
         --arg agent "SUBAGENT-ORCHESTRATOR" \
@@ -61,10 +61,10 @@ else
 fi
 
 # Write to structured log file (JSONL format)
-echo "$LOG_ENTRY" >> ~/.config/claudetainer/logs/subagent.jsonl
+echo "$LOG_ENTRY" >>~/.config/claudetainer/logs/subagent.jsonl
 
 # Store task ID for correlation with SubagentStop
-echo "$TASK_ID" > "/tmp/claude-task-$SESSION_ID-current"
+echo "$TASK_ID" >"/tmp/claude-task-$SESSION_ID-current"
 
 # Optional: Write to console for immediate visibility (comment out for production)
 # echo "🚀 SUB-AGENT DELEGATION: $DESCRIPTION" >&2

@@ -3,7 +3,7 @@
 ## Language-Specific Commands
 ```bash
 npm test           # Run single tests during development
-npm run test:watch # Continuous testing 
+npm run test:watch # Continuous testing
 npm run lint       # ESLint validation
 npm run format     # Prettier formatting
 npm run typecheck  # TypeScript validation

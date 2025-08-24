@@ -16,7 +16,7 @@ mkdir -p "$TARGET_HOME/.claude/agents"
 mkdir -p "$TARGET_HOME/.config/claudetainer/presets"
 
 # Try to install Node.js if it's not available
-if ! command -v node > /dev/null || ! command -v npm > /dev/null; then
+if ! command -v node >/dev/null || ! command -v npm >/dev/null; then
     source scripts/nodejs-helper.sh
 
     # Detect package manager
@@ -33,7 +33,7 @@ fi
 
 # Parse presets to install
 PRESETS="${INCLUDE:-base}" # Use INCLUDE or default to "base"
-if [ "$PRESETS" != "base" ] && [[ "$PRESETS" != *"base"* ]]; then
+if [ "$PRESETS" != "base" ] && [[ $PRESETS != *"base"* ]]; then
     PRESETS="base,$PRESETS" # Prepend base if not already included
 fi
 
@@ -62,7 +62,7 @@ fetch_github_preset() {
 
     # Clone repo if not already done
     if [ ! -d "$clone_dir" ]; then
-        git clone --depth=1 "https://github.com/$owner_repo.git" "$clone_dir" > /dev/null 2>&1 || {
+        git clone --depth=1 "https://github.com/$owner_repo.git" "$clone_dir" >/dev/null 2>&1 || {
             echo "❌ Failed to fetch GitHub repo: $owner_repo"
             return 1
         }
@@ -93,17 +93,17 @@ fetch_github_preset() {
 
 # Check if git is available for GitHub presets
 github_presets_exist=false
-IFS=',' read -ra CHECK_PRESET_LIST <<< "$PRESETS"
+IFS=',' read -ra CHECK_PRESET_LIST <<<"$PRESETS"
 for preset in "${CHECK_PRESET_LIST[@]}"; do
     preset=$(echo "$preset" | xargs)
-    if [[ "$preset" == github:* ]]; then
+    if [[ $preset == github:* ]]; then
         github_presets_exist=true
         break
     fi
 done
 
 if [ "$github_presets_exist" = true ]; then
-    if ! command -v git > /dev/null 2>&1; then
+    if ! command -v git >/dev/null 2>&1; then
         echo "❌ Error: git is required for GitHub presets but not found"
         echo "   Please install git or remove GitHub preset references"
         exit 1
@@ -115,15 +115,15 @@ if [ "$github_presets_exist" = true ]; then
 fi
 
 # Initialize preset tracking file
-> "$TARGET_HOME/.config/claudetainer/installed-presets.txt"
+true >"$TARGET_HOME/.config/claudetainer/installed-presets.txt"
 
 # Apply each preset
-IFS=',' read -ra PRESET_LIST <<< "$PRESETS"
+IFS=',' read -ra PRESET_LIST <<<"$PRESETS"
 for preset in "${PRESET_LIST[@]}"; do
     preset=$(echo "$preset" | xargs) # trim whitespace
 
     # Handle GitHub presets
-    if [[ "$preset" == github:* ]]; then
+    if [[ $preset == github:* ]]; then
         if ! preset_dir=$(fetch_github_preset "$preset" "$temp_dir"); then
             echo "⚠️  Failed to fetch GitHub preset '$preset', skipping"
             continue
@@ -145,15 +145,15 @@ for preset in "${PRESET_LIST[@]}"; do
     echo "   ✓ Applying $preset_name preset"
 
     # Copy commands, hooks, and agents (last preset wins for conflicts)
-    if [ -d "$preset_dir/commands" ] && [ -n "$(ls -A "$preset_dir/commands" 2> /dev/null)" ]; then
+    if [ -d "$preset_dir/commands" ] && [ -n "$(ls -A "$preset_dir/commands" 2>/dev/null)" ]; then
         echo "     📁 Installing commands from $preset_name"
         cp -r "$preset_dir/commands/"* "$TARGET_HOME/.claude/commands/"
     fi
-    if [ -d "$preset_dir/hooks" ] && [ -n "$(ls -A "$preset_dir/hooks" 2> /dev/null)" ]; then
+    if [ -d "$preset_dir/hooks" ] && [ -n "$(ls -A "$preset_dir/hooks" 2>/dev/null)" ]; then
         echo "     🪝 Installing hooks from $preset_name"
         cp -r "$preset_dir/hooks/"* "$TARGET_HOME/.claude/hooks/"
     fi
-    if [ -d "$preset_dir/agents" ] && [ -n "$(ls -A "$preset_dir/agents" 2> /dev/null)" ]; then
+    if [ -d "$preset_dir/agents" ] && [ -n "$(ls -A "$preset_dir/agents" 2>/dev/null)" ]; then
         echo "     🤖 Installing agents from $preset_name"
         cp -r "$preset_dir/agents/"* "$TARGET_HOME/.claude/agents/"
     fi
@@ -166,7 +166,7 @@ for preset in "${PRESET_LIST[@]}"; do
     fi
 
     # Track successfully installed preset
-    echo "$preset_name" >> "$TARGET_HOME/.config/claudetainer/installed-presets.txt"
+    echo "$preset_name" >>"$TARGET_HOME/.config/claudetainer/installed-presets.txt"
 done
 
 # Merge CLAUDE.md files
@@ -176,12 +176,12 @@ done
     echo "Merged from presets: $PRESETS"
     echo ""
 
-    IFS=',' read -ra PRESET_LIST <<< "$PRESETS"
+    IFS=',' read -ra PRESET_LIST <<<"$PRESETS"
     for preset in "${PRESET_LIST[@]}"; do
         preset=$(echo "$preset" | xargs)
 
         # Handle GitHub presets for CLAUDE.md
-        if [[ "$preset" == github:* ]]; then
+        if [[ $preset == github:* ]]; then
             preset_name="github-$(basename "${preset#github:*/*/}")"
             if [ -z "$preset_name" ] || [ "$preset_name" = "github-" ]; then
                 preset_name="github-$(echo "${preset#github:}" | tr '/' '-')"
@@ -199,16 +199,16 @@ done
             echo ""
         fi
     done
-} > "$TARGET_HOME/.claude/CLAUDE.md"
+} >"$TARGET_HOME/.claude/CLAUDE.md"
 
 # Merge settings.json files
 settings_files=""
-IFS=',' read -ra PRESET_LIST <<< "$PRESETS"
+IFS=',' read -ra PRESET_LIST <<<"$PRESETS"
 for preset in "${PRESET_LIST[@]}"; do
     preset=$(echo "$preset" | xargs)
 
     # Handle GitHub presets for settings.json
-    if [[ "$preset" == github:* ]]; then
+    if [[ $preset == github:* ]]; then
         preset_name="github-$(basename "${preset#github:*/*/}")"
         if [ -z "$preset_name" ] || [ "$preset_name" = "github-" ]; then
             preset_name="github-$(echo "${preset#github:}" | tr '/' '-')"
@@ -223,33 +223,33 @@ done
 
 if [ -n "$settings_files" ]; then
     echo "🔧 Merging settings..."
-    node "lib/merge-json.js" $settings_files "$TARGET_HOME/.claude/settings.json"
+    node "lib/merge-json.js" "$settings_files" "$TARGET_HOME/.claude/settings.json"
 fi
 
 # Fix ownership if running as root and target user is different
 if [ "$(whoami)" = "root" ] && [ "$TARGET_USER" != "root" ] && [ "$TARGET_USER" != "$(whoami)" ]; then
     echo "🔐 Setting ownership for user $TARGET_USER..."
-    chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.claude" 2> /dev/null || true
-    chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.config/claudetainer" 2> /dev/null || true
+    chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.claude" 2>/dev/null || true
+    chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.config/claudetainer" 2>/dev/null || true
 fi
 
 # Install gitui if not already available
-if ! command -v gitui > /dev/null 2>&1; then
+if ! command -v gitui >/dev/null 2>&1; then
     echo "📦 Installing gitui..."
 
     # Detect architecture
     ARCH=$(uname -m)
     case "$ARCH" in
-        x86_64 | amd64)
-            GITUI_ARCH="x86_64"
-            ;;
-        aarch64 | arm64)
-            GITUI_ARCH="aarch64"
-            ;;
-        *)
-            echo "⚠️  Unsupported architecture: $ARCH, skipping gitui installation"
-            GITUI_ARCH=""
-            ;;
+    x86_64 | amd64)
+        GITUI_ARCH="x86_64"
+        ;;
+    aarch64 | arm64)
+        GITUI_ARCH="aarch64"
+        ;;
+    *)
+        echo "⚠️  Unsupported architecture: $ARCH, skipping gitui installation"
+        GITUI_ARCH=""
+        ;;
     esac
 
     if [ -n "$GITUI_ARCH" ]; then
@@ -267,7 +267,7 @@ if ! command -v gitui > /dev/null 2>&1; then
 
             # Fix ownership of entire .local directory if needed
             if [ "$(whoami)" = "root" ] && [ "$TARGET_USER" != "root" ] && [ "$TARGET_USER" != "$(whoami)" ]; then
-                chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.local" 2> /dev/null || true
+                chown -R "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.local" 2>/dev/null || true
             fi
 
             echo "     ✓ gitui installed to $TARGET_HOME/.local/bin/gitui"
@@ -289,11 +289,11 @@ echo "🔧 Setting up $MULTIPLEXER multiplexer..."
 
 # Validate multiplexer choice
 case "$MULTIPLEXER" in
-    zellij | tmux | none) ;;
-    *)
-        echo "⚠️  Invalid multiplexer '$MULTIPLEXER', defaulting to 'zellij'"
-        MULTIPLEXER="zellij"
-        ;;
+zellij | tmux | none) ;;
+*)
+    echo "⚠️  Invalid multiplexer '$MULTIPLEXER', defaulting to 'zellij'"
+    MULTIPLEXER="zellij"
+    ;;
 esac
 
 # Export zellij layout for multiplexer scripts
@@ -321,14 +321,14 @@ echo "🏠 Setting up workspace navigation and welcome message..."
 mkdir -p "$TARGET_HOME/.config/claudetainer/scripts"
 
 # Install workspace setup script
-cp "scripts/workspace-setup.sh" "$TARGET_HOME/.config/claudetainer/scripts/workspace-setup.sh" 2> /dev/null || {
+cp "scripts/workspace-setup.sh" "$TARGET_HOME/.config/claudetainer/scripts/workspace-setup.sh" 2>/dev/null || {
     echo "⚠️  Failed to copy workspace setup script (non-critical)"
 }
 
 # Set proper ownership and permissions for workspace setup script
 if [ -f "$TARGET_HOME/.config/claudetainer/scripts/workspace-setup.sh" ]; then
-    if [ "$TARGET_USER" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
-        chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.config/claudetainer/scripts/workspace-setup.sh" 2> /dev/null || {
+    if [ "$TARGET_USER" != "$(whoami)" ] && command -v chown >/dev/null 2>&1; then
+        chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.config/claudetainer/scripts/workspace-setup.sh" 2>/dev/null || {
             echo "⚠️  Could not set ownership for workspace-setup.sh"
         }
     fi
@@ -336,12 +336,12 @@ if [ -f "$TARGET_HOME/.config/claudetainer/scripts/workspace-setup.sh" ]; then
 fi
 
 # Add workspace setup to bashrc for all SSH sessions
-if ! grep -q "workspace-setup.sh" "$TARGET_HOME/.bashrc" 2> /dev/null; then
+if ! grep -q "workspace-setup.sh" "$TARGET_HOME/.bashrc" 2>/dev/null; then
     {
         echo ""
         echo "# Claudetainer: Workspace navigation and custom welcome"
         echo "source ~/.config/claudetainer/scripts/workspace-setup.sh"
-    } >> "$TARGET_HOME/.bashrc"
+    } >>"$TARGET_HOME/.bashrc"
     echo "✅ Added workspace setup to ~/.bashrc"
 else
     echo "📋 Workspace setup already configured in ~/.bashrc"

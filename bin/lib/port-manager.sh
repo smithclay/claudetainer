@@ -3,7 +3,8 @@
 
 # Calculate base port from project path hash
 pm_calculate_project_base_port() {
-    local hash=$(echo "$PWD" | shasum | head -c8)
+    local hash
+    hash=$(echo "$PWD" | shasum | head -c8)
     local port=$((2220 + (0x$hash % 80)))
     echo $port
 }
@@ -13,27 +14,27 @@ pm_is_port_available() {
     local port=$1
 
     # Method 1: netcat check
-    if nc -z localhost "$port" 2> /dev/null; then
+    if nc -z localhost "$port" 2>/dev/null; then
         return 1 # Port is in use
     fi
 
     # Method 2: lsof check (if available)
     if ui_command_exists lsof; then
-        if lsof -i :"$port" > /dev/null 2>&1; then
+        if lsof -i :"$port" >/dev/null 2>&1; then
             return 1 # Port is in use
         fi
     fi
 
     # Method 3: netstat check (if available and lsof not available)
     if ! ui_command_exists lsof && ui_command_exists netstat; then
-        if netstat -ln 2> /dev/null | grep -q ":$port "; then
+        if netstat -ln 2>/dev/null | grep -q ":$port "; then
             return 1 # Port is in use
         fi
     fi
 
     # Method 4: Check if any Docker containers are using this port
     if ui_command_exists docker; then
-        if docker ps --format "table {{.Ports}}" 2> /dev/null | grep -q ":$port->"; then
+        if docker ps --format "table {{.Ports}}" 2>/dev/null | grep -q ":$port->"; then
             return 1 # Port is in use by Docker
         fi
     fi
@@ -72,38 +73,43 @@ pm_get_current_project_port() {
     local port_file=".devcontainer/claudetainer/.claudetainer-port"
 
     # First try: read from port file
-    if [[ -f "$port_file" ]]; then
-        local saved_port=$(cat "$port_file" 2> /dev/null | tr -d '\n\r ')
+    if [[ -f $port_file ]]; then
+        local saved_port
+        saved_port=$(tr -d '\n\r ' <"$port_file" 2>/dev/null)
         # Validate port is a number in valid range
-        if [[ "$saved_port" =~ ^[0-9]+$ ]] && [[ "$saved_port" -ge 2220 ]] && [[ "$saved_port" -le 2299 ]]; then
+        if [[ $saved_port =~ ^[0-9]+$ ]] && [[ $saved_port -ge 2220 ]] && [[ $saved_port -le 2299 ]]; then
             echo "$saved_port"
             return 0
         fi
     fi
 
     # Second try: extract port from running container
-    local container_name=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" | head -1)
-    if [[ -n "$container_name" ]]; then
-        local container_port=$(docker inspect "$container_name" --format '{{index .Config.Labels "devcontainer.ssh_port"}}' 2> /dev/null)
-        if [[ "$container_port" =~ ^[0-9]+$ ]] && [[ "$container_port" -ge 2220 ]] && [[ "$container_port" -le 2299 ]]; then
+    local container_name
+    container_name=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}" | head -1)
+    if [[ -n $container_name ]]; then
+        local container_port
+        container_port=$(docker inspect "$container_name" --format '{{index .Config.Labels "devcontainer.ssh_port"}}' 2>/dev/null)
+        if [[ $container_port =~ ^[0-9]+$ ]] && [[ $container_port -ge 2220 ]] && [[ $container_port -le 2299 ]]; then
             # Recreate port file for future use
-            mkdir -p .devcontainer 2> /dev/null
-            echo "$container_port" > "$port_file" 2> /dev/null
+            mkdir -p .devcontainer 2>/dev/null
+            echo "$container_port" >"$port_file" 2>/dev/null
             echo "$container_port"
             return 0
         fi
     fi
 
     # Third try: scan for active container ports in our range
-    local project_containers=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}")
-    if [[ -n "$project_containers" ]]; then
+    local project_containers
+    project_containers=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}")
+    if [[ -n $project_containers ]]; then
         for container in $project_containers; do
-            local host_ports=$(docker port "$container" 2> /dev/null | grep -E '^22[0-9]{2}/' | cut -d: -f2)
+            local host_ports
+            host_ports=$(docker port "$container" 2>/dev/null | grep -E '^22[0-9]{2}/' | cut -d: -f2)
             for port in $host_ports; do
-                if [[ "$port" -ge 2220 ]] && [[ "$port" -le 2299 ]]; then
+                if [[ $port -ge 2220 ]] && [[ $port -le 2299 ]]; then
                     # Recreate port file for future use
-                    mkdir -p .devcontainer 2> /dev/null
-                    echo "$port" > "$port_file" 2> /dev/null
+                    mkdir -p .devcontainer 2>/dev/null
+                    echo "$port" >"$port_file" 2>/dev/null
                     echo "$port"
                     return 0
                 fi
@@ -121,7 +127,7 @@ pm_get_project_port() {
     local lock_file=".devcontainer/claudetainer/.claudetainer-port.lock"
 
     # Create .devcontainer/claudetainer directory if it doesn't exist
-    if ! mkdir -p .devcontainer/claudetainer 2> /dev/null; then
+    if ! mkdir -p .devcontainer/claudetainer 2>/dev/null; then
         ui_print_error "Cannot create .devcontainer/claudetainer directory"
         return 1
     fi
@@ -137,14 +143,16 @@ pm_get_project_port() {
         fi
 
         # Check existing port file (inside lock)
-        if [[ -f "$port_file" ]]; then
-            local saved_port=$(cat "$port_file" 2> /dev/null | tr -d '\n\r ')
+        if [[ -f $port_file ]]; then
+            local saved_port
+            saved_port=$(tr -d '\n\r ' <"$port_file" 2>/dev/null)
             # Validate port format and range
-            if [[ "$saved_port" =~ ^[0-9]+$ ]] && [[ "$saved_port" -ge 2220 ]] && [[ "$saved_port" -le 2299 ]]; then
+            if [[ $saved_port =~ ^[0-9]+$ ]] && [[ $saved_port -ge 2220 ]] && [[ $saved_port -le 2299 ]]; then
                 # Check if saved port is still available for this project to use
                 # If port is in use by our own container, that's fine - we want to reuse it
-                local our_container=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --filter "label=devcontainer.ssh_port=$saved_port" --format "{{.Names}}" | head -1)
-                if [[ -n "$our_container" ]] || pm_is_port_available "$saved_port"; then
+                local our_container
+                our_container=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --filter "label=devcontainer.ssh_port=$saved_port" --format "{{.Names}}" | head -1)
+                if [[ -n $our_container ]] || pm_is_port_available "$saved_port"; then
                     echo "$saved_port"
                     return 0
                 fi
@@ -152,17 +160,19 @@ pm_get_project_port() {
         fi
 
         # Allocate new port
-        local base_port=$(pm_calculate_project_base_port)
-        local available_port=$(pm_find_available_port "$base_port")
+        local base_port
+        base_port=$(pm_calculate_project_base_port)
+        local available_port
+        available_port=$(pm_find_available_port "$base_port")
 
-        if [[ -n "$available_port" ]]; then
+        if [[ -n $available_port ]]; then
             # Atomic write using temporary file
             local temp_file="${port_file}.tmp.$$"
-            if echo "$available_port" > "$temp_file" && mv "$temp_file" "$port_file"; then
+            if echo "$available_port" >"$temp_file" && mv "$temp_file" "$port_file"; then
                 echo "$available_port"
                 return 0
             else
-                rm -f "$temp_file" 2> /dev/null
+                rm -f "$temp_file" 2>/dev/null
                 ui_print_error "Failed to write port allocation file"
                 return 1
             fi
@@ -171,18 +181,20 @@ pm_get_project_port() {
             return 1
         fi
 
-    ) 200> "$lock_file"
+    ) 200>"$lock_file"
 
     local result=$?
-    rm -f "$lock_file" 2> /dev/null
+    rm -f "$lock_file" 2>/dev/null
     return $result
 }
 
 # Diagnostic function to show port allocation status
 pm_show_port_status() {
     local port_file=".devcontainer/claudetainer/.claudetainer-port"
-    local current_port=$(pm_get_current_project_port)
-    local base_port=$(pm_calculate_project_base_port)
+    local current_port
+    current_port=$(pm_get_current_project_port)
+    local base_port
+    base_port=$(pm_calculate_project_base_port)
 
     echo "Port Allocation Status for $(pwd):"
     echo "========================================"
@@ -190,9 +202,10 @@ pm_show_port_status() {
     echo "Current allocated port: $current_port"
     echo
 
-    if [[ -f "$port_file" ]]; then
+    if [[ -f $port_file ]]; then
         echo "Port file exists: $port_file"
-        local file_content=$(cat "$port_file" 2> /dev/null)
+        local file_content
+        file_content=$(cat "$port_file" 2>/dev/null)
         echo "Port file content: '$file_content'"
     else
         echo "Port file missing: $port_file"
@@ -200,8 +213,9 @@ pm_show_port_status() {
     echo
 
     echo "Container status:"
-    local containers=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}\t{{.Status}}\t{{.Ports}}")
-    if [[ -n "$containers" ]]; then
+    local containers
+    containers=$(docker ps --filter "label=devcontainer.local_folder=$(pwd)" --format "{{.Names}}\t{{.Status}}\t{{.Ports}}")
+    if [[ -n $containers ]]; then
         echo "$containers"
     else
         echo "No running containers found for this directory"
@@ -215,8 +229,9 @@ pm_show_port_status() {
         echo "Port $current_port: IN USE"
         # Show what's using it
         if ui_command_exists lsof; then
-            local process=$(lsof -i :"$current_port" 2> /dev/null | grep LISTEN)
-            if [[ -n "$process" ]]; then
+            local process
+            process=$(lsof -i :"$current_port" 2>/dev/null | grep LISTEN)
+            if [[ -n $process ]]; then
                 echo "Used by: $process"
             fi
         fi

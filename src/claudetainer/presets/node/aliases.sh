@@ -25,7 +25,7 @@ alias nout='npm outdated'
 alias nv='npm version'
 
 # Yarn shortcuts (if yarn is available)
-if command -v yarn &> /dev/null; then
+if command -v yarn &>/dev/null; then
     alias y='yarn'
     alias ya='yarn add'
     alias yad='yarn add --dev'

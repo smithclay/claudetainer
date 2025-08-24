@@ -4,7 +4,7 @@ set -e
 # Import test library for `check` command
 source dev-container-features-test-lib
 
-echo $HOME
+echo "$HOME"
 
 # This test is specifically for the tmux multiplexer scenario
 # It should always check for tmux binary and configuration

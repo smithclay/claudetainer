@@ -45,7 +45,7 @@ Structured coordination reporting with clear phases:
 [ORCHESTRATOR] Phase 1: Complete - [outcome]
 
 [ORCHESTRATOR] Phase 2: Delegating [task] to [agent-name]...
-[AGENT-NAME] [status] [details]  
+[AGENT-NAME] [status] [details]
 [ORCHESTRATOR] Phase 2: Complete - [outcome]
 
 [ORCHESTRATOR] Summary: [combined results]
@@ -111,7 +111,7 @@ Coordination planning with structured thinking:
 [QUALITY] Phase 1: Complete - [formatting results]
 
 [QUALITY] Phase 2: Delegating style validation to code-linter...
-[LINTER] [status messages from code-linter agent] 
+[LINTER] [status messages from code-linter agent]
 [QUALITY] Phase 2: Complete - [linting results]
 
 [QUALITY] Phase 3: Delegating test validation to test-runner...
@@ -135,11 +135,11 @@ Coordination planning with structured thinking:
 
 ### ORCHESTRATOR
 - **coordination_start**: Multi-agent task initiation
-- **phase_start**: Individual phase delegation 
+- **phase_start**: Individual phase delegation
 - **phase_complete**: Phase completion with results
 - **coordination_complete**: Overall coordination summary
 
-### FORMATTER  
+### FORMATTER
 - **formatting_start**: Formatting validation initiation
 - **file_discovery**: Project file scanning
 - **violations_detected**: Issues found per language
@@ -147,7 +147,7 @@ Coordination planning with structured thinking:
 - **formatting_complete**: Overall formatting results
 
 ### TEST-RUNNER
-- **test_validation_start**: Test suite validation initiation  
+- **test_validation_start**: Test suite validation initiation
 - **framework_discovery**: Test framework scanning
 - **suite_execution_start**: Test execution beginning
 - **test_results_analyzed**: Initial results with metrics
@@ -206,7 +206,7 @@ Claudetainer now implements **hook-based sub-agent logging** using Claude Code's
     }],
     "SubagentStop": [{
       "hooks": [{
-        "type": "command", 
+        "type": "command",
         "command": "~/.claude/hooks/subagent-stop-logger.sh"
       }]
     }]
@@ -253,7 +253,7 @@ All structured logs are written to: `~/.claude/logs/subagent.jsonl`
   "message": "Delegating task to sub-agent: code formatting validation",
   "attributes": {
     "session_id": "abc123",
-    "task_id": "task-1722696600-1234", 
+    "task_id": "task-1722696600-1234",
     "tool_name": "Task",
     "delegation_type": "task_tool_invocation",
     "task_description": "code formatting validation",
@@ -265,7 +265,7 @@ All structured logs are written to: `~/.claude/logs/subagent.jsonl`
   "timestamp": "2025-08-03T14:30:15.456Z",
   "level": "INFO",
   "agent": "SUBAGENT-ORCHESTRATOR",
-  "event": "subagent_delegation_complete", 
+  "event": "subagent_delegation_complete",
   "message": "Sub-agent task completed with status: SUCCESS",
   "attributes": {
     "session_id": "abc123",

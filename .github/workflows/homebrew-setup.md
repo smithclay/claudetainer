@@ -131,7 +131,7 @@ The action automatically includes release notes in the commit message. To custom
 ```yaml
 message: |
   claudetainer {{version}}
-  
+
   🚀 New release: {{version}}
   📦 Updated from {{old_version}}
   🔗 Release: https://github.com/smithclay/claudetainer/releases/tag/{{version}}

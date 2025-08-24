@@ -25,7 +25,7 @@ alias gf='git fetch'
 alias glog='git log --graph --pretty=format:"%h -%d %s (%cr) <%an>" --abbrev-commit'
 
 # GitUI shortcut (if available)
-if command -v gitui &> /dev/null; then
+if command -v gitui &>/dev/null; then
     alias gu='gitui'
 fi
 
@@ -46,19 +46,19 @@ alias rm='rm -i'
 alias mkdir='mkdir -p'
 
 # Search shortcuts
-if command -v rg &> /dev/null; then
+if command -v rg &>/dev/null; then
     alias grep='rg'
     alias search='rg'
 else
     alias grep='grep --color=auto'
 fi
 
-if command -v fd &> /dev/null; then
+if command -v fd &>/dev/null; then
     alias find='fd'
 fi
 
 # Tree command with good defaults
-if command -v tree &> /dev/null; then
+if command -v tree &>/dev/null; then
     alias tree='tree -I "node_modules|.git|__pycache__|.pytest_cache|.mypy_cache|.ruff_cache|target|vendor"'
 fi
 

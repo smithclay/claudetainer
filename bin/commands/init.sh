@@ -10,19 +10,19 @@ cmd_init() {
     [[ $# -gt 0 ]] && shift
     while [[ $# -gt 0 ]]; do
         case $1 in
-            --multiplexer)
-                multiplexer="$2"
-                shift 2
-                ;;
-            --no-tmux)
-                # Legacy option for backward compatibility
-                multiplexer="none"
-                shift
-                ;;
-            *)
-                # Unknown option, ignore
-                shift
-                ;;
+        --multiplexer)
+            multiplexer="$2"
+            shift 2
+            ;;
+        --no-tmux)
+            # Legacy option for backward compatibility
+            multiplexer="none"
+            shift
+            ;;
+        *)
+            # Unknown option, ignore
+            shift
+            ;;
         esac
     done
 
@@ -30,12 +30,12 @@ cmd_init() {
     notifications_ensure_credentials_file
 
     # Check Docker memory allocation and warn if insufficient (skip in CI)
-    if [[ -z "${CI:-}" && -z "${GITHUB_ACTIONS:-}" && -z "${GITLAB_CI:-}" && -z "${JENKINS_URL:-}" && -z "${BUILDKITE:-}" && -z "${CIRCLECI:-}" && -z "${TRAVIS:-}" ]]; then
+    if [[ -z ${CI:-} && -z ${GITHUB_ACTIONS:-} && -z ${GITLAB_CI:-} && -z ${JENKINS_URL:-} && -z ${BUILDKITE:-} && -z ${CIRCLECI:-} && -z ${TRAVIS:-} ]]; then
         check_docker_memory_allocation
     fi
 
     # If no language specified, create base devcontainer
-    if [[ -z "$language" ]]; then
+    if [[ -z $language ]]; then
         ui_print_info "Creating base devcontainer without language-specific presets"
         language="base"
     else

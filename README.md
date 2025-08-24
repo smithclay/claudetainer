@@ -28,7 +28,7 @@ cd ~/your-project
 # 2. Initialize your project with a language preset (go, node, python, rust)
 claudetainer init python
 
-# 3. Start the container  
+# 3. Start the container
 claudetainer up
 
 # 4. Connect to the container full tooling and terminal multiplexer (default password is: vscode)
@@ -81,7 +81,7 @@ claudetainer ssh                # Connect with terminal multiplexer
 claude                          # Start Claude Code (inside container)
 
 # Management
-claudetainer list               # List running containers  
+claudetainer list               # List running containers
 claudetainer doctor             # Health check and troubleshooting
 claudetainer rm -f              # Clean removal
 ```
@@ -98,7 +98,7 @@ Includes mobile-optimized layouts and push notifications so you can code from yo
 
 ## Advanced Configuration
 
-- **[GitHub Presets](docs/CONFIGURATION.md#github-presets)** - Share team configurations  
+- **[GitHub Presets](docs/CONFIGURATION.md#github-presets)** - Share team configurations
 - **[Custom Layouts](docs/CONFIGURATION.md#layouts)** - Terminal multiplexer customization
 - **[CLI Reference](docs/CLI-REFERENCE.md)** - Complete command documentation
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Detailed problem solving

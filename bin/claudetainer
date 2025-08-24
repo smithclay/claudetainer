@@ -9,9 +9,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Read version from devcontainer-feature.json
-if [[ -f "$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json" ]] && command -v node > /dev/null 2>&1; then
-    VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json', 'utf8')).version)" 2> /dev/null)
-    if [[ -z "$VERSION" || "$VERSION" == "null" || "$VERSION" == "undefined" ]]; then
+if [[ -f "$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json" ]] && command -v node >/dev/null 2>&1; then
+    VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SCRIPT_DIR/../src/claudetainer/devcontainer-feature.json', 'utf8')).version)" 2>/dev/null)
+    if [[ -z $VERSION || $VERSION == "null" || $VERSION == "undefined" ]]; then
         echo "Error: Could not read version from devcontainer-feature.json" >&2
         exit 1
     fi
@@ -25,7 +25,7 @@ fi
 load_library() {
     local lib="$1"
     local lib_path="$SCRIPT_DIR/lib/$lib.sh"
-    if [[ -f "$lib_path" ]]; then
+    if [[ -f $lib_path ]]; then
         # shellcheck disable=SC1090  # Dynamic sourcing is intentional
         source "$lib_path"
     else
@@ -50,7 +50,7 @@ config_init
 load_command() {
     local cmd="$1"
     local cmd_path="$SCRIPT_DIR/commands/$cmd.sh"
-    if [[ -f "$cmd_path" ]]; then
+    if [[ -f $cmd_path ]]; then
         # shellcheck disable=SC1090  # Dynamic sourcing is intentional
         source "$cmd_path"
     else
@@ -63,39 +63,39 @@ load_command() {
 load_commands_for() {
     local command="$1"
     case "$command" in
-        prereqs)
-            load_command "prereqs"
-            load_command "doctor" # prereqs uses cmd_check_prerequisites from doctor
-            ;;
-        doctor)
-            load_command "doctor"
-            ;;
-        init)
-            load_command "init"
-            load_command "doctor" # init calls cmd_check_prerequisites from doctor
-            ;;
-        run | up | start)
-            load_command "up"
-            load_command "init" # up might call cmd_init
-            ;;
-        ssh)
-            load_command "ssh"
-            ;;
-        mosh)
-            load_command "mosh"
-            ;;
-        rm)
-            load_command "rm"
-            ;;
-        list | ps | ls)
-            load_command "list"
-            ;;
-        dashboard)
-            load_command "dashboard"
-            ;;
-        *)
-            # Load nothing for help/version
-            ;;
+    prereqs)
+        load_command "prereqs"
+        load_command "doctor" # prereqs uses cmd_check_prerequisites from doctor
+        ;;
+    doctor)
+        load_command "doctor"
+        ;;
+    init)
+        load_command "init"
+        load_command "doctor" # init calls cmd_check_prerequisites from doctor
+        ;;
+    run | up | start)
+        load_command "up"
+        load_command "init" # up might call cmd_init
+        ;;
+    ssh)
+        load_command "ssh"
+        ;;
+    mosh)
+        load_command "mosh"
+        ;;
+    rm)
+        load_command "rm"
+        ;;
+    list | ps | ls)
+        load_command "list"
+        ;;
+    dashboard)
+        load_command "dashboard"
+        ;;
+    *)
+        # Load nothing for help/version
+        ;;
     esac
 }
 
@@ -105,19 +105,19 @@ main() {
 
     # Handle special cases first
     case "$command" in
-        "")
-            ui_print_error "No command specified"
-            echo "Run 'claudetainer --help' for usage information"
-            return 1
-            ;;
-        --help | -h | help)
-            ui_show_help
-            return 0
-            ;;
-        --version | -v | version)
-            ui_show_version
-            return 0
-            ;;
+    "")
+        ui_print_error "No command specified"
+        echo "Run 'claudetainer --help' for usage information"
+        return 1
+        ;;
+    --help | -h | help)
+        ui_show_help
+        return 0
+        ;;
+    --version | -v | version)
+        ui_show_version
+        return 0
+        ;;
     esac
 
     # Load commands for the specific command
@@ -125,48 +125,48 @@ main() {
 
     # Dispatch to command
     case "$command" in
-        prereqs)
-            cmd_prereqs
-            ;;
-        doctor)
-            cmd_doctor
-            ;;
-        init)
-            # Check prerequisites before initializing
-            if ! cmd_check_prerequisites; then
-                echo
-                ui_print_error "Prerequisites not met. Install missing dependencies first."
-                return 1
-            fi
-            shift
-            cmd_init "$@"
-            ;;
-        run | up | start)
-            shift
-            cmd_up "$@"
-            ;;
-        ssh)
-            cmd_ssh
-            ;;
-        mosh)
-            cmd_mosh
-            ;;
-        rm)
-            shift
-            cmd_rm "$@"
-            ;;
-        list | ps | ls)
-            cmd_list
-            ;;
-        dashboard)
-            shift
-            cmd_dashboard "$@"
-            ;;
-        *)
-            ui_print_error "Unknown command: $command"
-            echo "Run 'claudetainer --help' for usage information"
+    prereqs)
+        cmd_prereqs
+        ;;
+    doctor)
+        cmd_doctor
+        ;;
+    init)
+        # Check prerequisites before initializing
+        if ! cmd_check_prerequisites; then
+            echo
+            ui_print_error "Prerequisites not met. Install missing dependencies first."
             return 1
-            ;;
+        fi
+        shift
+        cmd_init "$@"
+        ;;
+    run | up | start)
+        shift
+        cmd_up "$@"
+        ;;
+    ssh)
+        cmd_ssh
+        ;;
+    mosh)
+        cmd_mosh
+        ;;
+    rm)
+        shift
+        cmd_rm "$@"
+        ;;
+    list | ps | ls)
+        cmd_list
+        ;;
+    dashboard)
+        shift
+        cmd_dashboard "$@"
+        ;;
+    *)
+        ui_print_error "Unknown command: $command"
+        echo "Run 'claudetainer --help' for usage information"
+        return 1
+        ;;
     esac
 }
 

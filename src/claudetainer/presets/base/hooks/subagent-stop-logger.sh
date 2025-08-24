@@ -12,25 +12,21 @@ mkdir -p ~/.config/claudetainer/logs
 
 # Get memory usage for monitoring
 MEMORY_USAGE_MB=""
-if command -v node > /dev/null 2>&1; then
+if command -v node >/dev/null 2>&1; then
     # Get Node.js memory usage if available
-    MEMORY_USAGE_MB=$(node -e "const used = process.memoryUsage(); console.log(Math.round(used.heapUsed / 1024 / 1024))" 2> /dev/null || echo "0")
+    MEMORY_USAGE_MB=$(node -e "const used = process.memoryUsage(); console.log(Math.round(used.heapUsed / 1024 / 1024))" 2>/dev/null || echo "0")
 fi
 
 # Extract relevant data using jq (gracefully handle if jq not available)
-if command -v jq > /dev/null 2>&1; then
+if command -v jq >/dev/null 2>&1; then
     SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // "unknown"')
     STOP_HOOK_ACTIVE=$(echo "$HOOK_INPUT" | jq -r '.stop_hook_active // false')
     # SubagentStop provides minimal data - just session_id and stop_hook_active
-    STOP_REASON="completed"
-    MESSAGE_COUNT=0
-    LAST_MESSAGE=""
+    # Stop reason, message count, and last message tracking reserved for future use
 else
     SESSION_ID="unknown"
     STOP_HOOK_ACTIVE="false"
-    STOP_REASON="completed"
-    MESSAGE_COUNT=0
-    LAST_MESSAGE=""
+    # Stop reason, message count, and last message tracking reserved for future use
 fi
 
 # Generate timestamp in ISO-8601 format
@@ -47,7 +43,7 @@ fi
 
 # Determine completion status based on available data
 # SubagentStop hook has minimal data, so assume success unless stop_hook_active indicates otherwise
-if [[ "$STOP_HOOK_ACTIVE" == "true" ]]; then
+if [[ $STOP_HOOK_ACTIVE == "true" ]]; then
     STATUS="INTERRUPTED"
     LEVEL="WARN"
 else
@@ -58,7 +54,7 @@ fi
 # Create structured JSON log entry (single line for JSONL format)
 SUCCESS_BOOL=$([ "$STATUS" = "SUCCESS" ] && echo "true" || echo "false")
 
-if command -v jq > /dev/null 2>&1; then
+if command -v jq >/dev/null 2>&1; then
     LOG_ENTRY=$(jq -c -n --arg timestamp "$TIMESTAMP" \
         --arg level "$LEVEL" \
         --arg agent "SUBAGENT-ORCHESTRATOR" \
@@ -79,15 +75,15 @@ else
 fi
 
 # Write to structured log file (JSONL format)
-echo "$LOG_ENTRY" >> ~/.config/claudetainer/logs/subagent.jsonl
+echo "$LOG_ENTRY" >>~/.config/claudetainer/logs/subagent.jsonl
 
 # Optional: Write completion summary to console (comment out for production)
 # echo "✅ SUB-AGENT COMPLETE: $STATUS ($STOP_REASON)" >&2
 
 # Rotate log file if it gets too large (keep last 1000 entries)
 LOG_FILE=~/.config/claudetainer/logs/subagent.jsonl
-if [ -f "$LOG_FILE" ] && [ $(wc -l < "$LOG_FILE") -gt 1000 ]; then
-    tail -1000 "$LOG_FILE" > "$LOG_FILE.tmp" && mv "$LOG_FILE.tmp" "$LOG_FILE"
+if [ -f "$LOG_FILE" ] && [ "$(wc -l <"$LOG_FILE")" -gt 1000 ]; then
+    tail -1000 "$LOG_FILE" >"$LOG_FILE.tmp" && mv "$LOG_FILE.tmp" "$LOG_FILE"
 fi
 
 # Return success (allows normal completion flow)

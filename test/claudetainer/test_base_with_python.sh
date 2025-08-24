@@ -6,7 +6,7 @@ source dev-container-features-test-lib
 
 echo "🧪 Testing base + python preset merging..."
 
-echo $HOME
+echo "$HOME"
 
 ls -la ~/.claude
 
@@ -32,8 +32,8 @@ if [ -f ~/.claude/hooks/subagent-start-logger.sh ]; then
 fi
 
 # Test that all expected commands directory has both base and python commands
-BASE_COMMANDS=$(ls ~/.claude/commands/ | grep -E "(hello|check|commit|next)\.md" | wc -l)
-PYTHON_COMMANDS=$(ls ~/.claude/commands/ | grep "hello-python\.md" | wc -l)
+BASE_COMMANDS=$(find ~/.claude/commands/ -name "hello.md" -o -name "check.md" -o -name "commit.md" -o -name "next.md" | wc -l)
+PYTHON_COMMANDS=$(find ~/.claude/commands/ -name "hello-python.md" | wc -l)
 
 check "merged: base commands present" [ "$BASE_COMMANDS" -ge 3 ]
 check "merged: python commands present" [ "$PYTHON_COMMANDS" -eq 1 ]

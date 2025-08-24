@@ -10,26 +10,26 @@ cmd_up() {
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
-            --clean)
-                clean_build=true
-                shift
-                ;;
-            --verbose)
-                verbose=true
-                shift
-                ;;
-            --language)
-                language="$2"
-                shift 2
-                ;;
-            *)
-                ui_print_error "Unknown option: $1"
-                echo "Usage: claudetainer up [--clean] [--verbose] [--language <lang>]"
-                echo "  --clean         Remove existing container and rebuild without cache"
-                echo "  --verbose       Show detailed devcontainer CLI output"
-                echo "  --language      Specify language for devcontainer creation (python, node, rust, go, shell)"
-                return 1
-                ;;
+        --clean)
+            clean_build=true
+            shift
+            ;;
+        --verbose)
+            verbose=true
+            shift
+            ;;
+        --language)
+            language="$2"
+            shift 2
+            ;;
+        *)
+            ui_print_error "Unknown option: $1"
+            echo "Usage: claudetainer up [--clean] [--verbose] [--language <lang>]"
+            echo "  --clean         Remove existing container and rebuild without cache"
+            echo "  --verbose       Show detailed devcontainer CLI output"
+            echo "  --language      Specify language for devcontainer creation (python, node, rust, go, shell)"
+            return 1
+            ;;
         esac
     done
     if [[ ! -f ".devcontainer/claudetainer/devcontainer.json" ]]; then
@@ -38,13 +38,14 @@ cmd_up() {
         local lang_to_use=""
 
         # Use explicit language if provided
-        if [[ -n "$language" ]]; then
+        if [[ -n $language ]]; then
             lang_to_use="$language"
             ui_print_info "Using specified language: $lang_to_use"
         else
             # Try to auto-detect language
-            local detected_lang=$(validation_detect_language)
-            if [[ -n "$detected_lang" ]]; then
+            local detected_lang
+            detected_lang=$(validation_detect_language)
+            if [[ -n $detected_lang ]]; then
                 ui_print_info "Detected project language: $detected_lang"
 
                 # In interactive mode, ask for confirmation
@@ -92,13 +93,14 @@ cmd_up() {
     fi
 
     # Check if container already exists for this directory
-    local existing_containers=$(docker_find_project_containers)
-    if [[ -n "$existing_containers" ]]; then
-        if [[ "$clean_build" == "true" ]]; then
+    local existing_containers
+    existing_containers=$(docker_find_project_containers)
+    if [[ -n $existing_containers ]]; then
+        if [[ $clean_build == "true" ]]; then
             ui_print_info "Clean build requested - removing existing container(s): $existing_containers"
             for container in $existing_containers; do
                 ui_print_info "Removing container: $container"
-                docker rm -f "$container" 2> /dev/null || true
+                docker rm -f "$container" 2>/dev/null || true
             done
         else
             ui_print_error "A devcontainer already exists for this directory"
@@ -125,9 +127,9 @@ cmd_up() {
     # Run devcontainer command and capture exit code
     local exit_code=0
 
-    if [[ "$verbose" == "true" ]]; then
+    if [[ $verbose == "true" ]]; then
         # Show all output when verbose
-        if [[ "$clean_build" == "true" ]]; then
+        if [[ $clean_build == "true" ]]; then
             npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json --config .devcontainer/claudetainer/devcontainer.json --build-no-cache --remove-existing-container
         else
             npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json
@@ -135,10 +137,10 @@ cmd_up() {
         exit_code=$?
     else
         # Non-verbose mode: suppress stdout only, preserve stderr
-        if [[ "$clean_build" == "true" ]]; then
-            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json --config .devcontainer/claudetainer/devcontainer.json --build-no-cache --remove-existing-container > /dev/null
+        if [[ $clean_build == "true" ]]; then
+            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json --config .devcontainer/claudetainer/devcontainer.json --build-no-cache --remove-existing-container >/dev/null
         else
-            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json > /dev/null
+            npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json >/dev/null
         fi
         exit_code=$?
 
@@ -150,7 +152,7 @@ cmd_up() {
             ui_print_info "Re-running with full output to show error details:"
             echo ""
 
-            if [[ "$clean_build" == "true" ]]; then
+            if [[ $clean_build == "true" ]]; then
                 npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json --config .devcontainer/claudetainer/devcontainer.json --build-no-cache --remove-existing-container
             else
                 npx @devcontainers/cli up --workspace-folder . --config .devcontainer/claudetainer/devcontainer.json
@@ -178,8 +180,9 @@ cmd_up() {
     fi
 
     # After container is up, set up notifications and credentials
-    local container_name=$(docker_get_project_container_name)
-    if [[ -n "$container_name" ]]; then
+    local container_name
+    container_name=$(docker_get_project_container_name)
+    if [[ -n $container_name ]]; then
         # Wait a moment for container to be fully ready
         sleep 5
 
@@ -187,10 +190,12 @@ cmd_up() {
         notifications_setup_channel "$container_name"
 
         # Check credentials and set onboarding flag
-        local credentials_file=$(config_get_credentials_file)
-        if [[ -f "$credentials_file" ]]; then
-            local file_content=$(cat "$credentials_file" 2> /dev/null)
-            if [[ "$file_content" != "{}" ]] && [[ -n "$file_content" ]] && [[ "$file_content" != "" ]]; then
+        local credentials_file
+        credentials_file=$(config_get_credentials_file)
+        if [[ -f $credentials_file ]]; then
+            local file_content
+            file_content=$(cat "$credentials_file" 2>/dev/null)
+            if [[ $file_content != "{}" ]] && [[ -n $file_content ]] && [[ $file_content != "" ]]; then
                 ui_print_info "Setting Claude Code onboarding complete flag in container..."
                 docker_exec_in_container "$container_name" "echo '{\"hasCompletedOnboarding\": true}' > /home/vscode/.claude.json" || ui_print_warning "Could not set onboarding flag in container"
             fi
@@ -207,7 +212,8 @@ cmd_up() {
     echo "  3. Use 'claudetainer list' to see running containers"
     echo "  4. Run 'claudetainer doctor' if you encounter issues"
     echo
-    local ssh_port=$(pm_get_current_project_port)
+    local ssh_port
+    ssh_port=$(pm_get_current_project_port)
     local mosh_port=$((60000 + ssh_port))
     ui_print_info "Container details:"
     echo "  • SSH port: $ssh_port"

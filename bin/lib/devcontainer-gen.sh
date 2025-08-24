@@ -3,11 +3,12 @@
 
 # Function to get current feature version from devcontainer-feature.json
 devcontainer_get_feature_version() {
-    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local feature_json="$script_dir/../../src/claudetainer/devcontainer-feature.json"
 
-    if [[ -f "$feature_json" ]]; then
-        node -e "console.log(JSON.parse(require('fs').readFileSync('$feature_json', 'utf8')).version)" 2> /dev/null || echo "unknown"
+    if [[ -f $feature_json ]]; then
+        node -e "console.log(JSON.parse(require('fs').readFileSync('$feature_json', 'utf8')).version)" 2>/dev/null || echo "unknown"
     else
         echo "unknown" # fallback version
     fi
@@ -20,14 +21,18 @@ devcontainer_generate_compose() {
     local multiplexer="${3:-zellij}"
 
     # Get language-specific configuration
-    local lang_config=$(config_get_language_config "$lang")
-    local image=$(echo "$lang_config" | grep "^image:" | cut -d: -f2-)
+    local lang_config
+    lang_config=$(config_get_language_config "$lang")
+    local image
+    image=$(echo "$lang_config" | grep "^image:" | cut -d: -f2-)
 
     # Generate unique service name based on project path and port to avoid conflicts
-    local project_hash=$(echo "$PWD" | shasum | head -c8)
+    local project_hash
+    project_hash=$(echo "$PWD" | shasum | head -c8)
     local service_name="devcontainer-${project_hash}-${port}"
 
-    cat << EOF
+    cat <<EOF
+version: '3.8'
 services:
   ${service_name}:
     image: ${image}
@@ -56,29 +61,35 @@ devcontainer_generate_json() {
     local multiplexer="${3:-zellij}"
 
     # Get current feature version
-    local feature_version=$(devcontainer_get_feature_version)
+    local feature_version
+    feature_version=$(devcontainer_get_feature_version)
 
     # Get language-specific configuration
-    local lang_config=$(config_get_language_config "$lang")
-    local name=$(echo "$lang_config" | grep "^name:" | cut -d: -f2-)
-    local post_create_command=$(echo "$lang_config" | grep "^post_create:" | cut -d: -f2-)
+    local lang_config
+    lang_config=$(config_get_language_config "$lang")
+    local name
+    name=$(echo "$lang_config" | grep "^name:" | cut -d: -f2-)
+    local post_create_command
+    post_create_command=$(echo "$lang_config" | grep "^post_create:" | cut -d: -f2-)
 
     # Generate unique service name based on project path and port to avoid conflicts
-    local project_hash=$(echo "$PWD" | shasum | head -c8)
+    local project_hash
+    project_hash=$(echo "$PWD" | shasum | head -c8)
     local service_name="devcontainer-${project_hash}-${port}"
 
     # Determine claudetainer feature configuration
     local claudetainer_config
-    if [[ "$lang" == "base" ]]; then
+    if [[ $lang == "base" ]]; then
         claudetainer_config='"includeBase": true, "include": "", "multiplexer": "'${multiplexer}'"'
     else
         claudetainer_config='"includeBase": true, "include": "'${lang}'", "multiplexer": "'${multiplexer}'"'
     fi
 
     # Get language-specific additional features
-    local additional_features=$(config_get_language_features "$lang")
+    local additional_features
+    additional_features=$(config_get_language_features "$lang")
 
-    cat << EOF
+    cat <<EOF
 {
     "name": "${name}",
     "dockerComposeFile": "docker-compose.yml",
@@ -89,11 +100,12 @@ devcontainer_generate_json() {
         "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
         "ghcr.io/smithclay/claudetainer/claudetainer:${feature_version}": {
             ${claudetainer_config}
-        },$(if [[ -n "$additional_features" ]]; then echo -e "\n        $additional_features,"; fi)
+        },$(if [[ -n $additional_features ]]; then echo -e "\n        $additional_features,"; fi)
         "ghcr.io/devcontainers-extra/features/mosh-apt-get:1": {},
         "ghcr.io/devcontainers/features/sshd:1": {
             "SSHD_PORT": ${port},
             "START_SSHD": "true",
+            "USERNAME": "vscode",
             "NEW_PASSWORD": "vscode"
         }
     },
@@ -138,8 +150,8 @@ devcontainer_create_config() {
     fi
 
     # Generate docker-compose.yml and devcontainer.json with allocated port and multiplexer
-    devcontainer_generate_compose "$language" "$port" "$multiplexer" > .devcontainer/claudetainer/docker-compose.yml
-    devcontainer_generate_json "$language" "$port" "$multiplexer" > .devcontainer/claudetainer/devcontainer.json
+    devcontainer_generate_compose "$language" "$port" "$multiplexer" >.devcontainer/claudetainer/docker-compose.yml
+    devcontainer_generate_json "$language" "$port" "$multiplexer" >.devcontainer/claudetainer/devcontainer.json
 
     ui_print_success "Created .devcontainer/claudetainer/ config files for $language"
     ui_print_info "Generated: docker-compose.yml + devcontainer.json"

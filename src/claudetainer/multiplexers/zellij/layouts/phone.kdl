@@ -10,7 +10,7 @@ layout {
             plugin location="zellij:status-bar"
         }
     }
-    
+
     // Tab 1: Claude Code - Simplified main workspace
     tab name="  🤖  " focus=true {
         pane borderless=true {
@@ -19,7 +19,7 @@ layout {
             args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 claudetainer (Compact Mode)'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo 'Zellij may take a few seconds to compile plugins the first run...'; echo '💡 Alt+h/l: Switch tabs | Ctrl+p: Panes'; echo; exec bash"
         }
     }
-    
+
     // Tab 2: Cost - Single pane usage monitor
     tab name="  💰  " {
         pane borderless=true {
@@ -28,7 +28,7 @@ layout {
             args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '💰 Usage Monitor'; echo '━━━━━━━━━━━━━━━'; if command -v npx >/dev/null 2>&1; then npx ccusage blocks --live; else echo '❌ ccusage not available'; echo '📊 Check: https://console.anthropic.com'; exec bash; fi"
         }
     }
-    
+
     // Tab 3: Git - Simple git interface
     tab name=" 🌲  " {
         pane borderless=true {
@@ -37,7 +37,7 @@ layout {
             args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🌲 Git Interface'; echo '━━━━━━━━━━━━━━'; if command -v gitui >/dev/null 2>&1; then echo 'Starting GitUI...'; gitui; else echo '⚠️  GitUI not available - using standard git'; echo; git status --short 2>/dev/null || echo 'Not a git repo'; echo; git log --oneline -5 2>/dev/null || echo 'No commits'; echo; echo '⚡ Ready for git commands'; fi; exec bash"
         }
     }
-    
+
     // Tab 4: Shell - Simple shell
     tab name="  🐚  " {
         pane borderless=true {

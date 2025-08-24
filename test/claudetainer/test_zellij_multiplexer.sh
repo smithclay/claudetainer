@@ -4,7 +4,7 @@ set -e
 # Import test library for `check` command
 source dev-container-features-test-lib
 
-echo $HOME
+echo "$HOME"
 
 # This test is specifically for the zellij multiplexer scenario
 # It should always check for zellij binary and configuration
@@ -49,6 +49,7 @@ check "tablet layout is valid KDL syntax" bash -c '
 '
 
 # Test 12: Check for common KDL syntax errors in layout
+# shellcheck disable=SC2016 # Single quotes intentional for bash -c
 check "layout file has no obvious syntax errors" bash -c '
     # Basic checks for common syntax issues
     ! grep -q "Cannot have both tabs and panes" ~/.config/zellij/layouts/tablet.kdl 2>/dev/null &&
@@ -60,10 +61,11 @@ check "layout file has no obvious syntax errors" bash -c '
 check "auto-start script has valid bash syntax" bash -n "$HOME/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
 # Test 14: Auto-start script can be sourced without syntax errors
+# shellcheck disable=SC2016 # Single quotes intentional for bash -c
 check "auto-start script can be sourced safely" bash -c '
     # Create a safe test environment and source the script
     export SSH_CONNECTION="test" ZELLIJ="" HOME="$HOME"
-    timeout 5s bash -c "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 || 
+    timeout 5s bash -c "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 ||
     # Check if it failed due to syntax vs runtime issues
     bash -n ~/.config/claudetainer/scripts/bashrc-multiplexer.sh
 '

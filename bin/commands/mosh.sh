@@ -7,7 +7,7 @@ cmd_mosh() {
     local port_file=".devcontainer/claudetainer/.claudetainer-port"
     local ssh_port=2223 # fallback port
 
-    if [[ -f "$port_file" ]]; then
+    if [[ -f $port_file ]]; then
         ssh_port=$(cat "$port_file")
     fi
 
@@ -15,7 +15,7 @@ cmd_mosh() {
     local mosh_port=$((ssh_port + 60000))
 
     # Check if container is running by trying to connect to SSH port
-    if ! nc -z localhost "$ssh_port" 2> /dev/null; then
+    if ! nc -z localhost "$ssh_port" 2>/dev/null; then
         ui_print_error "Container not running or SSH not available on port $ssh_port"
         echo "Run 'claudetainer up' first to start the container"
         return 1

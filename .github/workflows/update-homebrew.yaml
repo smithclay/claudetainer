@@ -13,28 +13,28 @@ jobs:
         with:
           # Personal access token with repo and workflow scopes
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          
+
           # Formula name (must match your formula file name)
           formula: claudetainer
-          
+
           # Your tap repository (organization/homebrew-repo_name)
           tap: smithclay/homebrew-tap
-          
+
           # Force push to update the formula
           force: false
-          
+
           # Create a pull request instead of direct push (optional)
           create_pullrequest: true
-          
+
           # Commit message template
           message: |
             claudetainer {{version}}
-            
+
             Automated update for claudetainer release {{version}}
-            
+
             - Updated version from {{old_version}} to {{version}}
             - Updated SHA256 hash
-            
+
             Release notes: {{release_notes}}
 
   # Optional: Test the formula after updating
@@ -45,15 +45,15 @@ jobs:
       - name: Set up Homebrew
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
-        
+
       - name: Add tap
         run: brew tap smithclay/tap
-        
+
       - name: Test installation
         run: |
           brew install --build-from-source smithclay/tap/claudetainer
           claudetainer --version
-          
+
       - name: Test basic functionality
         run: |
           mkdir test-project
