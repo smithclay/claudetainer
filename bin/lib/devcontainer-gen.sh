@@ -26,6 +26,10 @@ devcontainer_generate_compose() {
     local image
     image=$(echo "$lang_config" | grep "^image:" | cut -d: -f2-)
 
+    # Get the correct default user for this language
+    local default_user
+    default_user=$(devcontainer_get_default_user "$lang")
+
     # Generate unique service name based on project path and port to avoid conflicts
     local project_hash
     project_hash=$(echo "$PWD" | shasum | head -c8)
@@ -42,8 +46,8 @@ services:
       - "$((60000 + port))-$((60000 + port + 10)):$((60000 + port))-$((60000 + port + 10))/udp"     # Mosh UDP range (direct mapping)
     volumes:
       - ../..:/workspaces:cached
-      - ~/.claudetainer-credentials.json:/home/vscode/.claude/.credentials.json:cached
-      - ~/.config/claudetainer/ssh:/home/vscode/.claudetainer-ssh:ro
+      - ~/.claudetainer-credentials.json:/home/${default_user}/.claude/.credentials.json:cached
+      - ~/.config/claudetainer/ssh:/home/${default_user}/.claudetainer-ssh:ro
     labels:
       - "devcontainer.local_folder=${PWD}"
       - "devcontainer.language=${lang}"
@@ -53,6 +57,19 @@ services:
       - CLAUDETAINER=true
       - NODE_OPTIONS=--max-old-space-size=8192
 EOF
+}
+
+# Get the default user for a language's base image
+devcontainer_get_default_user() {
+    local lang="$1"
+    case "$lang" in
+    node)
+        echo "node" # javascript-node image has 'node' user
+        ;;
+    python | rust | go | shell | base | *)
+        echo "vscode" # Other images use 'vscode' user
+        ;;
+    esac
 }
 
 # Generate devcontainer.json content for a language (compose-based)
@@ -90,6 +107,10 @@ devcontainer_generate_json() {
     local additional_features
     additional_features=$(config_get_language_features "$lang")
 
+    # Get the correct default user for this language
+    local default_user
+    default_user=$(devcontainer_get_default_user "$lang")
+
     # Determine if we need the Node.js feature (exclude for node language since base image already has it)
     local node_feature=""
     if [[ $lang != "node" ]]; then
@@ -112,8 +133,8 @@ devcontainer_generate_json() {
         "ghcr.io/devcontainers/features/sshd:1": {
             "SSHD_PORT": ${port},
             "START_SSHD": "true",
-            "USERNAME": "vscode",
-            "NEW_PASSWORD": "vscode"
+            "USERNAME": "${default_user}",
+            "NEW_PASSWORD": "${default_user}"
         }
     },
     "postCreateCommand": "${post_create_command} && /workspaces/.devcontainer/claudetainer/postinstall.sh",
@@ -165,82 +186,43 @@ setup_user() {
     echo
 }
 
-# Ensure vscode user exists
-ensure_vscode_user() {
-    local username="vscode"
+# Detect the appropriate user for SSH setup
+detect_ssh_user() {
+    # Try users in order of preference: passed parameter, existing users
+    local preferred_user="${1:-}"
 
-    if ! id "$username" >/dev/null 2>&1; then
-        echo "Creating vscode user..."
-
-        # Create the user with a home directory
-        if command -v useradd >/dev/null 2>&1; then
-            useradd -m -s /bin/bash "$username" 2>/dev/null || {
-                echo "Warning: Could not create user with useradd, trying adduser..."
-                adduser --disabled-password --gecos "" "$username" 2>/dev/null || {
-                    echo "Warning: Could not create vscode user"
-                    return 1
-                }
-            }
-        elif command -v adduser >/dev/null 2>&1; then
-            adduser --disabled-password --gecos "" "$username" 2>/dev/null || {
-                echo "Warning: Could not create vscode user"
-                return 1
-            }
-        else
-            echo "Warning: No user creation command available (useradd/adduser)"
-            return 1
-        fi
-
-        # Add to sudo group if it exists
-        if getent group sudo >/dev/null 2>&1; then
-            usermod -aG sudo "$username" 2>/dev/null || true
-        fi
-
-        echo "Created vscode user successfully"
-    else
-        echo "vscode user already exists"
+    # If a user was specified and exists, use it
+    if [[ -n $preferred_user ]] && id "$preferred_user" >/dev/null 2>&1; then
+        echo "$preferred_user"
+        return 0
     fi
 
-    return 0
+    # Try common devcontainer users in order
+    for candidate_user in vscode node nodejs; do
+        if id "$candidate_user" >/dev/null 2>&1; then
+            echo "$candidate_user"
+            return 0
+        fi
+    done
+
+    # Fallback to current user
+    echo "$(whoami)"
 }
 
 # Setup SSH access for claudetainer keys
 setup_ssh_access() {
     echo "=== SSH Access Setup ==="
-    local username="${1:-vscode}"
+    local preferred_user="${1:-}"
+
+    # Detect the actual user to use
+    local username
+    username=$(detect_ssh_user "$preferred_user")
+
     local ssh_dir="/home/$username/.ssh"
     local authorized_keys_file="$ssh_dir/authorized_keys"
     local claudetainer_ssh_dir="/home/$username/.claudetainer-ssh"
 
-    echo "Setting up SSH access for user: $username"
-
-    # Ensure vscode user exists if that's what we're trying to use
-    if [[ $username == "vscode" ]]; then
-        if ! ensure_vscode_user; then
-            echo "Failed to create vscode user, trying fallback users..."
-            username=""
-        fi
-    fi
-
-    # Check if user exists, try fallback users if not
-    if [[ -z $username ]] || ! id "$username" >/dev/null 2>&1; then
-        echo "User $username not found, trying fallback users..."
-        for fallback_user in nodejs node; do
-            if id "$fallback_user" >/dev/null 2>&1; then
-                username="$fallback_user"
-                ssh_dir="/home/$username/.ssh"
-                authorized_keys_file="$ssh_dir/authorized_keys"
-                claudetainer_ssh_dir="/home/$username/.claudetainer-ssh"
-                echo "Using fallback user: $username"
-                break
-            fi
-        done
-
-        if ! id "$username" >/dev/null 2>&1; then
-            echo "Warning: No suitable user found for SSH setup"
-            return 1
-        fi
-    fi
+    echo "Setting up SSH access for detected user: $username"
 
     # Ensure SSH directory exists
     if [[ ! -d "$ssh_dir" ]]; then
@@ -273,21 +255,21 @@ setup_ssh_access() {
 
 # Main postinstall function
 main() {
-    local username="${1:-vscode}"
+    local preferred_user="${1:-}"
 
     echo "Starting Claudetainer post-installation setup..."
-    echo "Target user: $username"
+    echo "Preferred user: ${preferred_user:-auto-detect}"
     echo
 
     print_claude_version
-    setup_ssh_access "$username"
+    setup_ssh_access "$preferred_user"
     #setup_user "$username"
 
     echo "=== Claudetainer Setup Complete ==="
     echo "Environment is ready for Claude Code development"
 }
 
-# Run main function with provided username or default to 'vscode'
+# Run main function - will auto-detect appropriate user
 main "$@"
 EOF
 }
@@ -303,19 +285,17 @@ set -e
 
 echo "=== SSH Key Setup ==="
 
-# Find the appropriate user (vscode preferred, then nodejs, then node)
-target_user="vscode"
-if ! id "$target_user" >/dev/null 2>&1; then
-    for fallback_user in nodejs node; do
-        if id "$fallback_user" >/dev/null 2>&1; then
-            target_user="$fallback_user"
-            echo "Using fallback user: $target_user"
-            break
-        fi
-    done
-fi
+# Find the appropriate user (try common devcontainer users)
+target_user=""
+for candidate_user in vscode node nodejs; do
+    if id "$candidate_user" >/dev/null 2>&1; then
+        target_user="$candidate_user"
+        echo "Using detected user: $target_user"
+        break
+    fi
+done
 
-if ! id "$target_user" >/dev/null 2>&1; then
+if [[ -z $target_user ]]; then
     echo "Warning: No suitable user found for SSH key setup"
     exit 0
 fi

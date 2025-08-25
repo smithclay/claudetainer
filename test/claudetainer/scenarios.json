@@ -69,8 +69,8 @@
       "ghcr.io/devcontainers/features/sshd:1": {
         "SSHD_PORT": 2222,
         "START_SSHD": "true",
-        "USERNAME": "vscode",
-        "NEW_PASSWORD": "vscode"
+        "USERNAME": "node",
+        "NEW_PASSWORD": "node"
       }
     }
   },
