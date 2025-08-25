@@ -10,32 +10,38 @@ cmd_init() {
     [[ $# -gt 0 ]] && shift
     while [[ $# -gt 0 ]]; do
         case $1 in
-            --multiplexer)
-                multiplexer="$2"
-                shift 2
-                ;;
-            --no-tmux)
-                # Legacy option for backward compatibility
-                multiplexer="none"
-                shift
-                ;;
-            *)
-                # Unknown option, ignore
-                shift
-                ;;
+        --multiplexer)
+            multiplexer="$2"
+            shift 2
+            ;;
+        --no-tmux)
+            # Legacy option for backward compatibility
+            multiplexer="none"
+            shift
+            ;;
+        *)
+            # Unknown option, ignore
+            shift
+            ;;
         esac
     done
 
     # Ensure credentials file exists before creating devcontainer
     notifications_ensure_credentials_file
 
+    # Ensure SSH keypair exists for container access
+    if ! ssh_ensure_keypair; then
+        ui_print_error "Failed to set up SSH keypair"
+        return 1
+    fi
+
     # Check Docker memory allocation and warn if insufficient (skip in CI)
-    if [[ -z "${CI:-}" && -z "${GITHUB_ACTIONS:-}" && -z "${GITLAB_CI:-}" && -z "${JENKINS_URL:-}" && -z "${BUILDKITE:-}" && -z "${CIRCLECI:-}" && -z "${TRAVIS:-}" ]]; then
-        check_docker_memory_allocation
+    if [[ -z ${CI:-} && -z ${GITHUB_ACTIONS:-} && -z ${GITLAB_CI:-} && -z ${JENKINS_URL:-} && -z ${BUILDKITE:-} && -z ${CIRCLECI:-} && -z ${TRAVIS:-} ]]; then
+        check_docker_memory_allocation "warn-only"
     fi
 
     # If no language specified, create base devcontainer
-    if [[ -z "$language" ]]; then
+    if [[ -z $language ]]; then
         ui_print_info "Creating base devcontainer without language-specific presets"
         language="base"
     else

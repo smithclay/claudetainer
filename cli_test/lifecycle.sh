@@ -13,16 +13,16 @@ check_prereqs() {
     local missing_optional=()
 
     # Check critical tools (required for core functionality)
-    if ! command -v node > /dev/null 2>&1; then
+    if ! command -v node >/dev/null 2>&1; then
         missing_critical+=("node")
     fi
 
-    if ! command -v docker > /dev/null 2>&1; then
+    if ! command -v docker >/dev/null 2>&1; then
         missing_critical+=("docker")
     fi
 
     # Check optional tools (used for language-specific testing)
-    if ! command -v python3 > /dev/null 2>&1; then
+    if ! command -v python3 >/dev/null 2>&1; then
         missing_optional+=("python3")
     fi
 
@@ -44,7 +44,7 @@ check_prereqs() {
 TEST_BASE_DIR="./tmp/claudetainer-cli-test-$$"
 CLI_BINARY_ARG="${1:-claudetainer}" # Allow specifying CLI path
 # Convert to absolute path if relative
-if [[ "$CLI_BINARY_ARG" == ./* ]]; then
+if [[ $CLI_BINARY_ARG == ./* ]]; then
     CLI_BINARY="$(pwd)/${CLI_BINARY_ARG#./}"
 else
     CLI_BINARY="$CLI_BINARY_ARG"
@@ -101,14 +101,14 @@ run_test() {
 # Cleanup function
 cleanup() {
     # shellcheck disable=SC2317  # Function is called via trap
-    if [[ "$CLEANUP_ON_EXIT" == "true" ]]; then
+    if [[ $CLEANUP_ON_EXIT == "true" ]]; then
         log_info "Cleaning up test directories and containers..."
 
         # Clean up any test containers first (before removing directories)
-        if [[ -d "$TEST_BASE_DIR" ]]; then
+        if [[ -d $TEST_BASE_DIR ]]; then
             for test_dir in "$TEST_BASE_DIR"/*; do
-                if [[ -d "$test_dir" ]]; then
-                    (cd "$test_dir" && "$CLI_BINARY" rm -f 2> /dev/null) || true
+                if [[ -d $test_dir ]]; then
+                    (cd "$test_dir" && "$CLI_BINARY" rm -f 2>/dev/null) || true
                 fi
             done
 
@@ -121,7 +121,7 @@ cleanup() {
 trap cleanup EXIT
 
 # Clean up any existing test directory and create fresh one
-if [[ -d "$TEST_BASE_DIR" ]]; then
+if [[ -d $TEST_BASE_DIR ]]; then
     log_info "Removing existing test directory: $TEST_BASE_DIR"
     rm -rf "$TEST_BASE_DIR"
 fi
@@ -145,7 +145,7 @@ cd "$NODE_TEST_DIR"
 NODE_TEST_DIR="$(pwd)" # Get absolute path
 
 # Create a simple Node.js project
-cat > package.json << 'EOF'
+cat >package.json <<'EOF'
 {
   "name": "test-claudetainer-project",
   "version": "1.0.0",
@@ -157,7 +157,7 @@ cat > package.json << 'EOF'
 }
 EOF
 
-cat > index.js << 'EOF'
+cat >index.js <<'EOF'
 console.log("Hello from claudetainer test!");
 EOF
 
@@ -169,19 +169,19 @@ run_test "devcontainer.json is valid JSON" "node -e \"JSON.parse(require('fs').r
 run_test "devcontainer.json contains claudetainer feature" "grep -q 'claudetainer' .devcontainer/claudetainer/devcontainer.json"
 
 # Test 3: Python project with specific options (if Python is available)
-if command -v python3 > /dev/null 2>&1; then
+if command -v python3 >/dev/null 2>&1; then
     PYTHON_TEST_DIR="$TEST_BASE_DIR/test-python-project"
     mkdir -p "$PYTHON_TEST_DIR"
     cd "$PYTHON_TEST_DIR"
     PYTHON_TEST_DIR="$(pwd)" # Get absolute path
 
     # Create a Python project
-    cat > requirements.txt << 'EOF'
+    cat >requirements.txt <<'EOF'
 flask>=2.0.0
 requests>=2.25.0
 EOF
 
-    cat > app.py << 'EOF'
+    cat >app.py <<'EOF'
 print("Hello from Python claudetainer test!")
 EOF
 
@@ -199,14 +199,14 @@ mkdir -p "$TMUX_TEST_DIR"
 cd "$TMUX_TEST_DIR"
 TMUX_TEST_DIR="$(pwd)" # Get absolute path
 
-echo "#!/bin/bash" > script.sh
-echo "echo 'Shell script test'" >> script.sh
+echo "#!/bin/bash" >script.sh
+echo "echo 'Shell script test'" >>script.sh
 
 run_test "CLI init with tmux multiplexer" "printf 'y\\n' | $CLI_BINARY init shell --multiplexer tmux >/dev/null 2>&1"
 run_test "tmux multiplexer configured" "grep -q 'tmux' .devcontainer/claudetainer/devcontainer.json"
 
 # Test 5: CLI management commands (from Node.js test directory)
-if [[ -d "$NODE_TEST_DIR" ]]; then
+if [[ -d $NODE_TEST_DIR ]]; then
     cd "$NODE_TEST_DIR"
     run_test "CLI list (no active containers)" "$CLI_BINARY list"
     run_test "CLI doctor check" "$CLI_BINARY doctor"
@@ -216,7 +216,7 @@ else
 fi
 
 # Test 6: Container lifecycle validation (lightweight tests)
-if command -v docker > /dev/null 2>&1 && docker ps > /dev/null 2>&1 && [[ -d "$NODE_TEST_DIR" ]]; then
+if command -v docker >/dev/null 2>&1 && docker ps >/dev/null 2>&1 && [[ -d $NODE_TEST_DIR ]]; then
     log_info "Docker is available - testing container commands (without actually starting containers)"
     cd "$NODE_TEST_DIR"
 
@@ -244,7 +244,7 @@ run_test "CLI handles directory without devcontainer gracefully" "! $CLI_BINARY 
 run_test "CLI rm works even without containers" "$CLI_BINARY rm -f"
 
 # Test 8: Configuration validation (from Node.js test directory)
-if [[ -d "$NODE_TEST_DIR" ]]; then
+if [[ -d $NODE_TEST_DIR ]]; then
     cd "$NODE_TEST_DIR"
     run_test "devcontainer.json has proper structure" "node -e \"
 const config = JSON.parse(require('fs').readFileSync('.devcontainer/claudetainer/devcontainer.json', 'utf8'));

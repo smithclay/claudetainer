@@ -19,7 +19,7 @@ set -x                # Debug mode for troubleshooting
 
 ## Shell Workflow Notes
 - Use `command -v tool` to check tool availability
-- Implement proper cleanup with `trap` handlers  
+- Implement proper cleanup with `trap` handlers
 - Validate inputs and arguments early with guard clauses
 - Use meaningful exit codes (0 = success, 1-255 for errors)
 - Run `shellcheck` before commits to catch common issues

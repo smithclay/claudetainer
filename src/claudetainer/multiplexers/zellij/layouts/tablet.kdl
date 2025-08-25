@@ -10,7 +10,7 @@ layout {
             plugin location="zellij:status-bar"
         }
     }
-    
+
     // Tab 1: Claude Code - Main development workspace
     tab name="🤖 claude" focus=true {
         pane split_direction="vertical" {
@@ -20,16 +20,16 @@ layout {
                 command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🤖 claudetainer'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo '💡 Tips:'; echo '  • Use claude for interactive coding'; echo '  • Alt+h/l to switch tabs quickly'; echo '  • Ctrl+p for pane management'; echo '  • Ctrl+t for tab management'; echo ''; echo '📁 Working in:' $(pwd); echo '🚀 Ready for development - the first time the editor starts it may take a few seconds to initialize!'; echo ''; exec bash"
             }
-            
+
             // Claudetainer hooks and notifications info
             pane size="30%" borderless=true {
                 name "claudetainer-info"
-                command "bash" 
+                command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '⚡ Claudetainer Hooks'; echo '━━━━━━━━━━━━━━━━━━━'; echo 'Slash Commands:'; echo '  • /commit         # Conventional commits'; echo '  • /check          # Project health check'; echo '  • /next           # Start new collaboration'; echo ''; echo '📱 Push Notifications:'; echo '  • Auto-generated channel'; echo '  • Subscribe: ntfy.sh/claude-project-xyz'; echo '  • Mobile app: ntfy.sh'; echo ''; echo '🔧 Features:'; echo '  • Auto-linting on file edits'; echo '  • Quality gates (blocks bad code)'; echo '  • Language-specific best practices'; echo ''; exec bash"
             }
         }
     }
-    
+
     // Tab 2: Cost Monitoring - Usage and resource tracking
     tab name="💰 cost" {
         pane split_direction="horizontal" {
@@ -39,7 +39,7 @@ layout {
                 command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '💰 Claude Code Usage Monitor'; echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'; echo 'Starting ccusage for real-time usage tracking...'; echo ''; echo '💡 This shows:'; echo '  • Token usage per request'; echo '  • Cost estimates'; echo '  • Request patterns'; echo '  • Daily/weekly totals'; echo ''; echo 'Loading...'; sleep 2; if command -v npx >/dev/null 2>&1; then npx ccusage blocks --live; else echo '❌ ccusage not available. Install with: npm install -g ccusage'; echo '📊 Alternative: Check Claude usage at https://console.anthropic.com'; exec bash; fi"
             }
-            
+
             // System resources
             pane size="40%" borderless=true {
                 name "system-resources"
@@ -48,7 +48,7 @@ layout {
             }
         }
     }
-    
+
     // Tab 3: Git Status - GitUI interface
     tab name="🌲 git" {
         pane split_direction="vertical" {
@@ -60,7 +60,7 @@ layout {
             }
         }
     }
-    
+
     // Tab 4: Shell - General development tasks
     tab name="🐚 shell" {
         pane split_direction="horizontal" {
@@ -70,7 +70,7 @@ layout {
                 command "bash"
                 args "-c" "cd /workspaces && if [ -d * ] 2>/dev/null; then cd */; fi; clear; echo '🐚 Development Shell'; echo '━━━━━━━━━━━━━━━━━━━━'; echo 'General purpose shell for development tasks'; echo ''; echo '📁 Current directory:' $(pwd); echo ''; echo '🛠️  Common Development Commands:'; echo '  • ls -la              # List files'; echo '  • find . -name \"*.py\" # Find files'; echo '  • rg \"pattern\"        # Search in files'; echo '  • tree                # Show directory tree'; echo '  • which <command>     # Find command location'; echo ''; echo '📦 Package Management:'; echo '  • npm install         # Node.js packages'; echo '  • pip install         # Python packages'; echo '  • cargo build         # Rust packages'; echo '  • go mod tidy         # Go modules'; echo ''; echo '🔧 Build & Test:'; echo '  • make               # Run Makefile'; echo '  • ./build.sh         # Run build script'; echo '  • npm test           # Run tests'; echo ''; echo 'Ready for commands!'; exec bash"
             }
-            
+
             // File explorer and monitoring
             pane size="30%" borderless=true {
                 name "file-explorer"

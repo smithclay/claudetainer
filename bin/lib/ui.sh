@@ -33,18 +33,18 @@ ui_print_warning() {
 
 # Check if a command exists
 ui_command_exists() {
-    command -v "$1" > /dev/null 2>&1
+    command -v "$1" >/dev/null 2>&1
 }
 
 # Check if we're in an interactive environment
 ui_is_interactive() {
     # Check if stdin is a terminal and we have a controlling terminal
-    [[ -t 0 ]] && [[ -t 1 ]] && [[ -z "${CI:-}" ]] && [[ -z "${GITHUB_ACTIONS:-}" ]] && [[ -z "${BUILDKITE:-}" ]] && [[ -z "${JENKINS_URL:-}" ]]
+    [[ -t 0 ]] && [[ -t 1 ]] && [[ -z ${CI:-} ]] && [[ -z ${GITHUB_ACTIONS:-} ]] && [[ -z ${BUILDKITE:-} ]] && [[ -z ${JENKINS_URL:-} ]]
 }
 
 # Show help message
 ui_show_help() {
-    cat << EOF
+    cat <<EOF
 claudetainer CLI v${VERSION}
 Easy and opinionated Claude Code in a dev container.
 

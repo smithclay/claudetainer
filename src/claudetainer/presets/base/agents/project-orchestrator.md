@@ -19,7 +19,7 @@ Implementation workflow:
 
 Multi-agent coordination strategies:
 - Spawn agents for parallel codebase exploration
-- Use agents for tests while implementing features  
+- Use agents for tests while implementing features
 - Delegate research to specialized agents
 - One agent identifies changes, another implements them
 

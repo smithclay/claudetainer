@@ -4,46 +4,45 @@
 # Check prerequisites and show installation guidance
 cmd_check_prerequisites() {
     local missing_deps=()
-    local all_good=true
-    local verbose="${1:-false}"
+    # Track dependencies for comprehensive checks
+    local verbose="${1:-false}" # Parameter expected: verbose mode flag
 
-    if [[ "$verbose" == "true" ]]; then
+    if [[ $verbose == "true" ]]; then
         ui_print_info "Checking prerequisites..."
     fi
 
     # Check Docker
     if ui_command_exists docker; then
-        if docker info > /dev/null 2>&1; then
-            if [[ "$verbose" == "true" ]]; then
+        if docker info >/dev/null 2>&1; then
+            if [[ $verbose == "true" ]]; then
                 ui_print_success "Docker is installed and running"
             fi
         else
             ui_print_warning "Docker is installed but not running"
             echo "  → Start Docker Desktop or run: sudo systemctl start docker"
-            all_good=false
         fi
     else
         ui_print_error "Docker is not installed"
         missing_deps+=("docker")
-        all_good=false
     fi
 
     # Check Node.js
     if ui_command_exists node; then
-        if [[ "$verbose" == "true" ]]; then
-            local node_version=$(node --version)
+        if [[ $verbose == "true" ]]; then
+            local node_version
+            node_version=$(node --version)
             ui_print_success "Node.js is installed ($node_version)"
         fi
     else
         ui_print_error "Node.js is not installed"
         missing_deps+=("node")
-        all_good=false
     fi
 
     # Check npm (comes with Node.js)
     if ui_command_exists npm; then
-        if [[ "$verbose" == "true" ]]; then
-            local npm_version=$(npm --version)
+        if [[ $verbose == "true" ]]; then
+            local npm_version
+            npm_version=$(npm --version)
             ui_print_success "npm is installed ($npm_version)"
         fi
     else
@@ -54,13 +53,26 @@ cmd_check_prerequisites() {
 
     # Check git
     if ui_command_exists git; then
-        if [[ "$verbose" == "true" ]]; then
-            local git_version=$(git --version | cut -d' ' -f3)
+        if [[ $verbose == "true" ]]; then
+            local git_version
+            git_version=$(git --version | cut -d' ' -f3)
             ui_print_success "Git is installed ($git_version)"
         fi
     else
         ui_print_warning "Git is not installed (needed for GitHub presets)"
         missing_deps+=("git")
+    fi
+
+    # Check DevContainer CLI
+    if ui_command_exists devcontainer; then
+        if [[ $verbose == "true" ]]; then
+            local devcontainer_version
+            devcontainer_version=$(devcontainer --version 2>/dev/null || echo "unknown")
+            ui_print_success "DevContainer CLI is installed ($devcontainer_version)"
+        fi
+    else
+        ui_print_error "DevContainer CLI is not installed (required for container operations)"
+        missing_deps+=("devcontainer")
     fi
 
     # Check Tailscale CLI (optional but recommended for dashboard)
@@ -71,12 +83,13 @@ cmd_check_prerequisites() {
         tailscale_cmd="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
     fi
 
-    if [[ -n "$tailscale_cmd" ]]; then
-        if $tailscale_cmd status > /dev/null 2>&1; then
-            if [[ "$verbose" == "true" ]]; then
-                local tailscale_version=$($tailscale_cmd version | head -1 | cut -d' ' -f1)
+    if [[ -n $tailscale_cmd ]]; then
+        if $tailscale_cmd status >/dev/null 2>&1; then
+            if [[ $verbose == "true" ]]; then
+                local tailscale_version
+                tailscale_version=$($tailscale_cmd version | head -1 | cut -d' ' -f1)
                 local install_method=""
-                if [[ "$tailscale_cmd" == *"Applications"* ]]; then
+                if [[ $tailscale_cmd == *"Applications"* ]]; then
                     install_method=" (Mac App Store)"
                 fi
                 ui_print_success "Tailscale is installed and connected ($tailscale_version$install_method)"
@@ -98,31 +111,36 @@ cmd_check_prerequisites() {
 
         for dep in "${missing_deps[@]}"; do
             case "$dep" in
-                docker)
-                    echo "  ${WRENCH} Docker:"
-                    echo "    • macOS/Windows: Download Docker Desktop from https://docker.com"
-                    echo "    • Ubuntu/Debian: curl -fsSL https://get.docker.com | sh"
-                    echo "    • With Homebrew: brew install --cask docker"
-                    ;;
-                node)
-                    echo "  ${WRENCH} Node.js:"
-                    echo "    • Download from https://nodejs.org (LTS recommended)"
-                    echo "    • With Homebrew: brew install node"
-                    echo "    • With package manager: sudo apt install nodejs npm"
-                    ;;
-                git)
-                    echo "  ${WRENCH} Git:"
-                    echo "    • Download from https://git-scm.com"
-                    echo "    • With Homebrew: brew install git"
-                    echo "    • With package manager: sudo apt install git"
-                    ;;
-                tailscale)
-                    echo "  ${WRENCH} Tailscale (optional):"
-                    echo "    • Download from https://tailscale.com/download"
-                    echo "    • With Homebrew: brew install tailscale"
-                    echo "    • After install: sudo tailscale up"
-                    echo "    • Improves dashboard with MagicDNS hostnames"
-                    ;;
+            docker)
+                echo "  ${WRENCH} Docker:"
+                echo "    • macOS/Windows: Download Docker Desktop from https://docker.com"
+                echo "    • Ubuntu/Debian: curl -fsSL https://get.docker.com | sh"
+                echo "    • With Homebrew: brew install --cask docker"
+                ;;
+            node)
+                echo "  ${WRENCH} Node.js:"
+                echo "    • Download from https://nodejs.org (LTS recommended)"
+                echo "    • With Homebrew: brew install node"
+                echo "    • With package manager: sudo apt install nodejs npm"
+                ;;
+            git)
+                echo "  ${WRENCH} Git:"
+                echo "    • Download from https://git-scm.com"
+                echo "    • With Homebrew: brew install git"
+                echo "    • With package manager: sudo apt install git"
+                ;;
+            devcontainer)
+                echo "  ${WRENCH} DevContainer CLI:"
+                echo "    • Install globally: npm install -g @devcontainers/cli"
+                echo "    • Required for container operations (up, build, rebuild)"
+                ;;
+            tailscale)
+                echo "  ${WRENCH} Tailscale (optional):"
+                echo "    • Download from https://tailscale.com/download"
+                echo "    • With Homebrew: brew install tailscale"
+                echo "    • After install: sudo tailscale up"
+                echo "    • Improves dashboard with MagicDNS hostnames"
+                ;;
             esac
             echo
         done
@@ -155,7 +173,7 @@ cmd_doctor() {
 				try {
 					const config = JSON.parse(require('fs').readFileSync('.devcontainer/claudetainer/devcontainer.json', 'utf8'));
 					const features = config.features || {};
-					
+
 					// Check different possible paths for claudetainer feature
 					if (features['ghcr.io/smithclay/claudetainer/claudetainer']) {
 						console.log('ghcr.io/smithclay/claudetainer/claudetainer');
@@ -175,10 +193,10 @@ cmd_doctor() {
 				} catch (e) {
 					// Silently ignore errors
 				}
-			" 2> /dev/null)
+			" 2>/dev/null)
         fi
 
-        if [[ -n "$feature_version" ]]; then
+        if [[ -n $feature_version ]]; then
             ui_print_success "DevContainer feature: $feature_version"
         else
             ui_print_info "DevContainer: Found (no claudetainer feature detected)"
@@ -190,7 +208,7 @@ cmd_doctor() {
 
     # 1. Check prerequisites
     ui_print_info "1. Checking prerequisites..."
-    if cmd_check_prerequisites > /dev/null 2>&1; then
+    if cmd_check_prerequisites "false" >/dev/null 2>&1; then
         ui_print_success "All prerequisites satisfied"
     else
         ui_print_warning "Some prerequisites missing - run 'claudetainer prereqs' for details"
@@ -202,8 +220,9 @@ cmd_doctor() {
     ui_print_info "2. Checking current directory setup..."
 
     # Check if in a project directory
-    local detected_lang=$(validation_detect_language)
-    if [[ -n "$detected_lang" ]]; then
+    local detected_lang
+    detected_lang=$(validation_detect_language)
+    if [[ -n $detected_lang ]]; then
         ui_print_success "Project language detected: $detected_lang"
     else
         ui_print_warning "No supported project files found in current directory"
@@ -219,7 +238,7 @@ cmd_doctor() {
             ui_print_success "devcontainer.json found"
 
             # Check if it's a claudetainer devcontainer
-            if grep -q "claudetainer" ".devcontainer/claudetainer/devcontainer.json" 2> /dev/null; then
+            if grep -q "claudetainer" ".devcontainer/claudetainer/devcontainer.json" 2>/dev/null; then
                 ui_print_success "claudetainer feature detected in devcontainer.json"
             else
                 ui_print_warning "devcontainer.json exists but doesn't use claudetainer feature"
@@ -228,7 +247,7 @@ cmd_doctor() {
 
             # Validate JSON syntax
             if ui_command_exists node; then
-                if node -e "JSON.parse(require('fs').readFileSync('.devcontainer/claudetainer/devcontainer.json', 'utf8'))" 2> /dev/null; then
+                if node -e "JSON.parse(require('fs').readFileSync('.devcontainer/claudetainer/devcontainer.json', 'utf8'))" 2>/dev/null; then
                     ui_print_success "devcontainer.json is valid JSON"
                 else
                     ui_print_error "devcontainer.json has invalid JSON syntax"
@@ -248,26 +267,34 @@ cmd_doctor() {
     # 3. Check Docker status
     ui_print_info "3. Checking Docker status..."
     if ui_command_exists docker; then
-        if docker info > /dev/null 2>&1; then
-            ui_print_success "Docker is running"
+        if docker info >/dev/null 2>&1; then
+            local docker_version
+            docker_version=$(docker --version | cut -d' ' -f3 | sed 's/,//')
+            ui_print_success "Docker is running ($docker_version)"
 
-            # Check Docker memory allocation for sub-agent workloads (skip in CI)
-            if [[ -z "${CI:-}" && -z "${GITHUB_ACTIONS:-}" && -z "${GITLAB_CI:-}" && -z "${JENKINS_URL:-}" && -z "${BUILDKITE:-}" && -z "${CIRCLECI:-}" && -z "${TRAVIS:-}" ]]; then
-                if ! check_docker_memory_allocation "no-prompt"; then
-                    ((issues_found++))
-                fi
+            # Display Docker memory allocation information (non-blocking)
+            # Get Docker memory info for display
+            local docker_memory_bytes
+            docker_memory_bytes=$(docker info --format '{{.MemTotal}}' 2>/dev/null || echo "0")
+            if [[ $docker_memory_bytes == "0" ]]; then
+                ui_print_info "Docker memory allocation: Unlimited (system memory available)"
             else
-                ui_print_info "Skipping Docker memory check in CI environment"
+                local docker_memory_gb
+                docker_memory_gb=$((docker_memory_bytes / 1024 / 1024 / 1024))
+                ui_print_info "Docker memory allocation: ${docker_memory_gb}GB"
+                echo "  • Recommended for sub-agents: 12GB+ (Node.js heap: 8GB)"
             fi
 
             # Check for existing containers
-            local containers=$(docker_find_project_containers)
-            if [[ -n "$containers" ]]; then
+            local containers
+            containers=$(docker_find_project_containers)
+            if [[ -n $containers ]]; then
                 ui_print_success "Found existing devcontainer(s): $containers"
 
                 # Check if running
-                local running=$(docker_find_running_project_containers)
-                if [[ -n "$running" ]]; then
+                local running
+                running=$(docker_find_running_project_containers)
+                if [[ -n $running ]]; then
                     ui_print_success "Container is running: $running"
                 else
                     ui_print_warning "Container exists but is not running"
@@ -294,12 +321,13 @@ cmd_doctor() {
 
     # 5. Check SSH connectivity (if container should be running)
     ui_print_info "5. Checking SSH connectivity..."
-    local ssh_port=$(pm_get_current_project_port)
-    if nc -z localhost "$ssh_port" 2> /dev/null; then
+    local ssh_port
+    ssh_port=$(pm_get_current_project_port)
+    if nc -z localhost "$ssh_port" 2>/dev/null; then
         ui_print_success "SSH port $ssh_port is accessible"
 
         # Test actual SSH connection
-        if timeout 5 ssh -p "$ssh_port" -o ConnectTimeout=3 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no vscode@localhost "echo 'SSH test successful'" 2> /dev/null; then
+        if timeout 5 ssh -p "$ssh_port" -o ConnectTimeout=3 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no vscode@localhost "echo 'SSH test successful'" 2>/dev/null; then
             ui_print_success "SSH connection test passed"
         else
             ui_print_warning "SSH port open but connection failed"
@@ -312,22 +340,26 @@ cmd_doctor() {
 
     # 6. Check claudetainer installation inside container (if running)
     ui_print_info "6. Checking claudetainer installation in container..."
-    local container_name=$(docker_get_project_container_name)
-    if [[ -n "$container_name" ]]; then
-        local claude_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.claude/ 2>/dev/null")
-        if [[ -n "$claude_check" ]]; then
+    local container_name
+    container_name=$(docker_get_project_container_name)
+    if [[ -n $container_name ]]; then
+        local claude_check
+        claude_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.claude/ 2>/dev/null")
+        if [[ -n $claude_check ]]; then
             ui_print_success "Claude Code configuration found in container"
 
             # Check for specific claudetainer files
-            local commands_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.claude/commands/*.md 2>/dev/null | wc -l")
-            if [[ "$commands_check" -gt 0 ]]; then
+            local commands_check
+            commands_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.claude/commands/*.md 2>/dev/null | wc -l")
+            if [[ $commands_check -gt 0 ]]; then
                 ui_print_success "Claudetainer commands installed ($commands_check commands)"
             else
                 ui_print_warning "No claudetainer commands found in container"
             fi
 
-            local hooks_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.claude/hooks/*.sh 2>/dev/null | wc -l")
-            if [[ "$hooks_check" -gt 0 ]]; then
+            local hooks_check
+            hooks_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.claude/hooks/*.sh 2>/dev/null | wc -l")
+            if [[ $hooks_check -gt 0 ]]; then
                 ui_print_success "Claudetainer hooks installed ($hooks_check hooks)"
             else
                 ui_print_warning "No claudetainer hooks found in container"
@@ -343,18 +375,21 @@ cmd_doctor() {
                 multiplexer_check="none"
             fi
 
-            if [[ "$multiplexer_check" != "none" ]]; then
+            if [[ $multiplexer_check != "none" ]]; then
                 ui_print_success "Multiplexer configured: $multiplexer_check"
 
                 # Check if multiplexer is properly configured
-                if [[ "$multiplexer_check" == "zellij" ]]; then
-                    local zellij_layouts_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/*.kdl 2>/dev/null")
-                    if [[ -n "$zellij_layouts_check" ]]; then
+                if [[ $multiplexer_check == "zellij" ]]; then
+                    local zellij_layouts_check
+                    zellij_layouts_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/*.kdl 2>/dev/null")
+                    if [[ -n $zellij_layouts_check ]]; then
                         ui_print_success "Zellij layouts configured"
                         # Check for specific bundled layouts
-                        local claude_dev_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/tablet.kdl 2>/dev/null")
-                        local claude_compact_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/phone.kdl 2>/dev/null")
-                        if [[ -n "$claude_dev_check" ]] && [[ -n "$claude_compact_check" ]]; then
+                        local claude_dev_check
+                        claude_dev_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/tablet.kdl 2>/dev/null")
+                        local claude_compact_check
+                        claude_compact_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.config/zellij/layouts/phone.kdl 2>/dev/null")
+                        if [[ -n $claude_dev_check ]] && [[ -n $claude_compact_check ]]; then
                             ui_print_success "Bundled layouts available: tablet, phone"
                         else
                             ui_print_warning "Some bundled layouts missing - check installation"
@@ -362,9 +397,10 @@ cmd_doctor() {
                     else
                         ui_print_warning "Zellij layouts not found - sessions may not work properly"
                     fi
-                elif [[ "$multiplexer_check" == "tmux" ]]; then
-                    local tmux_config_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.tmux.conf 2>/dev/null")
-                    if [[ -n "$tmux_config_check" ]]; then
+                elif [[ $multiplexer_check == "tmux" ]]; then
+                    local tmux_config_check
+                    tmux_config_check=$(docker_exec_in_container "$container_name" "ls /home/vscode/.tmux.conf 2>/dev/null")
+                    if [[ -n $tmux_config_check ]]; then
                         ui_print_success "tmux configuration found"
                     else
                         ui_print_warning "tmux configuration missing - sessions may not work properly"
@@ -372,8 +408,9 @@ cmd_doctor() {
                 fi
 
                 # Check if auto-start is configured
-                local bashrc_multiplexer_check=$(docker_exec_in_container "$container_name" "grep -q 'bashrc-multiplexer.sh' /home/vscode/.bashrc 2>/dev/null && echo 'found'")
-                if [[ "$bashrc_multiplexer_check" = "found" ]]; then
+                local bashrc_multiplexer_check
+                bashrc_multiplexer_check=$(docker_exec_in_container "$container_name" "grep -q 'bashrc-multiplexer.sh' /home/vscode/.bashrc 2>/dev/null && echo 'found'")
+                if [[ $bashrc_multiplexer_check == "found" ]]; then
                     ui_print_success "Multiplexer auto-start configured"
                 else
                     ui_print_warning "Multiplexer auto-start not configured"
@@ -403,30 +440,45 @@ cmd_doctor() {
     ui_print_info "8. Checking for common issues..."
 
     # Check credentials file
-    local credentials_file=$(config_get_credentials_file)
-    if [[ -f "$credentials_file" ]]; then
+    local credentials_file
+    credentials_file=$(config_get_credentials_file)
+    if [[ -f $credentials_file ]]; then
         ui_print_success "Credentials file exists: ~/.claudetainer-credentials.json"
     else
         ui_print_warning "Credentials file missing: ~/.claudetainer-credentials.json"
         echo "  • Will be created automatically on next 'claudetainer init'"
     fi
 
-    # Check for port conflicts
-    local port_check=$(lsof -i :"$ssh_port" 2> /dev/null | wc -l)
-    if [[ "$port_check" -gt 0 ]]; then
-        ui_print_success "Port $ssh_port is in use (likely by claudetainer)"
+    # Display port status information (non-blocking)
+    if ui_command_exists gtimeout; then
+        local port_check
+        port_check=$(gtimeout 2s lsof -i :"$ssh_port" 2>/dev/null | wc -l 2>/dev/null | tr -d ' ' || echo "0")
+        if [[ $port_check -gt 0 ]]; then
+            ui_print_info "Port $ssh_port is in use (likely by claudetainer)"
+        else
+            ui_print_info "Port $ssh_port is available"
+        fi
+    elif ui_command_exists timeout; then
+        local port_check
+        port_check=$(timeout 2s lsof -i :"$ssh_port" 2>/dev/null | wc -l 2>/dev/null | tr -d ' ' || echo "0")
+        if [[ $port_check -gt 0 ]]; then
+            ui_print_info "Port $ssh_port is in use (likely by claudetainer)"
+        else
+            ui_print_info "Port $ssh_port is available"
+        fi
     else
-        ui_print_info "Port $ssh_port is available"
+        # Skip lsof check if no timeout command available to avoid hanging
+        ui_print_info "Port $ssh_port status: (lsof check skipped - no timeout available)"
     fi
 
-    # Check disk space
-    local disk_usage=$(df . | tail -1 | awk '{print $5}' | sed 's/%//')
-    if [[ "$disk_usage" -lt 90 ]]; then
-        ui_print_success "Sufficient disk space available (${disk_usage}% used)"
+    # Display disk space information (non-blocking)
+    local disk_usage
+    disk_usage=$(df . | tail -1 | awk '{print $5}' | sed 's/%//')
+    if [[ $disk_usage -lt 90 ]]; then
+        ui_print_info "Disk space: ${disk_usage}% used"
     else
-        ui_print_warning "Disk space is low (${disk_usage}% used)"
+        ui_print_info "Disk space: ${disk_usage}% used"
         echo "  • Consider running: docker system prune -a"
-        ((issues_found++))
     fi
     echo
 

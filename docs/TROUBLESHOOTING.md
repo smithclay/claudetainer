@@ -125,6 +125,6 @@ This removes:
 ## Getting Help
 
 1. **Run diagnostics:** `claudetainer doctor`
-2. **Check logs:** `docker logs <container-id>` 
+2. **Check logs:** `docker logs <container-id>`
 3. **Report issues:** [GitHub Issues](https://github.com/smithclay/claudetainer/issues)
 4. **Include output of:** `claudetainer doctor` and `claudetainer list`

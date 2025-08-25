@@ -4,7 +4,7 @@ set -e
 # Import test library for `check` command
 source dev-container-features-test-lib
 
-echo $HOME
+echo "$HOME"
 
 ls -la ~/.claude
 
@@ -28,12 +28,12 @@ check "settings.json contains PostToolUse hook" grep -q '"PostToolUse"' ~/.claud
 check "settings.json contains PostToolUse hook" grep -q '"Notification"' ~/.claude/settings.json
 
 # Test 6: Validate syntax of generated shell scripts
-check "settings.json is valid JSON" python3 -c "import json; json.load(open('$HOME/.claude/settings.json'))" 2> /dev/null
+check "settings.json is valid JSON" python3 -c "import json; json.load(open('$HOME/.claude/settings.json'))" 2>/dev/null
 
 # Test 7: Check bash syntax of hook scripts
 for hook_script in ~/.claude/hooks/*.sh; do
     if [ -f "$hook_script" ]; then
-        check "hook script $(basename $hook_script) has valid bash syntax" bash -n "$hook_script"
+        check "hook script $(basename "$hook_script") has valid bash syntax" bash -n "$hook_script"
     fi
 done
 

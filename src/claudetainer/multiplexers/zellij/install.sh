@@ -15,7 +15,7 @@ ZELLIJ_LAYOUTS_DIR="$ZELLIJ_CONFIG_DIR/layouts"
 
 # Check if Zellij is available
 is_multiplexer_available() {
-    command -v zellij > /dev/null 2>&1
+    command -v zellij >/dev/null 2>&1
 }
 
 # Install Zellij
@@ -30,12 +30,12 @@ install_zellij_binary() {
     # Detect architecture
     local arch
     case "$(uname -m)" in
-        x86_64) arch="x86_64-unknown-linux-musl" ;;
-        aarch64 | arm64) arch="aarch64-unknown-linux-musl" ;;
-        *)
-            log_error "Unsupported architecture: $(uname -m)"
-            return 1
-            ;;
+    x86_64) arch="x86_64-unknown-linux-musl" ;;
+    aarch64 | arm64) arch="aarch64-unknown-linux-musl" ;;
+    *)
+        log_error "Unsupported architecture: $(uname -m)"
+        return 1
+        ;;
     esac
 
     # Download and install Zellij
@@ -44,9 +44,9 @@ install_zellij_binary() {
 
     mkdir -p "$temp_dir"
 
-    if command -v curl > /dev/null 2>&1; then
+    if command -v curl >/dev/null 2>&1; then
         curl -fsSL "$download_url" | tar -xz -C "$temp_dir"
-    elif command -v wget > /dev/null 2>&1; then
+    elif command -v wget >/dev/null 2>&1; then
         wget -qO- "$download_url" | tar -xz -C "$temp_dir"
     else
         log_error "Neither curl nor wget found. Cannot download Zellij."
@@ -54,7 +54,7 @@ install_zellij_binary() {
     fi
 
     # Install binary (try with sudo, fallback to user bin)
-    if sudo mv "$temp_dir/zellij" /usr/local/bin/zellij 2> /dev/null && sudo chmod +x /usr/local/bin/zellij 2> /dev/null; then
+    if sudo mv "$temp_dir/zellij" /usr/local/bin/zellij 2>/dev/null && sudo chmod +x /usr/local/bin/zellij 2>/dev/null; then
         log_info "Installed Zellij to /usr/local/bin/zellij"
     else
         # Fallback to user's bin directory
@@ -66,7 +66,8 @@ install_zellij_binary() {
         # Try to add to PATH for current session
         if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
             export PATH="$HOME/.local/bin:$PATH"
-            echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >> "$HOME/.bashrc"
+            # shellcheck disable=SC2016 # Intentional single quotes to prevent expansion
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >>"$HOME/.bashrc"
         fi
     fi
 
@@ -83,7 +84,7 @@ create_zellij_config() {
     mkdir -p "$ZELLIJ_CONFIG_DIR" "$ZELLIJ_LAYOUTS_DIR"
 
     # Copy main config file
-    cp "multiplexers/zellij/config.kdl" "$ZELLIJ_CONFIG_DIR/config.kdl" 2> /dev/null || {
+    cp "multiplexers/zellij/config.kdl" "$ZELLIJ_CONFIG_DIR/config.kdl" 2>/dev/null || {
         log_error "Failed to copy default Zellij config"
         return 1
     }
@@ -92,8 +93,9 @@ create_zellij_config() {
     log_info "Installing bundled Zellij layouts..."
     for layout_file in multiplexers/zellij/layouts/*.kdl; do
         if [ -f "$layout_file" ]; then
-            local layout_name=$(basename "$layout_file")
-            cp "$layout_file" "$ZELLIJ_LAYOUTS_DIR/$layout_name" 2> /dev/null || {
+            local layout_name
+            layout_name=$(basename "$layout_file")
+            cp "$layout_file" "$ZELLIJ_LAYOUTS_DIR/$layout_name" 2>/dev/null || {
                 log_warning "Failed to copy layout: $layout_name"
                 continue
             }
@@ -103,8 +105,8 @@ create_zellij_config() {
 
     # Set proper ownership for all zellij configuration files
     local target_user="${TARGET_USER:-$(whoami)}"
-    if [ "$target_user" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
-        chown -R "$target_user:$target_user" "$ZELLIJ_CONFIG_DIR" 2> /dev/null || {
+    if [ "$target_user" != "$(whoami)" ] && command -v chown >/dev/null 2>&1; then
+        chown -R "$target_user:$target_user" "$ZELLIJ_CONFIG_DIR" 2>/dev/null || {
             log_warning "Could not set ownership for Zellij configuration directory"
         }
     fi
@@ -117,7 +119,7 @@ handle_custom_layout() {
     local layout_spec="$1"
 
     # Check if it's a file path (contains / or starts with .)
-    if [[ "$layout_spec" == *"/"* ]] || [[ "$layout_spec" == "."* ]]; then
+    if [[ $layout_spec == *"/"* ]] || [[ $layout_spec == "."* ]]; then
         log_info "Installing custom layout from: $layout_spec"
 
         # Check if custom layout file exists
@@ -137,16 +139,16 @@ handle_custom_layout() {
     else
         # It's a bundled layout name
         case "$layout_spec" in
-            tablet | phone)
-                log_info "Using bundled layout: $layout_spec"
-                export ZELLIJ_DEFAULT_LAYOUT="$layout_spec"
-                ;;
-            *)
-                log_warning "Unknown bundled layout: $layout_spec"
-                log_info "Available bundled layouts: tablet, phone"
-                log_info "Falling back to: phone"
-                export ZELLIJ_DEFAULT_LAYOUT="phone"
-                ;;
+        tablet | phone)
+            log_info "Using bundled layout: $layout_spec"
+            export ZELLIJ_DEFAULT_LAYOUT="$layout_spec"
+            ;;
+        *)
+            log_warning "Unknown bundled layout: $layout_spec"
+            log_info "Available bundled layouts: tablet, phone"
+            log_info "Falling back to: phone"
+            export ZELLIJ_DEFAULT_LAYOUT="phone"
+            ;;
         esac
     fi
 }
@@ -163,22 +165,22 @@ setup_auto_start() {
     log_info "Setting up Zellij auto-start script with layout: ${ZELLIJ_DEFAULT_LAYOUT:-phone}"
 
     # Substitute the layout placeholder in the template
-    sed "s/__ZELLIJ_LAYOUT__/${ZELLIJ_DEFAULT_LAYOUT:-phone}/g" "multiplexers/zellij/bash-multiplexer.sh" > "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" || {
+    sed "s/__ZELLIJ_LAYOUT__/${ZELLIJ_DEFAULT_LAYOUT:-phone}/g" "multiplexers/zellij/bash-multiplexer.sh" >"$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" || {
         log_error "Failed to create Zellij auto-start script"
         return 1
     }
 
     # Set proper ownership and permissions
     local target_user="${TARGET_USER:-$(whoami)}"
-    if [ "$target_user" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
-        chown "$target_user:$target_user" "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" 2> /dev/null || {
+    if [ "$target_user" != "$(whoami)" ] && command -v chown >/dev/null 2>&1; then
+        chown "$target_user:$target_user" "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" 2>/dev/null || {
             log_warning "Could not set ownership for bashrc-multiplexer.sh"
         }
     fi
     chmod +x "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
     # Append to bashrc if not already present
-    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2> /dev/null; then
+    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2>/dev/null; then
         {
             echo ""
             echo "# Claudetainer: Auto-start multiplexer session for remote connections"
@@ -187,7 +189,7 @@ setup_auto_start() {
             echo "# Claudetainer: Simple layout aliases"
             echo "alias phone='zellij --new-session-with-layout phone'"
             echo "alias tablet='zellij --new-session-with-layout tablet'"
-        } >> "$bashrc"
+        } >>"$bashrc"
         log_success "Added Zellij auto-start and layout switching to ~/.bashrc"
     else
         log_info "Zellij auto-start already configured in ~/.bashrc"

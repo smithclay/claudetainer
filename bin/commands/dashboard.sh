@@ -9,20 +9,21 @@ DASHBOARD_SCRIPT="$SCRIPT_DIR/claudetainer-dashboard.js"
 
 # Ensure dashboard config directory exists
 dashboard_ensure_config_dir() {
-    if [[ ! -d "$DASHBOARD_CONFIG_DIR" ]]; then
+    if [[ ! -d $DASHBOARD_CONFIG_DIR ]]; then
         mkdir -p "$DASHBOARD_CONFIG_DIR"
     fi
 }
 
 # Check if dashboard is running
 dashboard_is_running() {
-    if [[ -f "$DASHBOARD_PID_FILE" ]]; then
-        local pid=$(cat "$DASHBOARD_PID_FILE" 2> /dev/null)
-        if [[ -n "$pid" ]] && kill -0 "$pid" 2> /dev/null; then
+    if [[ -f $DASHBOARD_PID_FILE ]]; then
+        local pid
+        pid=$(cat "$DASHBOARD_PID_FILE" 2>/dev/null)
+        if [[ -n $pid ]] && kill -0 "$pid" 2>/dev/null; then
             return 0
         else
             # Clean up stale PID file
-            rm -f "$DASHBOARD_PID_FILE" 2> /dev/null
+            rm -f "$DASHBOARD_PID_FILE" 2>/dev/null
             return 1
         fi
     fi
@@ -31,8 +32,8 @@ dashboard_is_running() {
 
 # Get dashboard process ID
 dashboard_get_pid() {
-    if [[ -f "$DASHBOARD_PID_FILE" ]]; then
-        cat "$DASHBOARD_PID_FILE" 2> /dev/null
+    if [[ -f $DASHBOARD_PID_FILE ]]; then
+        cat "$DASHBOARD_PID_FILE" 2>/dev/null
     fi
 }
 
@@ -61,7 +62,7 @@ dashboard_start() {
         return 1
     fi
 
-    if ! docker info > /dev/null 2>&1; then
+    if ! docker info >/dev/null 2>&1; then
         ui_print_error "Docker is not running"
         echo "Start Docker and try again"
         return 1
@@ -71,7 +72,7 @@ dashboard_start() {
     dashboard_ensure_config_dir
 
     # Check if dashboard script exists
-    if [[ ! -f "$DASHBOARD_SCRIPT" ]]; then
+    if [[ ! -f $DASHBOARD_SCRIPT ]]; then
         ui_print_error "Dashboard script not found: $DASHBOARD_SCRIPT"
         return 1
     fi
@@ -79,13 +80,13 @@ dashboard_start() {
     ui_print_info "Starting claudetainer dashboard..."
 
     # Start dashboard in background
-    nohup node "$DASHBOARD_SCRIPT" --port "$port" --host "$host" > "$DASHBOARD_LOG_FILE" 2>&1 &
+    nohup node "$DASHBOARD_SCRIPT" --port "$port" --host "$host" >"$DASHBOARD_LOG_FILE" 2>&1 &
     local dashboard_pid=$!
 
     # Wait a moment to see if it started successfully
     sleep 2
 
-    if kill -0 "$dashboard_pid" 2> /dev/null; then
+    if kill -0 "$dashboard_pid" 2>/dev/null; then
         ui_print_success "Dashboard started successfully!"
         echo
         cmd_dashboard_status
@@ -103,26 +104,27 @@ dashboard_stop() {
         return 0
     fi
 
-    local pid=$(dashboard_get_pid)
+    local pid
+    pid=$(dashboard_get_pid)
     ui_print_info "Stopping dashboard (PID: $pid)..."
 
     # Send SIGTERM for graceful shutdown
-    if kill "$pid" 2> /dev/null; then
+    if kill "$pid" 2>/dev/null; then
         # Wait for graceful shutdown
         local count=0
-        while kill -0 "$pid" 2> /dev/null && [[ $count -lt 10 ]]; do
+        while kill -0 "$pid" 2>/dev/null && [[ $count -lt 10 ]]; do
             sleep 1
             ((count++))
         done
 
         # Force kill if still running
-        if kill -0 "$pid" 2> /dev/null; then
+        if kill -0 "$pid" 2>/dev/null; then
             ui_print_warning "Force killing dashboard process"
-            kill -9 "$pid" 2> /dev/null
+            kill -9 "$pid" 2>/dev/null
         fi
 
         # Clean up PID file
-        rm -f "$DASHBOARD_PID_FILE" 2> /dev/null
+        rm -f "$DASHBOARD_PID_FILE" 2>/dev/null
         ui_print_success "Dashboard stopped"
     else
         ui_print_error "Failed to stop dashboard"
@@ -138,13 +140,15 @@ cmd_dashboard_status() {
     echo "================"
 
     if dashboard_is_running; then
-        local pid=$(dashboard_get_pid)
+        local pid
+        pid=$(dashboard_get_pid)
         local uptime=""
 
         # Get uptime if ps is available
         if ui_command_exists ps; then
-            local start_time=$(ps -o lstart= -p "$pid" 2> /dev/null | xargs)
-            if [[ -n "$start_time" ]]; then
+            local start_time
+            start_time=$(ps -o lstart= -p "$pid" 2>/dev/null | xargs)
+            if [[ -n $start_time ]]; then
                 uptime=" (started: $start_time)"
             fi
         fi
@@ -153,9 +157,10 @@ cmd_dashboard_status() {
         echo "  PID: $pid$uptime"
 
         # Try to get URL from log file
-        if [[ -f "$DASHBOARD_LOG_FILE" ]]; then
-            local url=$(grep "Dashboard server started on" "$DASHBOARD_LOG_FILE" | tail -1 | sed 's/.*http:/http:/')
-            if [[ -n "$url" ]]; then
+        if [[ -f $DASHBOARD_LOG_FILE ]]; then
+            local url
+            url=$(grep "Dashboard server started on" "$DASHBOARD_LOG_FILE" | tail -1 | sed 's/.*http:/http:/')
+            if [[ -n $url ]]; then
                 echo "  URL: $url"
             fi
         fi
@@ -173,14 +178,14 @@ cmd_dashboard_status() {
 cmd_dashboard_logs() {
     dashboard_ensure_config_dir
 
-    if [[ ! -f "$DASHBOARD_LOG_FILE" ]]; then
+    if [[ ! -f $DASHBOARD_LOG_FILE ]]; then
         ui_print_warning "No log file found: $DASHBOARD_LOG_FILE"
         return 0
     fi
 
     local lines="${1:-20}"
 
-    if [[ "$lines" == "follow" ]] || [[ "$lines" == "-f" ]]; then
+    if [[ $lines == "follow" ]] || [[ $lines == "-f" ]]; then
         echo "Following dashboard logs (Ctrl+C to stop):"
         echo "=========================================="
         tail -f "$DASHBOARD_LOG_FILE"
@@ -199,9 +204,10 @@ cmd_dashboard_url() {
         return 1
     fi
 
-    if [[ -f "$DASHBOARD_LOG_FILE" ]]; then
-        local url=$(grep "Dashboard server started on" "$DASHBOARD_LOG_FILE" | tail -1 | sed 's/.*http:/http:/')
-        if [[ -n "$url" ]]; then
+    if [[ -f $DASHBOARD_LOG_FILE ]]; then
+        local url
+        url=$(grep "Dashboard server started on" "$DASHBOARD_LOG_FILE" | tail -1 | sed 's/.*http:/http:/')
+        if [[ -n $url ]]; then
             echo "$url"
             return 0
         fi
@@ -216,32 +222,32 @@ cmd_dashboard() {
     local subcommand="${1:-status}"
 
     case "$subcommand" in
-        start | up)
-            shift
-            local port="${1:-8080}"
-            local host="${2:-0.0.0.0}"
-            dashboard_start "$port" "$host"
-            ;;
-        stop | down)
-            dashboard_stop
-            ;;
-        status)
-            cmd_dashboard_status
-            ;;
-        logs)
-            shift
-            cmd_dashboard_logs "$@"
-            ;;
-        url)
-            cmd_dashboard_url
-            ;;
-        restart)
-            dashboard_stop
-            sleep 1
-            dashboard_start
-            ;;
-        --help | -h | help)
-            cat << 'EOF'
+    start | up)
+        shift
+        local port="${1:-8080}"
+        local host="${2:-0.0.0.0}"
+        dashboard_start "$port" "$host"
+        ;;
+    stop | down)
+        dashboard_stop
+        ;;
+    status)
+        cmd_dashboard_status
+        ;;
+    logs)
+        shift
+        cmd_dashboard_logs "$@"
+        ;;
+    url)
+        cmd_dashboard_url
+        ;;
+    restart)
+        dashboard_stop
+        sleep 1
+        dashboard_start
+        ;;
+    --help | -h | help)
+        cat <<'EOF'
 Usage: claudetainer dashboard <command> [options]
 
 Commands:
@@ -262,11 +268,11 @@ Examples:
 The dashboard provides a mobile-friendly web interface for connecting to
 claudetainer containers via SSH, with deep links for Blink Shell.
 EOF
-            ;;
-        *)
-            ui_print_error "Unknown dashboard command: $subcommand"
-            echo "Run 'claudetainer dashboard --help' for usage information"
-            return 1
-            ;;
+        ;;
+    *)
+        ui_print_error "Unknown dashboard command: $subcommand"
+        echo "Run 'claudetainer dashboard --help' for usage information"
+        return 1
+        ;;
     esac
 }

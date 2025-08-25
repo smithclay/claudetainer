@@ -43,10 +43,11 @@ check "phone layout is valid KDL syntax" bash -c 'head -1 ~/.config/zellij/layou
 check "auto-start script has valid bash syntax" bash -n "$HOME/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
 # Test 12: Auto-start script references compact layout correctly
+# shellcheck disable=SC2016 # Single quotes intentional for bash -c
 check "auto-start script can be sourced safely" bash -c '
     # Create a safe test environment and source the script
     export SSH_CONNECTION="test" ZELLIJ="" HOME="$HOME"
-    timeout 5s bash -c "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 || 
+    timeout 5s bash -c "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh" >/dev/null 2>&1 ||
     # Check if it failed due to syntax vs runtime issues
     bash -n ~/.config/claudetainer/scripts/bashrc-multiplexer.sh
 '

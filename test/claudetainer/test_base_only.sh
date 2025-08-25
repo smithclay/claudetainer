@@ -4,7 +4,7 @@ set -e
 # Import test library for `check` command
 source dev-container-features-test-lib
 
-echo $HOME
+echo "$HOME"
 
 ls -la ~/.claude
 

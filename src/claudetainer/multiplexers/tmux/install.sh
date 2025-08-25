@@ -13,7 +13,7 @@ TMUX_CONFIG_FILE="${TARGET_HOME:-$HOME}/.tmux.conf"
 
 # Check if tmux is available
 is_multiplexer_available() {
-    command -v tmux > /dev/null 2>&1
+    command -v tmux >/dev/null 2>&1
 }
 
 # Install tmux (usually pre-installed in most containers)
@@ -28,16 +28,16 @@ install_tmux_binary() {
     # Try different package managers with proper error handling
     local install_success=false
 
-    if command -v apt-get > /dev/null 2>&1; then
-        if sudo apt-get update > /dev/null 2>&1 && sudo apt-get install -y tmux > /dev/null 2>&1; then
+    if command -v apt-get >/dev/null 2>&1; then
+        if sudo apt-get update >/dev/null 2>&1 && sudo apt-get install -y tmux >/dev/null 2>&1; then
             install_success=true
         fi
-    elif command -v yum > /dev/null 2>&1; then
-        if sudo yum install -y tmux > /dev/null 2>&1; then
+    elif command -v yum >/dev/null 2>&1; then
+        if sudo yum install -y tmux >/dev/null 2>&1; then
             install_success=true
         fi
-    elif command -v apk > /dev/null 2>&1; then
-        if sudo apk add --no-cache tmux > /dev/null 2>&1; then
+    elif command -v apk >/dev/null 2>&1; then
+        if sudo apk add --no-cache tmux >/dev/null 2>&1; then
             install_success=true
         fi
     fi
@@ -48,7 +48,7 @@ install_tmux_binary() {
     else
         log_warning "Could not install tmux automatically"
         log_warning "Please install tmux manually or use a different multiplexer"
-        log_warning "For devcontainer, add: \"ghcr.io/duduribeiro/devcontainer-features/tmux:1\""
+        log_warning 'For devcontainer, add: "ghcr.io/duduribeiro/devcontainer-features/tmux:1"'
         return 1
     fi
 }
@@ -57,7 +57,7 @@ install_tmux_binary() {
 create_tmux_config() {
     log_info "Creating tmux configuration..."
 
-    cat > "$TMUX_CONFIG_FILE" << 'EOF'
+    cat >"$TMUX_CONFIG_FILE" <<'EOF'
 # Claudetainer tmux Configuration
 # Optimized for remote Claude Code development
 
@@ -145,8 +145,8 @@ EOF
 
     # Set proper ownership for tmux config file
     local target_user="${TARGET_USER:-$(whoami)}"
-    if [ "$target_user" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
-        chown "$target_user:$target_user" "$TMUX_CONFIG_FILE" 2> /dev/null || {
+    if [ "$target_user" != "$(whoami)" ] && command -v chown >/dev/null 2>&1; then
+        chown "$target_user:$target_user" "$TMUX_CONFIG_FILE" 2>/dev/null || {
             log_warning "Could not set ownership for .tmux.conf"
         }
     fi
@@ -163,7 +163,7 @@ setup_auto_start() {
 
     # Create the auto-start script
     mkdir -p "$target_home/.config/claudetainer/scripts"
-    cat > "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" << 'EOF'
+    cat >"$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" <<'EOF'
 #!/usr/bin/env bash
 
 # bashrc-multiplexer.sh - Auto-start tmux session for remote connections
@@ -179,17 +179,17 @@ if [[ $- == *i* ]] && [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]] && 
         echo "🚀 Starting new claudetainer session with tmux..."
         # Create session with claude window in /workspaces
         tmux new-session -d -s claudetainer -c /workspaces -n claude
-        
+
         # Create usage window and run ccusage
         tmux new-window -t claudetainer:2 -n usage -c /workspaces 'echo "📊 Claude Code Usage Monitor"; echo "Starting ccusage..."; echo; exec npx ccusage'
-        
+
         # Switch back to claude window and add welcome messages
         tmux select-window -t claudetainer:1
         tmux send-keys -t claudetainer:claude 'clear' Enter
         tmux send-keys -t claudetainer:claude 'echo "🤖 Welcome to Claudetainer with tmux!"' Enter
         tmux send-keys -t claudetainer:claude 'echo "💡 Switch windows: Alt+1 (claude) or Alt+2 (usage)"' Enter
         tmux send-keys -t claudetainer:claude 'echo "🚀 Start coding with: claude"' Enter
-        
+
         # Attach to the session
         exec tmux attach-session -t claudetainer
     fi
@@ -198,18 +198,20 @@ EOF
 
     # Set proper ownership and permissions
     local target_user="${TARGET_USER:-$(whoami)}"
-    if [ "$target_user" != "$(whoami)" ] && command -v chown > /dev/null 2>&1; then
-        chown "$target_user:$target_user" "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" 2> /dev/null || {
+    if [ "$target_user" != "$(whoami)" ] && command -v chown >/dev/null 2>&1; then
+        chown "$target_user:$target_user" "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh" 2>/dev/null || {
             log_warning "Could not set ownership for bashrc-multiplexer.sh"
         }
     fi
     chmod +x "$target_home/.config/claudetainer/scripts/bashrc-multiplexer.sh"
 
     # Append to bashrc if not already present
-    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2> /dev/null; then
-        echo "" >> "$bashrc"
-        echo "# Claudetainer: Auto-start multiplexer session for remote connections" >> "$bashrc"
-        echo "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh" >> "$bashrc"
+    if ! grep -q "bashrc-multiplexer.sh" "$bashrc" 2>/dev/null; then
+        {
+            echo ""
+            echo "# Claudetainer: Auto-start multiplexer session for remote connections"
+            echo "source ~/.config/claudetainer/scripts/bashrc-multiplexer.sh"
+        } >>"$bashrc"
         log_success "Added tmux auto-start to ~/.bashrc"
     else
         log_info "tmux auto-start already configured in ~/.bashrc"

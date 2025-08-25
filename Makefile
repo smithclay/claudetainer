@@ -87,7 +87,7 @@ test-cli:
 	@./$(BIN_DIR)/claudetainer --version >/dev/null || (echo -e "$(RED)❌ Modular CLI test failed$(RESET)" && exit 1)
 	@./$(BIN_DIR)/claudetainer --help >/dev/null || (echo -e "$(RED)❌ Modular CLI help failed$(RESET)" && exit 1)
 	@echo -e "$(GREEN)✅ Modular CLI tests passed$(RESET)"
-	
+
 	@if [ -f "$(CLI_OUTPUT)" ]; then \
 		echo -e "$(YELLOW)Testing built version...$(RESET)"; \
 		./$(CLI_OUTPUT) --version >/dev/null || (echo -e "$(RED)❌ Built CLI test failed$(RESET)" && exit 1); \

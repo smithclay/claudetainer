@@ -42,7 +42,7 @@ check_with_details() {
     local failure_msg="$4"
 
     echo -n "Checking $description... "
-    if eval "$command" > /dev/null 2>&1; then
+    if eval "$command" >/dev/null 2>&1; then
         log_success "$success_msg"
         return 0
     else
@@ -68,7 +68,7 @@ main() {
     echo -e "Container ID: $(hostname)"
 
     # Check if we're in SSH session
-    if [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]]; then
+    if [[ -n ${SSH_CONNECTION:-} || -n ${SSH_CLIENT:-} ]]; then
         log_success "SSH connection detected"
         echo -e "SSH_CONNECTION: ${SSH_CONNECTION:-not set}"
         echo -e "SSH_CLIENT: ${SSH_CLIENT:-not set}"
@@ -77,14 +77,14 @@ main() {
     fi
 
     # Check for VS Code connection
-    if [[ -n "${VSCODE_IPC_HOOK_CLI:-}" ]]; then
+    if [[ -n ${VSCODE_IPC_HOOK_CLI:-} ]]; then
         log_info "VS Code remote connection detected"
         echo -e "VSCODE_IPC_HOOK_CLI: $VSCODE_IPC_HOOK_CLI"
     fi
 
     # 2. Zellij Installation Check
     log_header "🔧 Zellij Installation"
-    if command -v zellij > /dev/null 2>&1; then
+    if command -v zellij >/dev/null 2>&1; then
         log_success "Zellij binary found at: $(which zellij)"
         echo -e "Version: $(zellij --version)"
 
@@ -139,13 +139,13 @@ main() {
     echo -e "Default layout: $default_layout"
 
     local layout_file="$HOME/.config/zellij/layouts/${default_layout}.kdl"
-    if [[ -f "$layout_file" ]]; then
+    if [[ -f $layout_file ]]; then
         log_success "Layout file exists: $layout_file"
         echo -e "Layout file size: $(du -h "$layout_file" | cut -f1)"
 
         # Validate layout syntax
         echo -n "Validating layout syntax... "
-        if zellij --layout "$layout_file" setup --check > /dev/null 2>&1; then
+        if zellij --layout "$layout_file" setup --check >/dev/null 2>&1; then
             log_success "Layout syntax is valid"
         else
             log_error "Layout syntax validation failed"
@@ -159,7 +159,7 @@ main() {
         echo "Looking for alternative layouts:"
         for layout in tablet phone claude-dev claude-compact; do
             alt_file="$HOME/.config/zellij/layouts/${layout}.kdl"
-            if [[ -f "$alt_file" ]]; then
+            if [[ -f $alt_file ]]; then
                 log_info "Found alternative: $alt_file"
             fi
         done
@@ -186,7 +186,7 @@ main() {
 
             # Check if the script exists
             local script_path="$HOME/.config/claudetainer/scripts/bashrc-multiplexer.sh"
-            if [[ -f "$script_path" ]]; then
+            if [[ -f $script_path ]]; then
                 log_success "Multiplexer script exists: $script_path"
                 echo -e "Script size: $(du -h "$script_path" | cut -f1)"
 
@@ -248,7 +248,8 @@ main() {
 
     echo
     echo "Current shell process tree:"
-    pstree -p $$ 2> /dev/null || ps -ef | grep -E "($$|bash|zellij)" || true
+    # shellcheck disable=SC2009 # Intentional grep of ps output for compatibility
+    pstree -p $$ 2>/dev/null || ps -ef | grep -E "($$|bash|zellij)" || true
 
     # 9. Manual Zellij Test
     log_header "🧪 Manual Zellij Test"
@@ -257,7 +258,7 @@ main() {
 
     # Test zellij help
     echo -n "Testing 'zellij --help'... "
-    if zellij --help > /dev/null 2>&1; then
+    if zellij --help >/dev/null 2>&1; then
         log_success "Help command works"
     else
         log_error "Help command failed"
@@ -265,7 +266,7 @@ main() {
 
     # Test zellij setup
     echo -n "Testing 'zellij setup --check'... "
-    if zellij setup --check > /dev/null 2>&1; then
+    if zellij setup --check >/dev/null 2>&1; then
         log_success "Setup check passed"
     else
         log_error "Setup check failed"
@@ -304,15 +305,15 @@ main() {
     log_header "📊 System Resources"
 
     echo "Available memory:"
-    free -h 2> /dev/null || echo "free command not available"
+    free -h 2>/dev/null || echo "free command not available"
 
     echo
     echo "Disk space in home directory:"
-    du -sh "$HOME" 2> /dev/null || echo "du command failed"
+    du -sh "$HOME" 2>/dev/null || echo "du command failed"
 
     echo
     echo "Load average:"
-    uptime 2> /dev/null || echo "uptime command not available"
+    uptime 2>/dev/null || echo "uptime command not available"
 
     # Final summary
     log_header "📝 Summary"

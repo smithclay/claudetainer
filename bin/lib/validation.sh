@@ -22,14 +22,14 @@ validation_detect_language() {
 validation_validate_language() {
     local lang="$1"
     case "$lang" in
-        python | node | rust | go | shell | base)
-            return 0
-            ;;
-        *)
-            ui_print_error "Unsupported language: $lang"
-            echo "Supported languages: python, node, rust, go, shell, base"
-            return 1
-            ;;
+    python | node | rust | go | shell | base)
+        return 0
+        ;;
+    *)
+        ui_print_error "Unsupported language: $lang"
+        echo "Supported languages: python, node, rust, go, shell, base"
+        return 1
+        ;;
     esac
 }
 
@@ -37,13 +37,13 @@ validation_validate_language() {
 validation_validate_multiplexer() {
     local multiplexer="$1"
     case "$multiplexer" in
-        zellij | tmux | none)
-            return 0
-            ;;
-        *)
-            ui_print_error "Unsupported multiplexer: $multiplexer"
-            echo "Supported multiplexers: zellij, tmux, none"
-            return 1
-            ;;
+    zellij | tmux | none)
+        return 0
+        ;;
+    *)
+        ui_print_error "Unsupported multiplexer: $multiplexer"
+        echo "Supported multiplexers: zellij, tmux, none"
+        return 1
+        ;;
     esac
 }

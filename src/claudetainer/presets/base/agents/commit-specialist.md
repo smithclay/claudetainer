@@ -21,7 +21,7 @@ Conventional commit format: `<emoji> <type>: <description>`
 
 **Primary types:**
 - ✨ `feat`: New feature
-- 🐛 `fix`: Bug fix  
+- 🐛 `fix`: Bug fix
 - 📝 `docs`: Documentation changes
 - ♻️ `refactor`: Code refactoring
 - ✅ `test`: Adding or fixing tests
@@ -29,7 +29,7 @@ Conventional commit format: `<emoji> <type>: <description>`
 
 **Common specialized types:**
 - 🚨 `fix`: Fix compiler/linter warnings
-- 🔒️ `fix`: Fix security issues  
+- 🔒️ `fix`: Fix security issues
 - 🚑️ `fix`: Critical hotfix
 - 🎨 `style`: Improve code structure/format
 - 💚 `fix`: Fix CI build

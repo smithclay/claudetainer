@@ -5,8 +5,8 @@ We're building production-quality code together. Your role is to create maintain
 When you seem stuck or overly complex, I'll redirect you - my guidance helps you stay on track.
 
 ## 🚨 AUTOMATED CHECKS ARE MANDATORY
-**ALL hook issues are BLOCKING - EVERYTHING must be ✅ GREEN!**  
-No errors. No formatting issues. No linting problems. Zero tolerance.  
+**ALL hook issues are BLOCKING - EVERYTHING must be ✅ GREEN!**
+No errors. No formatting issues. No linting problems. Zero tolerance.
 These are not suggestions. Fix ALL issues before continuing.
 
 ## CRITICAL WORKFLOW - ALWAYS FOLLOW THIS
@@ -14,7 +14,7 @@ These are not suggestions. Fix ALL issues before continuing.
 ### Explore → Plan → Code → Commit
 **NEVER JUMP STRAIGHT TO CODING!** Always follow this structured sequence:
 1. **Explore**: Research the codebase, understand existing patterns and dependencies
-2. **Plan**: Create a detailed implementation plan and verify it with me  
+2. **Plan**: Create a detailed implementation plan and verify it with me
 3. **Code**: Implement with validation checkpoints and iterative improvement
 4. **Commit**: Validate, test, and commit changes with proper documentation
 
@@ -35,7 +35,7 @@ Say: "I'll spawn agents to tackle different aspects of this problem" whenever a 
 ### Reality Checkpoints
 **Stop and validate** at these moments:
 - After implementing a complete feature
-- Before starting a new major component  
+- Before starting a new major component
 - When something feels wrong
 - Before declaring "done"
 - **WHEN HOOKS FAIL WITH ERRORS** ❌
@@ -69,7 +69,7 @@ Your code must be 100% clean. No exceptions.
 ## Context & Memory Management
 
 ### When context gets long
-- Use `/clear` to reset and maintain focused context  
+- Use `/clear` to reset and maintain focused context
 - Re-read this CLAUDE.md file periodically (every 30+ minutes)
 - Use TodoWrite tool to track tasks and maintain continuity
 - Document current state before major changes
@@ -84,7 +84,7 @@ Your code must be 100% clean. No exceptions.
 
 ### Our code is complete when
 - ✓ All linters pass with zero issues
-- ✓ All tests pass  
+- ✓ All tests pass
 - ✓ Feature works end-to-end
 - ✓ Old code is deleted
 - ✓ Documentation comments on all public interfaces
@@ -124,7 +124,7 @@ My insights on better approaches are valued - please ask for them!
 ### Progress Updates
 ```
 ✓ Implemented authentication (all tests passing)
-✓ Added rate limiting  
+✓ Added rate limiting
 ✗ Found issue with token expiration - investigating
 ```
 
@@ -136,7 +136,7 @@ Would you like me to [specific improvement]?"
 
 ### Git Workflow
 - Use feature branches - no backwards compatibility needed
-- Consider git worktrees for parallel task management  
+- Consider git worktrees for parallel task management
 - Follow consistent branch naming conventions
 - Plan merge strategies early in complex features
 

@@ -82,7 +82,7 @@ preset-name/
 Each language preset extends base functionality:
 
 - **Python**: black/flake8/autopep8 pipeline, FastAPI patterns
-- **Node.js**: eslint/prettier integration, TypeScript support  
+- **Node.js**: eslint/prettier integration, TypeScript support
 - **Go**: gofmt/golangci-lint, module-aware tooling
 - **Rust**: rustfmt/clippy integration, Cargo workflows
 
@@ -150,7 +150,7 @@ The `lib/merge-json.js` utility handles Claude Code-specific merging rules for c
 }
 ```
 
-#### Hooks Arrays  
+#### Hooks Arrays
 ```javascript
 // Hooks with same matcher are combined, commands deduplicated
 [
@@ -226,7 +226,7 @@ claudetainer <command> [options]
 
 Commands:
   init [lang]         # Create .devcontainer with claudetainer feature
-  up                  # Start devcontainer  
+  up                  # Start devcontainer
   ssh                 # Connect via SSH with multiplexer session
   doctor              # Comprehensive health check and debugging
   list/ps/ls          # List running containers
@@ -237,7 +237,7 @@ Commands:
 ```bash
 detect_language() {
   if [[ -f "package.json" ]]; then echo "node"
-  elif [[ -f "requirements.txt" || -f "pyproject.toml" ]]; then echo "python"  
+  elif [[ -f "requirements.txt" || -f "pyproject.toml" ]]; then echo "python"
   elif [[ -f "Cargo.toml" ]]; then echo "rust"
   elif [[ -f "go.mod" ]]; then echo "go"
   fi
@@ -311,7 +311,7 @@ git clone --depth=1 "https://github.com/$owner/$repo.git" "$temp_dir"
 if [[ -n "$preset_path" ]]; then
   cp -r "$temp_dir/$preset_path" "$presets_dir/github-$repo_name"
 else
-  cp -r "$temp_dir" "$presets_dir/github-$repo_name"  
+  cp -r "$temp_dir" "$presets_dir/github-$repo_name"
 fi
 ```
 
@@ -338,7 +338,7 @@ make test-cli
 make test-lifecycle
 
 # Test specific scenarios
-devcontainer features test --feature claudetainer --base-image mcr.microsoft.com/devcontainers/javascript-node:1-18-bookworm .
+devcontainer features test --feature claudetainer --base-image mcr.microsoft.com/devcontainers/javascript-node:22-bookworm .
 ```
 
 **CI/CD Testing**: Three-tier approach
@@ -375,7 +375,7 @@ cat ~/.claude/settings.json | jq .
 
 - [ ] Settings.json is valid JSON with expected hooks
 - [ ] Commands directory contains expected .md files
-- [ ] Hooks directory contains executable scripts  
+- [ ] Hooks directory contains executable scripts
 - [ ] CLAUDE.md exists and contains preset documentation
 - [ ] Smart-lint works for target language
 - [ ] SSH access works on dynamically allocated port
@@ -394,7 +394,7 @@ cat ~/.claude/settings.json | jq .
 - Validates all test scenarios automatically
 - Matrix testing for different preset combinations
 
-#### Release Workflow (`.github/workflows/release.yaml`)  
+#### Release Workflow (`.github/workflows/release.yaml`)
 - Triggered on version tags
 - Publishes feature to GitHub Container Registry
 - Auto-generates documentation
@@ -437,7 +437,7 @@ Features are published to `ghcr.io/smithclay/claudetainer` using the DevContaine
      },
      "hooks": [
        {
-         "type": "PostToolUse", 
+         "type": "PostToolUse",
          "matcher": "Write",
          "command": ["~/.claude/hooks/my-hook.sh", "$FILE_PATH"]
        }
@@ -448,9 +448,9 @@ Features are published to `ghcr.io/smithclay/claudetainer` using the DevContaine
 4. **Add commands** (`commands/my-command.md`):
    ```markdown
    # My Custom Command
-   
+
    Description of what this slash command does.
-   
+
    Usage: /my-command
    ```
 
@@ -464,7 +464,7 @@ Features are published to `ghcr.io/smithclay/claudetainer` using the DevContaine
 6. **Document usage** (`CLAUDE.md`):
    ```markdown
    # My Preset
-   
+
    This preset provides custom functionality for...
    ```
 
@@ -475,7 +475,7 @@ Features are published to `ghcr.io/smithclay/claudetainer` using the DevContaine
 export INCLUDE="base,/path/to/my-preset"
 ./install.sh
 
-# GitHub testing  
+# GitHub testing
 export INCLUDE="base,github:myorg/my-preset"
 ./install.sh
 ```
@@ -499,7 +499,7 @@ Host your preset on GitHub and reference it:
 ### Prerequisites
 
 - **Node.js 16+** - For JSON merging utilities
-- **Bash 4.0+** - For installation scripts  
+- **Bash 4.0+** - For installation scripts
 - **Git** - For GitHub preset support
 - **Docker** - For devcontainer testing
 - **DevContainer CLI** - `npm install -g @devcontainers/cli`
@@ -540,7 +540,7 @@ cd src/claudetainer && ./install.sh
 ### Review Criteria
 
 - [ ] All automated tests pass
-- [ ] Code follows existing patterns and standards  
+- [ ] Code follows existing patterns and standards
 - [ ] Documentation is updated appropriately
 - [ ] Backwards compatibility is maintained
 - [ ] Error handling is comprehensive
@@ -607,7 +607,7 @@ export DEBUG=1
 ### Getting Help
 
 - **Issues**: https://github.com/smithclay/claudetainer/issues
-- **Discussions**: https://github.com/smithclay/claudetainer/discussions  
+- **Discussions**: https://github.com/smithclay/claudetainer/discussions
 - **Claude Code Community**: https://claude.ai/code
 
 ## Performance Considerations

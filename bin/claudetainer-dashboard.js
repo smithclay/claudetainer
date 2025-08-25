@@ -46,7 +46,7 @@ function log(message) {
   const timestamp = new Date().toISOString();
   const logEntry = `${timestamp} ${message}\n`;
   console.log(message);
-  
+
   ensureConfigDir();
   fs.appendFileSync(LOG_FILE, logEntry);
 }
@@ -54,7 +54,7 @@ function log(message) {
 function getTailscaleHostname() {
   // Determine which Tailscale command to use
   let tailscaleCmd = 'tailscale';
-  
+
   try {
     // First try the system PATH version
     execSync('which tailscale', { encoding: 'utf8', timeout: 2000 });
@@ -79,25 +79,25 @@ function getTailscaleHostname() {
     // Get Tailscale status with MagicDNS hostname
     const statusOutput = execSync(`"${tailscaleCmd}" status --json`, { encoding: 'utf8', timeout: 5000 });
     const status = JSON.parse(statusOutput);
-    
+
     // Extract MagicDNS hostname from Self.DNSName
     if (status.Self && status.Self.DNSName) {
       const magicDNSName = status.Self.DNSName.replace(/\.$/, ''); // Remove trailing dot
       log(`Found Tailscale MagicDNS hostname: ${magicDNSName}`);
       return magicDNSName;
     }
-    
+
     // Fallback: try to get Tailscale IP
     const ip = execSync(`"${tailscaleCmd}" ip --4`, { encoding: 'utf8', timeout: 5000 }).trim();
     if (ip && ip !== '') {
       log(`Found Tailscale IP: ${ip}, but no MagicDNS name available`);
       return ip;
     }
-    
+
     // Final fallback
     log('Tailscale available but no IP/hostname found, using localhost');
     return 'localhost';
-    
+
   } catch (e) {
     log(`Warning: Could not detect Tailscale hostname: ${e.message}`);
     return 'localhost';
@@ -107,7 +107,7 @@ function getTailscaleHostname() {
 function getTailscaleIP() {
   // Determine which Tailscale command to use
   let tailscaleCmd = 'tailscale';
-  
+
   try {
     // First try the system PATH version
     execSync('which tailscale', { encoding: 'utf8', timeout: 2000 });
@@ -135,21 +135,21 @@ function getTailscaleIP() {
       log(`Found Tailscale IP: ${ip}`);
       return ip;
     }
-    
+
     // Fallback: try to get MagicDNS hostname
     const statusOutput = execSync(`"${tailscaleCmd}" status --json`, { encoding: 'utf8', timeout: 5000 });
     const status = JSON.parse(statusOutput);
-    
+
     if (status.Self && status.Self.DNSName) {
       const magicDNSName = status.Self.DNSName.replace(/\.$/, ''); // Remove trailing dot
       log(`Found Tailscale MagicDNS hostname: ${magicDNSName}, but using as fallback`);
       return magicDNSName;
     }
-    
+
     // Final fallback
     log('Tailscale available but no IP/hostname found, using localhost');
     return 'localhost';
-    
+
   } catch (e) {
     log(`Warning: Could not detect Tailscale IP: ${e.message}`);
     return 'localhost';
@@ -160,42 +160,42 @@ function getClaudetainerContainers() {
   try {
     // Use the same logic as the CLI docker_list_containers function
     const containerIds = execSync('docker ps -q', { encoding: 'utf8', timeout: 10000 });
-    
+
     if (!containerIds.trim()) {
       return [];
     }
-    
+
     const containers = containerIds.trim().split('\n').map(cid => {
       try {
         // Get container details using docker inspect (same as CLI)
-        const name = execSync(`docker inspect --format '{{.Name}}' "${cid}"`, 
+        const name = execSync(`docker inspect --format '{{.Name}}' "${cid}"`,
           { encoding: 'utf8', timeout: 5000 }).trim().replace(/^\//, '');
-        
-        const ports = execSync(`docker inspect --format '{{range $p, $conf := .NetworkSettings.Ports}}{{if $conf}}{{$p}}->{{(index $conf 0).HostPort}} {{end}}{{end}}' "${cid}"`, 
+
+        const ports = execSync(`docker inspect --format '{{range $p, $conf := .NetworkSettings.Ports}}{{if $conf}}{{$p}}->{{(index $conf 0).HostPort}} {{end}}{{end}}' "${cid}"`,
           { encoding: 'utf8', timeout: 5000 }).trim();
-        
-        const status = execSync(`docker inspect --format '{{.State.Status}}' "${cid}"`, 
+
+        const status = execSync(`docker inspect --format '{{.State.Status}}' "${cid}"`,
           { encoding: 'utf8', timeout: 5000 }).trim();
-        
-        const localFolder = execSync(`docker inspect --format '{{index .Config.Labels "devcontainer.local_folder"}}' "${cid}"`, 
+
+        const localFolder = execSync(`docker inspect --format '{{index .Config.Labels "devcontainer.local_folder"}}' "${cid}"`,
           { encoding: 'utf8', timeout: 5000 }).trim();
-        
+
         // Skip containers without devcontainer.local_folder label
         if (!localFolder || localFolder === '<no value>') {
           return null;
         }
-        
+
         // Extract SSH-like port from ports string
         // Look for patterns like "22/tcp->2226", "2226/tcp->2226", or "0.0.0.0:2226->22/tcp"
         let sshPort = null;
-        
+
         // Try different port patterns that could be SSH
         const portPatterns = [
           /(\d+)\/tcp->(\d+)/g,           // "22/tcp->2226" or "2226/tcp->2226"
           /0\.0\.0\.0:(\d+)->22\/tcp/g,   // "0.0.0.0:2226->22/tcp"
           /0\.0\.0\.0:(\d+)->(\d+)\/tcp/g // "0.0.0.0:2226->2226/tcp"
         ];
-        
+
         for (const pattern of portPatterns) {
           let match;
           while ((match = pattern.exec(ports)) !== null) {
@@ -208,17 +208,17 @@ function getClaudetainerContainers() {
           }
           if (sshPort) break;
         }
-        
+
         // Skip containers without detectable SSH ports
         if (!sshPort) {
           return null;
         }
-        
+
         const projectName = path.basename(localFolder);
-        
+
         // Calculate mosh UDP port range: 60000 + sshPort to 60000 + sshPort + 10
         const moshPortStart = 60000 + sshPort;
-        
+
         return {
           name,
           projectName,
@@ -228,13 +228,13 @@ function getClaudetainerContainers() {
           localFolder,
           lastSeen: new Date().toISOString()
         };
-        
+
       } catch (e) {
         log(`Warning: Could not inspect container ${cid}: ${e.message}`);
         return null;
       }
     }).filter(container => container !== null);
-    
+
     return containers;
   } catch (e) {
     log(`Warning: Could not fetch Docker containers: ${e.message}`);
@@ -245,7 +245,7 @@ function getClaudetainerContainers() {
 function generateDashboardHTML(containers, hostname) {
   const refreshInterval = loadConfig().auto_refresh_interval;
   const tailscaleIP = getTailscaleIP();
-  
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -253,16 +253,16 @@ function generateDashboardHTML(containers, hostname) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📱 claudetainer dashboard</title>
     <style>
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        body { 
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #1a1a1a; 
-            color: #ffffff; 
-            padding: 20px; 
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
             line-height: 1.6;
         }
         .header {
@@ -407,7 +407,7 @@ function generateDashboardHTML(containers, hostname) {
         const moshCommand = `mosh -P ${container.sshPort} -p ${container.moshPortStart} vscode@${tailscaleIP}`;
         // Use proper URL encoding for Blink Shell
         const encodedCommand = encodeURIComponent(moshCommand);
-        
+
         return `
         <div class="container-card">
             <div class="container-header">
@@ -460,7 +460,7 @@ function generateDashboardHTML(containers, hostname) {
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-            
+
             try {
                 const successful = document.execCommand('copy');
                 if (successful) {
@@ -479,7 +479,7 @@ function generateDashboardHTML(containers, hostname) {
             // Final fallback: show the command in a prompt
             const userAgent = navigator.userAgent.toLowerCase();
             const isIOS = /iphone|ipad|ipod/.test(userAgent);
-            
+
             if (isIOS) {
                 // iOS: Use a more user-friendly approach
                 alert('Tap and hold the command below to copy it:\\n\\n' + text);
@@ -493,9 +493,9 @@ function generateDashboardHTML(containers, hostname) {
             const messageEl = document.createElement('div');
             messageEl.textContent = message;
             messageEl.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #007AFF; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.3);';
-            
+
             document.body.appendChild(messageEl);
-            
+
             setTimeout(() => {
                 if (document.body.contains(messageEl)) {
                     document.body.removeChild(messageEl);
@@ -525,15 +525,15 @@ function generateDashboardHTML(containers, hostname) {
 function createServer() {
   const config = loadConfig();
   const hostname = getTailscaleHostname();
-  
+
   const server = http.createServer((req, res) => {
     log(`${req.method} ${req.url} from ${req.socket.remoteAddress}`);
-    
+
     if (req.url === '/' || req.url === '/containers') {
       try {
         const containers = getClaudetainerContainers();
         const html = generateDashboardHTML(containers, hostname);
-        
+
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(html);
       } catch (e) {
@@ -603,7 +603,7 @@ function createServer() {
 // CLI interface
 if (require.main === module) {
   const args = process.argv.slice(2);
-  
+
   if (args.includes('--help') || args.includes('-h')) {
     console.log(`
 Claudetainer Dashboard Server
@@ -632,7 +632,7 @@ claudetainer containers via SSH and Mosh, with deep links for Blink Shell.
       i++;
     }
   }
-  
+
   saveConfig(config);
   createServer();
 }

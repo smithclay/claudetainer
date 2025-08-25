@@ -38,7 +38,7 @@ mkdir -p "/tmp/mock-workspaces/test-project"
 echo "Testing workspace navigation with mock directory..."
 
 # Create a test script to verify workspace navigation
-cat > "/tmp/test-workspace-nav.sh" << 'EOF'
+cat >"/tmp/test-workspace-nav.sh" <<'EOF'
 #!/bin/bash
 # Mock the workspace navigation function
 source ~/.config/claudetainer/scripts/workspace-setup.sh
@@ -52,7 +52,7 @@ cd /tmp
 if [[ -d /tmp/test-workspace ]]; then
     workspace_dirs=($(find /tmp/test-workspace -maxdepth 1 -type d ! -path /tmp/test-workspace))
     workspace_count=${#workspace_dirs[@]}
-    
+
     if [[ $workspace_count -eq 1 ]]; then
         echo "✅ Single workspace detection works"
         exit 0

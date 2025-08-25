@@ -38,14 +38,14 @@ make build                      # Build single-file distribution
 
 **Core Files:**
 - `bin/claudetainer` - Modular CLI development version (143 lines)
-- `dist/claudetainer` - Built single-file distribution (1,435 lines) 
+- `dist/claudetainer` - Built single-file distribution (1,435 lines)
 - `build.sh` - Build script (modular → single-file)
 - `Makefile` - Development automation and testing
 - `src/claudetainer/install.sh` - DevContainer feature installation
 
 **Important Directories:**
 - `bin/lib/` - CLI library modules (8 core functions)
-- `bin/commands/` - CLI command implementations 
+- `bin/commands/` - CLI command implementations
 - `src/claudetainer/presets/` - Language-specific configurations with sub-agents
 - `src/claudetainer/multiplexers/` - Terminal multiplexer support
 - `test/claudetainer/` - DevContainer feature tests

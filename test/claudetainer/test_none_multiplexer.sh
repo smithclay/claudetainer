@@ -4,7 +4,7 @@ set -e
 # Import test library for `check` command
 source dev-container-features-test-lib
 
-echo $HOME
+echo "$HOME"
 
 # This test is specifically for the none multiplexer scenario
 # It should check that no multiplexer is installed and simple environment is configured
