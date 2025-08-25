@@ -347,6 +347,88 @@ else
     echo "📋 Workspace setup already configured in ~/.bashrc"
 fi
 
+# SSH Setup for claudetainer key access
+echo "🔑 Setting up SSH infrastructure..."
+
+# Function to ensure vscode user exists
+ensure_vscode_user() {
+    local username="vscode"
+
+    if ! id "$username" >/dev/null 2>&1; then
+        echo "Creating vscode user..."
+
+        # Create the user with a home directory
+        if command -v useradd >/dev/null 2>&1; then
+            useradd -m -s /bin/bash "$username" 2>/dev/null || {
+                echo "Warning: Could not create user with useradd, trying adduser..."
+                if command -v adduser >/dev/null 2>&1; then
+                    adduser --disabled-password --gecos "" "$username" 2>/dev/null || {
+                        echo "Warning: Could not create vscode user"
+                        return 1
+                    }
+                else
+                    echo "Warning: No user creation command available (useradd/adduser)"
+                    return 1
+                fi
+            }
+        elif command -v adduser >/dev/null 2>&1; then
+            adduser --disabled-password --gecos "" "$username" 2>/dev/null || {
+                echo "Warning: Could not create vscode user"
+                return 1
+            }
+        else
+            echo "Warning: No user creation command available (useradd/adduser)"
+            return 1
+        fi
+
+        # Add to sudo group if it exists
+        if getent group sudo >/dev/null 2>&1; then
+            usermod -aG sudo "$username" 2>/dev/null || true
+        fi
+
+        echo "Created vscode user successfully"
+    else
+        echo "vscode user already exists"
+    fi
+
+    return 0
+}
+
+# Create vscode user if running with root privileges and user doesn't exist
+if [ "$(id -u)" -eq 0 ]; then
+    ensure_vscode_user
+fi
+
+# Setup SSH directory structure for vscode user (if exists)
+if id vscode >/dev/null 2>&1; then
+    echo "Setting up SSH directory structure for vscode user..."
+    VSCODE_HOME="/home/vscode"
+    VSCODE_SSH_DIR="$VSCODE_HOME/.ssh"
+    CLAUDETAINER_SSH_DIR="$VSCODE_HOME/.claudetainer-ssh"
+
+    # Create SSH directory
+    mkdir -p "$VSCODE_SSH_DIR"
+    chmod 700 "$VSCODE_SSH_DIR"
+
+    # Create SSH mount point for claudetainer keys
+    mkdir -p "$CLAUDETAINER_SSH_DIR"
+    chmod 755 "$CLAUDETAINER_SSH_DIR"
+
+    # Create authorized_keys file if it doesn't exist (might be created by sshd feature)
+    if [ ! -f "$VSCODE_SSH_DIR/authorized_keys" ]; then
+        touch "$VSCODE_SSH_DIR/authorized_keys"
+    fi
+    chmod 600 "$VSCODE_SSH_DIR/authorized_keys"
+
+    # Set ownership if running as root
+    if [ "$(id -u)" -eq 0 ]; then
+        chown -R vscode:vscode "$VSCODE_SSH_DIR" 2>/dev/null || true
+        chown -R vscode:vscode "$CLAUDETAINER_SSH_DIR" 2>/dev/null || true
+    fi
+
+    echo "✅ SSH infrastructure ready for vscode user"
+fi
+
 # Disable system welcome messages for cleaner SSH experience
 echo "🔇 Disabling system welcome messages..."
 

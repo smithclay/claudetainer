@@ -41,6 +41,7 @@ load_library "validation"
 load_library "port-manager"
 load_library "docker-ops"
 load_library "notifications"
+load_library "ssh"
 load_library "devcontainer-gen"
 
 # Initialize configuration

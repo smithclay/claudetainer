@@ -25,7 +25,14 @@ cmd_mosh() {
     ui_print_info "SSH connection will use port $ssh_port"
     ui_print_info "The container will automatically start a multiplexer session with claude and usage windows"
 
-    mosh --ssh="ssh -p $ssh_port -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR" \
+    # Get SSH key arguments for authentication
+    local ssh_key_args
+    ssh_key_args=$(ssh_get_connection_args)
+
+    # Build MOSH command with SSH key authentication
+    local ssh_cmd="ssh -p $ssh_port -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o GlobalKnownHostsFile=/dev/null -o LogLevel=ERROR $ssh_key_args"
+
+    mosh --ssh="$ssh_cmd" \
         --port="$mosh_port" \
         vscode@localhost
 }

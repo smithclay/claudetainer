@@ -208,6 +208,9 @@ check_docker_memory_allocation() {
                 ui_print_error "Installation cancelled. Please increase Docker memory allocation."
                 return 1
             fi
+        elif [[ $mode == "warn-only" ]]; then
+            # In warn-only mode (like init), just show warning and continue
+            return 0
         else
             # In no-prompt mode (like doctor), just return failure status
             return 1

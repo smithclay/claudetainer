@@ -60,5 +60,25 @@
         "include": "base"
       }
     }
+  },
+  "test_ssh_configuration": {
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+    "user": "node",
+    "features": {
+      "claudetainer": {},
+      "ghcr.io/devcontainers/features/sshd:1": {
+        "SSHD_PORT": 2222,
+        "START_SSHD": "true",
+        "USERNAME": "vscode",
+        "NEW_PASSWORD": "vscode"
+      }
+    }
+  },
+  "test_ssh_key_generation": {
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+    "user": "node",
+    "features": {
+      "claudetainer": {}
+    }
   }
 }

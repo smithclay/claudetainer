@@ -6,13 +6,13 @@
 [![DevContainer Feature](https://img.shields.io/badge/devcontainer-feature-blue?logo=visualstudiocode)](https://containers.dev/features)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> Auto-configured Claude Code with mobile-friendly shell: code from anywhere.
+> Auto-configured Claude Code devcontainer with mobile-friendly shell: code from anywhere.
 
 <p align="center">
   <img src="./assets/claudetainer-demo.gif" width="250px" alt="claudetainer-demo">
 </p>
 
-[Claude Code](https://www.anthropic.com/claude-code) automatically configured with a persistent shell session, hooks, slash commands, utilities, and specialized sub-agents designed for coding without a keyboard. Everything runs in an isolated Docker container using Anthropic's official devcontainer.
+[Claude Code](https://www.anthropic.com/claude-code) automatically configured with a persistent shell session, hooks, slash commands, utilities, and specialized sub-agents designed for coding without a keyboard. Everything runs in an isolated devcontainer using Anthropic's official image.
 
 ## Quick Start (Recommended)
 
@@ -31,7 +31,7 @@ claudetainer init python
 # 3. Start the container
 claudetainer up
 
-# 4. Connect to the container full tooling and terminal multiplexer (default password is: vscode)
+# 4. Connect to the container with SSH key authentication (passwordless)
 claudetainer ssh
 
 # 5. (Inside the ssh session) Start Claude Code: all hooks and slash commands automatically load in a nice zellij UI.
@@ -90,7 +90,7 @@ claudetainer rm -f              # Clean removal
 Connect from anywhere with persistent sessions:
 ```bash
 claudetainer mosh                # MOSH + Zellij/tmux multiplexer (better for mobile)
-# Password: vscode (change via container config)
+# Uses SSH key authentication (passwordless)
 ```
 
 Includes mobile-optimized layouts and push notifications so you can code from your phone effectively.

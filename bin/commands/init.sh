@@ -29,9 +29,15 @@ cmd_init() {
     # Ensure credentials file exists before creating devcontainer
     notifications_ensure_credentials_file
 
+    # Ensure SSH keypair exists for container access
+    if ! ssh_ensure_keypair; then
+        ui_print_error "Failed to set up SSH keypair"
+        return 1
+    fi
+
     # Check Docker memory allocation and warn if insufficient (skip in CI)
     if [[ -z ${CI:-} && -z ${GITHUB_ACTIONS:-} && -z ${GITLAB_CI:-} && -z ${JENKINS_URL:-} && -z ${BUILDKITE:-} && -z ${CIRCLECI:-} && -z ${TRAVIS:-} ]]; then
-        check_docker_memory_allocation
+        check_docker_memory_allocation "warn-only"
     fi
 
     # If no language specified, create base devcontainer
