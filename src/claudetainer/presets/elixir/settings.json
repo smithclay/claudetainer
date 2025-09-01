@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": ["Bash(mix:*)", "Bash(elixir:*)", "Bash(iex:*)"],
+    "deny": []
+  },
+  "hooks": {}
+}

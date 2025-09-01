@@ -25,7 +25,7 @@ brew install claudetainer
 
 cd ~/your-project
 
-# 2. Initialize your project with a language preset (go, node, python, rust)
+# 2. Initialize your project with a language preset (go, node, python, rust, elixir)
 claudetainer init python
 
 # 3. Start the container
@@ -42,7 +42,7 @@ You now have a fully configured Claude Code development environment with special
 
 ## Why Claudetainer?
 
-- **🚀 Instant Setup** - Auto-detects your language (Python, Node.js, Go, Rust, Shell) and configures everything
+- **🚀 Instant Setup** - Auto-detects your language (Python, Node.js, Go, Rust, Elixir, Shell) and configures everything
 - **📱 Code Anywhere** - SSH + terminal multiplexer designed for mobile coding (yes, even from your iPhone)
 - **🔧 Smart Tooling** - Claude Code with specialized sub-agents, automatic quality control, and useful tools like ccusage and gitui
 - **📬 Stay Connected** - Push notifications so you know when Claude needs attention

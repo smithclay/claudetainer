@@ -40,6 +40,7 @@ Creates a `.devcontainer` setup with claudetainer feature configured for the spe
 - Scans for `package.json` → Node.js
 - Scans for `go.mod` → Go
 - Scans for `Cargo.toml` → Rust
+- Scans for `mix.exs` → Elixir
 - Scans for `*.sh` files → Shell
 
 **Options:**

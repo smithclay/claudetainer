@@ -11,6 +11,8 @@ validation_detect_language() {
         echo "rust"
     elif [[ -f "go.mod" ]]; then
         echo "go"
+    elif [[ -f "mix.exs" ]]; then
+        echo "elixir"
     elif [[ -f "install.sh" ]] || [[ -f "setup.sh" ]] || [[ -f "build.sh" ]] || find . -maxdepth 2 -name "*.sh" -type f | head -1 | grep -q .; then
         echo "shell"
     else
@@ -22,12 +24,12 @@ validation_detect_language() {
 validation_validate_language() {
     local lang="$1"
     case "$lang" in
-    python | node | rust | go | shell | base)
+    python | node | rust | go | elixir | shell | base)
         return 0
         ;;
     *)
         ui_print_error "Unsupported language: $lang"
-        echo "Supported languages: python, node, rust, go, shell, base"
+        echo "Supported languages: python, node, rust, go, elixir, shell, base"
         return 1
         ;;
     esac
