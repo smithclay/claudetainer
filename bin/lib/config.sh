@@ -49,6 +49,11 @@ config_get_language_config() {
         echo "image:mcr.microsoft.com/devcontainers/go:1-bookworm"
         echo "post_create:claude --version"
         ;;
+    elixir)
+        echo "name:Elixir Claudetainer"
+        echo "image:ghcr.io/jrnk/elixir-devcontainer:0.1.0"
+        echo "post_create:claude --version"
+        ;;
     shell)
         echo "name:Shell Script Claudetainer"
         echo "image:mcr.microsoft.com/devcontainers/base:bookworm"
