@@ -1,5 +1,7 @@
 # claudetainer 📦 🤖
 
+### October 2025 update: Claude Code is now available in [research preview in Anthropic's iOS app](https://www.anthropic.com/news/claude-code-on-the-web) with built-in sandboxing, this may be the official solution you're looking for :)
+
 [![Test](https://github.com/smithclay/claudetainer/workflows/Test/badge.svg)](https://github.com/smithclay/claudetainer/actions/workflows/test.yaml)
 [![Release](https://github.com/smithclay/claudetainer/workflows/Release/badge.svg)](https://github.com/smithclay/claudetainer/actions/workflows/release.yaml)
 [![GitHub Container Registry](https://img.shields.io/badge/ghcr.io-claudetainer-blue?logo=docker)](https://github.com/smithclay/claudetainer/pkgs/container/claudetainer)
