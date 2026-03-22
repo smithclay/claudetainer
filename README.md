@@ -1,5 +1,5 @@
 # claudetainer 📦 🤖
-
+### March 2026 update: This is now obsoleted by Claude Code ["Remote Control" capabilities](https://code.claude.com/docs/en/remote-control).
 ### October 2025 update: Claude Code is now available in [research preview in Anthropic's iOS app](https://www.anthropic.com/news/claude-code-on-the-web) with built-in sandboxing, this may be the official solution you're looking for :)
 
 [![Test](https://github.com/smithclay/claudetainer/workflows/Test/badge.svg)](https://github.com/smithclay/claudetainer/actions/workflows/test.yaml)
